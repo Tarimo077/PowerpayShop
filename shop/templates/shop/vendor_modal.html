@@ -1,0 +1,60 @@
+<dialog id="vendorModal_{{ product.id }}" 
+        class="modal p-4 rounded-lg backdrop:bg-black/20 backdrop:backdrop-blur-sm transition-all">
+
+    <div class="modal-box">
+        <!-- Close Button -->
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <!-- Header -->
+        <h3 class="text-2xl font-bold mb-4 mt-4 text-green-700 flex items-center gap-2">
+            <i class="fa-solid fa-store"></i>
+            Vendor Details
+        </h3>
+        <!-- Vendor Card -->
+        <div class="space-y-4">
+            <!-- Vendor Name -->
+            <div class="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+                <i class="fa-solid fa-user text-green-600 text-xl mt-1"></i>
+                <div>
+                    <p class="font-semibold text-gray-700">Name</p>
+                    <p class="text-gray-600 text-sm">
+                        {{ product.vendor.shop_name|default:product.vendor.user }}
+                    </p>
+                </div>
+            </div>
+            <!-- Email -->
+            <div class="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+                <i class="fa-solid fa-envelope text-green-600 text-xl mt-1"></i>
+                <div>
+                    <p class="font-semibold text-gray-700">Email</p>
+                    <p class="text-gray-600 text-sm">
+                        {{ product.vendor.email|default:"N/A" }}
+                    </p>
+                </div>
+            </div>
+            <!-- Phone -->
+            {% if product.vendor.phone %}
+            <div class="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+                <i class="fa-solid fa-phone text-green-600 text-xl mt-1"></i>
+                <div>
+                    <p class="font-semibold text-gray-700">Phone</p>
+                    <p class="text-gray-600 text-sm">
+                        {{ product.vendor.phone }}
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+            <!-- Product Count -->
+            <div class="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+                <i class="fa-solid fa-boxes-stacked text-green-600 text-xl mt-1"></i>
+                <div>
+                    <p class="font-semibold text-gray-700">Total Products</p>
+                    <p class="text-gray-600 text-sm">
+                        {{ product.vendor.products.count }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</dialog>

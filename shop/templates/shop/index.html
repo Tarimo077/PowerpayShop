@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+
+{% include 'shop/navbar.html' %}
+
+<!-- CUSTOMER VIEW ONLY -->
+<div class="container mx-auto mt-6">
+
+    <!-- FILTERS -->
+    <form method="GET" class="flex flex-col md:flex-row gap-4 mb-8 items-center">
+
+        <input type="text" name="search" placeholder="Search products..."
+               value="{{ request.GET.search|default:'' }}"
+               class="input input-bordered w-full md:w-64 rounded-lg border-green-300 focus:border-green-500 focus:ring focus:ring-green-200">
+
+        <input type="number" name="min_price" placeholder="Min Price"
+               value="{{ request.GET.min_price|default:'' }}"
+               class="input input-bordered w-full md:w-28 rounded-lg border-green-300 focus:border-green-500 focus:ring focus:ring-green-200">
+
+        <input type="number" name="max_price" placeholder="Max Price"
+               value="{{ request.GET.max_price|default:'' }}"
+               class="input input-bordered w-full md:w-28 rounded-lg border-green-300 focus:border-green-500 focus:ring focus:ring-green-200">
+
+        <button type="submit" class="btn bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+            <i class="fa-solid fa-filter mr-1"></i> Apply
+        </button>
+
+        <a href="{% url 'index' %}"
+           class="btn bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition">
+           <i class="fa-solid fa-filter-circle-xmark mr-1"></i> Clear
+        </a>
+    </form>
+
+
+
+    <!-- PRODUCTS GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        {% for product in products %}
+        <div class="card bg-white shadow-md rounded-xl p-3 flex flex-col relative">
+
+            {% if product.image %}
+            <img src="{{ product.image.url }}" class="rounded-lg w-full max-h-48 object-contain bg-white">
+            {% endif %}
+
+            <h2 class="text-lg font-semibold text-gray-700 mb-4 truncate"><i class="fa-solid fa-tag m-1"></i>{{ product.name }}</h2>
+            <p class="text-gray-500 text-sm mb-2 line-clamp-2"><i class="fa-solid fa-circle-info m-1"></i>{{ product.description }}</p>
+            <p class="text-green-600 font-bold mb-2"><i class="fa-solid fa-hand-holding-dollar m-1"></i>Price: Ksh. {{ product.price|intcomma }}</p>
+            <p class="text-orange-500 mb-2 font-bold flex items-center">
+                <span>
+                    <i class="fa-solid fa-shop m-1"></i>Vendor: 
+                    {{ product.vendor.shop_name|default:product.vendor.user }}
+                </span>
+
+                <!-- View Vendor Button -->
+                <button onclick="vendorModal_{{ product.id }}.showModal()" title="Click to see vendor profile"
+                        class="text-sm bg-orange-500 text-white px-2 py-1 rounded-lg hover:bg-orange-700 transition ml-2">
+                   <i class="fa-solid fa-circle-info"></i> Vendor Info
+                </button>
+            </p>
+            {% include 'shop/vendor_modal.html' %}
+
+            <!-- RATING -->
+            <div class="flex items-center gap-1 m-1 text-yellow-500">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= product.average_rating %}
+                        <i class="fa-solid fa-star"></i>
+                    {% else %}
+                        <i class="fa-regular fa-star"></i>
+                    {% endif %}
+                {% endfor %}
+                <span class="text-gray-600 text-xs ml-1">
+                    {{ product.rating_count }} reviews
+                </span>
+            </div>
+            <p class="text-yellow-500 text-sm mb-2 font-semibold flex justify-end"><i class="fa-solid fa-list-ol m-1"></i>Items left: {{ product.stock }}</p>
+
+            {% if is_authenticated %}
+                <form method="POST" action="{% url 'add_to_cart' product.id %}">
+                    {% csrf_token %}
+                    <button class="w-full bg-green-600 text-white rounded-lg py-2 text-sm hover:bg-green-700 transition">
+                        <i class="fa-solid fa-cart-plus mr-1"></i> Add to cart
+                    </button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" 
+                  class="inline-block bg-yellow-400 text-white text-sm py-2 rounded-lg w-full text-center hover:bg-yellow-500 transition">
+                    <i class="fa-solid fa-cart-plus mr-1"></i> Add to cart
+                </a>
+            {% endif %}
+
+        </div>
+        {% empty %}
+            <p class="text-gray-500">No products found.</p>
+        {% endfor %}
+
+    </div>
+
+    <form method="get" class="mt-4 mb-4 flex justify-end">
+        <label class="mr-2 mt-2 font-semibold">Items per page:</label>
+        <select name="per_page" onchange="this.form.submit()" class="border-green-600 rounded-lg">
+            <option value="6" {% if per_page == 6 %}selected{% endif %}>6</option>
+            <option value="9" {% if per_page == 9 %}selected{% endif %}>9</option>
+            <option value="12" {% if per_page == 12 %}selected{% endif %}>12</option>
+        </select>
+    </form>
+    {% if products.has_other_pages %}
+    <div class="flex justify-center mt-6 mb-6">
+
+        <div class="flex items-center gap-2">
+
+            {# Previous Button #}
+            {% if products.has_previous %}
+                <a href="?page={{ products.previous_page_number }}&per_page={{ per_page }}{% if search %}&search={{ search }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
+                  class="px-4 py-2 rounded-full bg-white shadow hover:bg-green-600 hover:text-white transition">
+                    <i class="fa-solid fa-backward m-1"></i> Prev
+                </a>
+            {% else %}
+                <button class="px-4 py-2 rounded-full bg-gray-200 text-gray-400 cursor-not-allowed shadow">
+                    <i class="fa-solid fa-backward m-1"></i> Prev
+                </button>
+            {% endif %}
+
+            {# Page Numbers #}
+            <div class="flex gap-2">
+                {% for num in products.paginator.page_range %}
+                    {% if num == products.number %}
+                        <span class="px-4 py-2 rounded-full bg-green-600 text-white shadow font-semibold">
+                            {{ num }}
+                        </span>
+                    {% else %}
+                        <a href="?page={{ num }}&per_page={{ per_page }}{% if search %}&search={{ search }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
+                          class="px-4 py-2 rounded-full bg-white shadow hover:bg-orange-500 hover:text-white transition">
+                            {{ num }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            {# Next Button #}
+            {% if products.has_next %}
+                <a href="?page={{ products.next_page_number }}&per_page={{ per_page }}{% if search %}&search={{ search }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
+                  class="px-4 py-2 rounded-full bg-white shadow hover:bg-green-600 hover:text-white transition">
+                    Next <i class="fa-solid fa-forward m-1"></i>
+                </a>
+            {% else %}
+                <button class="px-4 py-2 rounded-full bg-gray-200 text-gray-400 cursor-not-allowed shadow">
+                    Next <i class="fa-solid fa-forward m-1"></i>
+                </button>
+            {% endif %}
+
+        </div>
+
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

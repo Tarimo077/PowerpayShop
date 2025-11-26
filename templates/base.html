@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" data-theme="light">  <!-- enables DaisyUI themes -->
+<head>
+    <script src="https://kit.fontawesome.com/69d2af506e.js" crossorigin="anonymous"></script>
+    <link rel="icon" href="{% static 'images/favicon.ico' %}">
+    <meta charset="UTF-8">
+    <title>{% block title %}PowerPayShop{% endblock %}</title>
+
+    <!-- Tailwind + DaisyUI CSS -->
+    <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Saira:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+
+<body class="min-h-screen bg-gradient-to-r from-green-100 via-orange-100 to-green-50">
+    {% block content %}
+    
+    {% endblock %}
+    <!-- DaisyUI Modal for messages -->
+<dialog id="messageModal" class="modal opacity-0 transform -translate-y-96 transition-all duration-500 rounded-lg">
+  <div class="modal-box max-w-2xl shadow-2xl p-4 relative">
+    
+    <!-- Close button -->
+    <button class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 text-white outline-none border-none" onclick="closeModal()">✕</button>
+    
+    <!-- Modal title -->
+    <h3 id="modalTitle" class="text-xl text-center font-bold text-white mb-2">Message</h3>
+
+    <!-- Modal content -->
+    <p id="modalMessage" class="text-white text-lg py-2">Message content</p>
+
+  </div>
+</dialog>
+<script>
+  function closeModal() {
+    const modal = document.getElementById("messageModal");
+    modal.classList.add("opacity-0","-translate-y-10");
+    setTimeout(() => modal.close(), 500); // wait for animation
+  }
+
+  {% if messages %}
+    const modal = document.getElementById("messageModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalMessage = document.getElementById("modalMessage");
+    const modalBox = modal.querySelector('.modal-box');
+
+    {% for message in messages %}
+      modalTitle.textContent = "{{ message.tags|capfirst }}";
+      modalMessage.textContent = "{{ message|escapejs }}";
+
+      modalBox.classList.remove('bg-red-100','bg-green-100','bg-yellow-100','text-red-800','text-green-800','text-yellow-800');
+      {% if message.level_tag == 'error' %}
+        modalBox.classList.add('bg-red-400','text-red-800');
+      {% elif message.level_tag == 'success' %}
+        modalBox.classList.add('bg-green-400','text-green-800');
+      {% else %}
+        modalBox.classList.add('bg-yellow-400','text-yellow-800');
+      {% endif %}
+
+      modal.showModal();
+      modal.classList.remove("opacity-0","-translate-y-10");
+
+      // Auto-close after 4 seconds
+      setTimeout(() => {
+          closeModal();
+      }, 4000);
+    {% endfor %}
+  {% endif %}
+</script>
+</body>
+</html>

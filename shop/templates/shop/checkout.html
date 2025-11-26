@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+{% block content %}
+
+{% include "shop/navbar.html" %}
+
+<div class="container mx-auto p-6 max-w-5xl">
+
+    <h1 class="text-3xl font-bold text-green-700 mb-6">Checkout</h1>
+
+    <div class="flex flex-col md:flex-row gap-6">
+
+        <!-- LEFT SIDE -->
+        <div class="w-full md:w-2/3">
+
+            <!-- TAB BUTTONS -->
+            <div class="flex gap-2 mb-4">
+                <button class="tab-btn bg-green-600 text-white px-4 py-2 rounded-lg" data-tab="tab1">Basic Info</button>
+                <button class="tab-btn bg-gray-200 px-4 py-2 rounded-lg" data-tab="tab2">Household</button>
+                <button class="tab-btn bg-gray-200 px-4 py-2 rounded-lg" data-tab="tab3">Cooking</button>
+                <button class="tab-btn bg-gray-200 px-4 py-2 rounded-lg" data-tab="tab4">Payment</button>
+            </div>
+
+            <form method="POST" id="checkoutForm">
+                {% csrf_token %}
+
+                <!-- TAB 1 -->
+                <div id="tab1" class="tab-content bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4">Basic Information</h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <label>
+                            <span>First Name <span class="text-red-500">*</span></span>
+                            {{ form.first_name }}
+                        </label>
+                        <label>
+                            <span>Last Name <span class="text-red-500">*</span></span>
+                            {{ form.last_name }}
+                        </label>
+
+                        <label class="md:col-span-2">
+                            <span>Email <span class="text-red-500">*</span></span>
+                            {{ form.email }}
+                        </label>
+
+                        <label class="md:col-span-2">
+                            <span>Phone <span class="text-red-500">*</span></span>
+                            {{ form.phone }}
+                        </label>
+
+                        <label class="md:col-span-2">
+                            <span>Country <span class="text-red-500">*</span></span>
+                            {{ form.country }}
+                        </label>
+
+                        <label class="md:col-span-2">
+                            <span>County/State/Province <span class="text-red-500">*</span></span>
+                            {{ form.county }}
+                        </label>
+
+                        <label class="md:col-span-2">
+                            <span>City/Town <span class="text-red-500">*</span></span>
+                            {{ form.city }}
+                        </label>
+
+                        <label class="md:col-span-2">
+                            <span>Village</span>
+                            {{ form.village }}
+                        </label>
+
+                        <label class="md:col-span-2">
+                            <span>Apartment, suite, unit, etc.</span>
+                            {{ form.address_detail }}
+                        </label>
+
+                    </div>
+                </div>
+
+                <!-- TAB 2 -->
+                <div id="tab2" class="tab-content hidden bg-white p-6 rounded-xl shadow-lg mt-4">
+                    <h2 class="text-xl font-semibold mb-4">Household Information</h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <!-- Gender -->
+                        <label>
+                            <span class="font-medium">Gender</span>
+                            {{ form.gender }}
+                        </label>
+
+                        <!-- Age -->
+                        <label>
+                            <span class="font-medium">Age</span>
+                            {{ form.age }}
+                        </label>
+
+                        <!-- National ID -->
+                        <label class="md:col-span-2">
+                            <span class="font-medium">National ID</span>
+                            {{ form.national_id }}
+                        </label>
+
+                        <!-- Education -->
+                        <label>
+                            <span class="font-medium">Highest Level Of Education</span>
+                            {{ form.education }}
+                        </label>
+
+                        <!-- Marital Status -->
+                        <label>
+                            <span class="font-medium">Marital Status</span>
+                            {{ form.marital_status }}
+                        </label>
+
+                        <!-- Employment -->
+                        <label class="md:col-span-2">
+                            <span class="font-medium">Employment</span>
+                            {{ form.employment }}
+                        </label>
+
+                        <!-- Economic Activity -->
+                        <label class="md:col-span-2">
+                            <span class="font-medium">Economic Activity</span>
+                            {{ form.economic_activity }}
+                        </label>
+
+                        <!-- Monthly Income -->
+                        <label>
+                            <span class="font-medium">Monthly Income (Ksh)</span>
+                            {{ form.monthly_income }}
+                        </label>
+
+                        <!-- Buying Method -->
+                        <label>
+                            <span class="font-medium">Buying Cash Or Applying For Loan<span class="text-red-500">*</span></span>
+                            {{ form.buying_method }}
+                        </label>
+
+                        <!-- Other Loans -->
+                        <label class="md:col-span-2">
+                            <span class="font-medium">Do You Have Any Other Loans?</span>
+                            {{ form.other_loans }}
+                        </label>
+
+                    </div>
+                </div>
+
+
+                <!-- TAB 3 -->
+                <div id="tab3" class="tab-content hidden bg-white p-6 rounded-xl shadow-lg mt-4">
+                    <h2 class="text-xl font-semibold mb-4">Cooking & Energy</h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <!-- Cooking Fuel -->
+                        <label class="md:col-span-2">
+                            <span class="font-medium">Cooking Fuel Currently In Use (if multiple fuels are used, please select accordingly)</span>
+                            {{ form.cooking_fuel }}
+                        </label>
+
+                        <!-- Stove Type -->
+                        <label class="md:col-span-2">
+                            <span class="font-medium">Cooking Stove Currently In Use (if multiple stoves are used, please select accordingly)</span>
+                            {{ form.stove_type }}
+                        </label>
+
+                        <!-- Are you the cook -->
+                        <label class="md:col-span-2">
+                            <span class="font-medium">Are you the one who is going to be cooking with the appliance?</span>
+                            {{ form.is_cook_user }}
+                        </label>
+
+                        <!-- Electricity Cost -->
+                        <label  class="md:col-span-2">
+                            <span class="font-medium">Monthly Electricity Cost For Previous Month</span>
+                            {{ form.monthly_electricity_cost }}
+                        </label>
+
+                        <!-- Grid Connection -->
+                        <label>
+                            <span class="font-medium">Do you have a grid connection?</span>
+                            {{ form.grid_connection }}
+                        </label>
+
+                        <!-- Utility Provider -->
+                        <label>
+                            <span class="font-medium">Utility Provider</span>
+                            {{ form.utility_provider }}
+                        </label>
+                    </div>
+                </div>
+
+
+
+                <!-- TAB 4 -->
+                <div id="tab4" class="tab-content hidden bg-white p-6 rounded-xl shadow-lg mt-4">
+                    <h2 class="text-xl font-semibold mb-4">Payment</h2>
+
+                    <label class="block">
+                        <span>Mpesa Number (start with 254) <span class="text-red-500">*</span></span>
+                        {{ payment_form.mpesa_phone }}
+                    </label>
+
+                    <button id="payBtn" disabled
+                        class="mt-4 w-full bg-gray-400 text-white py-3 rounded-lg">
+                        Fill all required fields to proceed
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- RIGHT SIDE SUMMARY -->
+        <div class="w-full md:w-1/2 mt-14">
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-lg font-semibold mb-4">Order Summary</h3>
+
+                {% for item in items %}
+                <div class="py-3 flex items-center gap-3 border-b">
+                    <img src="{{ item.product.image.url }}" class="w-16 h-16 object-contain rounded">
+                    <div>
+                        <div class="font-semibold">{{ item.product.name }}</div>
+                        <div class="text-sm text-gray-500">Ksh. {{ item.product.price|intcomma }} × {{ item.quantity }}</div>
+                    </div>
+                    <div class="ml-auto font-bold">Ksh. {{ item.total_price|intcomma }}</div>
+                </div>
+                {% endfor %}
+
+                <div class="flex justify-between font-semibold mt-4">
+                    <span>Total:</span>
+                    <span>Ksh. {{ cart_total|intcomma }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs + validation -->
+<script>
+document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const tab = btn.dataset.tab;
+
+        document.querySelectorAll(".tab-btn").forEach(b => 
+            b.classList.remove("bg-green-600","text-white"));
+        btn.classList.add("bg-green-600","text-white");
+
+        document.querySelectorAll(".tab-content").forEach(t => t.classList.add("hidden"));
+        document.getElementById(tab).classList.remove("hidden");
+    });
+});
+
+
+/* Disable Pay Button Until Required Filled */
+const requiredFields = [
+    "id_first_name", "id_last_name", "id_email", "id_phone",
+    "id_country", "id_county", "id_city", "id_buying_method",
+    "id_mpesa_phone"
+];
+
+function checkRequired() {
+    let allFilled = true;
+    requiredFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el || !el.value.trim()) allFilled = false;
+    });
+
+    const btn = document.getElementById("payBtn");
+
+    if (allFilled) {
+        btn.disabled = false;
+        btn.className = "mt-4 w-full bg-gradient-to-r from-green-600 to-orange-500 text-white py-3 rounded-lg";
+        btn.innerText = "Pay Now";
+    } else {
+        btn.disabled = true;
+        btn.className = "mt-4 w-full bg-gray-400 text-white py-3 rounded-lg";
+        btn.innerText = "Fill all required fields to proceed";
+    }
+}
+
+requiredFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener("input", checkRequired);
+});
+</script>
+
+{% endblock %}

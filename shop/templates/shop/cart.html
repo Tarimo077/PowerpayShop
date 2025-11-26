@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block content %}
+{% load humanize %}
+{% load static %}
+
+{% include 'shop/navbar.html' %}
+
+<div class="max-w-6xl mx-auto p-6">
+
+    <h2 class="text-3xl font-bold text-green-700 mb-6">Your Cart</h2>
+
+    {% if cart.items.all %}
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full table-auto border-collapse rounded-lg overflow-hidden shadow-lg bg-white">
+
+            <thead class="bg-green-600 text-white">
+                <tr>
+                    <th class="px-4 py-3 text-left">Image</th>
+                    <th class="px-4 py-3 text-left">Product</th>
+                    <th class="px-4 py-3 text-left">Vendor</th>
+                    <th class="px-4 py-3 text-left">Quantity</th>
+                    <th class="px-4 py-3 text-left">Unit Price</th>
+                    <th class="px-4 py-3 text-left">Total</th>
+                    <th class="px-4 py-3 text-left">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in cart.items.all %}
+                <tr id="row-{{ item.id }}" class="border-b hover:bg-gray-50 transition">
+
+                    <!-- image -->
+                    <td class="px-4 py-3">
+                        {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" class="w-16 h-16 object-contain rounded">
+                        {% else %}
+                        <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-500">
+                            No Image
+                        </div>
+                        {% endif %}
+                    </td>
+
+                    <!-- name -->
+                    <td class="px-4 py-3 font-semibold text-gray-700">
+                        {{ item.product.name }}
+                    </td>
+
+                    <!-- vendor -->
+                    <td class="px-4 py-3 text-gray-600">
+                        {{ item.product.vendor.shop_name|default:item.product.vendor.user }}
+                    </td>
+
+                    <!-- qty with AJAX buttons -->
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-2">
+
+                            <button onclick="changeQty('{{ item.id }}', -1)"
+                                class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">−</button>
+
+                            <input id="qty-{{ item.id }}" 
+                                   type="number" min="1"
+                                   value="{{ item.quantity }}"
+                                   class="w-16 text-center border rounded"
+                                   onchange="directQtyChange('{{ item.id }}')">
+
+                            <button onclick="changeQty('{{ item.id }}', 1)"
+                                class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">+</button>
+
+                        </div>
+                    </td>
+
+                    <!-- price -->
+                    <td class="px-4 py-3 text-green-600 font-bold">
+                        Ksh. {{ item.product.price|intcomma }}
+                    </td>
+
+                    <!-- total -->
+                    <td id="item-total-{{ item.id }}" class="px-4 py-3 text-green-700 font-bold">
+                        Ksh. {{ item.total_price|intcomma }}
+                    </td>
+
+                    <!-- actions -->
+                    <td class="px-4 py-3">
+                        <a href="{% url 'remove_from_cart' item.id %}"
+                           class="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 transition">
+                            <i class="fa-solid fa-trash"></i> Remove
+                        </a>
+                    </td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+    <!-- TOTAL + CHECKOUT -->
+    <div class="mt-6 flex justify-end">
+        <div class="bg-white p-5 rounded-xl shadow-md w-72 border border-green-100">
+
+            <h3 class="text-lg font-semibold text-gray-700">Cart Total:</h3>
+
+            <p id="cart-total" class="text-2xl font-bold text-green-600 mt-2 mb-4">
+                Ksh. {{ cart.total_price|intcomma }}
+            </p>
+
+            <a href="{% url 'checkout' %}"
+               class="btn w-full mt-4 bg-gradient-to-r from-green-600 to-orange-500 text-white rounded-lg p-2">
+               Proceed to Checkout
+            </a>
+
+        </div>
+    </div>
+
+    {% else %}
+
+    <p class="text-gray-600 text-lg text-center mt-10">Your cart is empty.</p>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'index' %}" class="btn bg-green-600 text-white rounded-full px-6 py-2">
+            Continue Shopping
+        </a>
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+<!-- AJAX Script -->
+<script>
+function formatCurrency(num) {
+    return "Ksh. " + Number(num).toLocaleString("en-KE", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function changeQty(itemId, delta) {
+    const input = document.getElementById(`qty-${itemId}`);
+    let newQty = parseInt(input.value) + delta;
+    if (newQty < 1) newQty = 1;
+
+    input.value = newQty;
+    sendQtyUpdate(itemId, newQty);
+}
+
+function directQtyChange(itemId) {
+    const input = document.getElementById(`qty-${itemId}`);
+    let newQty = parseInt(input.value);
+
+    if (newQty < 1) newQty = 1;
+    input.value = newQty;
+
+    sendQtyUpdate(itemId, newQty);
+}
+
+function sendQtyUpdate(itemId, newQty) {
+    const csrfToken = "{{ csrf_token }}";
+
+    fetch(`/cart/update/${itemId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: `quantity=${newQty}`
+    })
+    .then(res => res.json())
+    .then(data => {
+        // Update item row total with formatted currency
+        document.getElementById(`item-total-${itemId}`).innerText =
+            formatCurrency(data.item_total);
+
+        // Update cart total
+        document.getElementById("cart-total").innerText =
+            formatCurrency(data.cart_total);
+    })
+}
+</script>
+
+{% endblock %}

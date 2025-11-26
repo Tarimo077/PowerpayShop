@@ -1,0 +1,26 @@
+{% load static %}
+<!-- NAVBAR -->
+<nav class="w-full bg-white flex items-center justify-between px-6 py-4 shadow-md">
+    <a href="/" style="display:flex; align-items:center; text-decoration:none;">
+        <img src="{% static 'images/pplogo.png' %}" alt="PowerPay Logo" style="height:45px; margin-right:10px;">
+    </a>
+
+    <div class="flex items-center gap-8">
+        {% if user.is_authenticated %}
+            <!-- CART BUTTON -->
+            <a href="{% url 'view_cart' %}" class="relative cursor-pointer" title="view cart">
+                <i class="fa-solid fa-cart-shopping text-2xl text-green-600 hover:text-orange-500 transition"></i>
+
+                {% if cart_item_count > 0 %}
+                <span class="badge badge-md bg-orange-500 text-white font-semibold text-center absolute -top-2 left-5 rounded-full w-6 h-6">
+                    {{ cart_item_count }}
+                </span>
+                {% endif %}
+            </a>
+            {% include 'shop/avatar.html' %}
+        {% else %}
+            <a href="{% url 'login' %}" class="text-green-600 font-semibold hover:text-orange-500">Login</a>
+            <a href="{% url 'register' %}" class="ml-2 text-green-600 font-semibold hover:text-orange-500">Sign Up</a>
+        {% endif %}
+    </div>
+</nav>
