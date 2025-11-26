@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+
+{% include "shop/navbar.html" %}
+
+<div class="container mx-auto p-6 max-w-5xl">
+
+    <div class="bg-white shadow-lg rounded-xl p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        <!-- Product Image -->
+        <div class="flex flex-col items-center">
+            <img src="{{ product.image.url }}" class="rounded-xl w-full max-h-96 object-contain bg-white mb-4" />
+
+            {% if product.stock > 0 %}
+                <span class="text-green-600 font-semibold">In Stock: {{ product.stock }}</span>
+            {% else %}
+                <span class="text-red-600 font-semibold">Out of Stock</span>
+            {% endif %}
+        </div>
+
+        <!-- Product Details -->
+        <div class="flex flex-col justify-between">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-800 mb-3">{{ product.name }}</h1>
+
+                <!-- RATING -->
+                <div class="flex items-center gap-1 m-1 text-yellow-500">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= product.average_rating %}
+                            <i class="fa-solid fa-star"></i>
+                        {% else %}
+                            <i class="fa-regular fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                    <span class="text-gray-600 text-xs ml-1">{{ product.rating_count }} reviews</span>
+                </div>
+
+                <!-- Description -->
+                <p class="text-gray-700 mb-4">{{ product.description }}</p>
+
+                <!-- Price -->
+                <p class="text-3xl font-semibold text-green-600 mb-6">
+                    Ksh. {{ product.price|intcomma }}
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col md:flex-row gap-3 items-start md:items-center">
+
+                {% if user.is_authenticated %}
+                    <!-- Add to Cart -->
+                    <form method="POST" action="{% url 'add_to_cart' product.id %}" class="flex-1">
+                        {% csrf_token %}
+                        <button class="w-full bg-green-600 text-white rounded-lg py-3 hover:bg-green-700 transition flex justify-center items-center">
+                            <i class="fa-solid fa-cart-plus mr-2"></i> Add to Cart
+                        </button>
+                    </form>
+
+                    <!-- Wishlist Toggle -->
+                    <form method="POST" action="{% url 'toggle_wishlist' product.id %}" class="flex-1">
+                        {% csrf_token %}
+                        <button class="w-full border border-orange-500 text-orange-500 rounded-lg py-3 hover:bg-orange-50 transition flex justify-center items-center">
+                            {% if in_wishlist %}
+                                <i class="fa-solid fa-heart mr-2"></i> Remove from Wishlist
+                            {% else %}
+                                <i class="fa-regular fa-heart mr-2"></i> Add to Wishlist
+                            {% endif %}
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="w-full bg-yellow-400 text-white py-3 rounded-lg text-center hover:bg-yellow-500 transition">
+                        Login to Interact
+                    </a>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% include 'footer.html' %}
+
+{% endblock %}

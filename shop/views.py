@@ -1,18 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Product, Sale, Cart, CartItem, CheckoutOrder, ProductRating
+from .models import Product, Sale, Cart, CartItem, CheckoutOrder, ProductRating, Wishlist
 from django.contrib import messages
 from .forms import ProductForm, CheckoutForm, PaymentForm, RatingForm
 from django.db.models import Sum
 from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponse
 import requests
-from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.core.mail import send_mail
-from decimal import Decimal
 import uuid
 import json
 from accounts.models import Vendor
@@ -21,11 +19,16 @@ from accounts.models import Vendor
 def index_page(request):
     """Customer-facing view: shows all products"""
     products = Product.objects.all()
+    vendors = Vendor.objects.filter(products__isnull=False).distinct()
+    wishlist_items = []
+    if request.user.is_authenticated:
+        wishlist_items = Wishlist.objects.filter(user=request.user).values_list('product', flat=True)
 
     # Filters
     search = request.GET.get("search")
     min_price = request.GET.get("min_price")
     max_price = request.GET.get("max_price")
+    vendor = request.GET.get("vendor")
 
     if search:
         products = products.filter(name__icontains=search)
@@ -33,6 +36,8 @@ def index_page(request):
         products = products.filter(price__gte=min_price)
     if max_price:
         products = products.filter(price__lte=max_price)
+    if vendor:
+        products = products.filter(vendor__id=vendor)
 
     # ITEMS PER PAGE OPTIONS
     per_page = request.GET.get("per_page", 6)
@@ -43,11 +48,24 @@ def index_page(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "shop/index.html", {
+    context = {
         "products": page_obj,
-         "per_page": int(per_page),
+        "per_page": int(per_page),
+        "vendors": vendors,
+        "wishlist_items": wishlist_items,
         "is_authenticated": request.user.is_authenticated,
-    })
+        "search": search,
+        "vendor": vendor,
+        "min_price": min_price,
+        "max_price": max_price,
+    }
+
+    if request.headers.get('HX-Request'):
+        # HTMX request → render only the grid
+        print("HTMX IN ACTION")
+        return render(request, "shop/product_grid.html", context)
+    
+    return render(request, "shop/index.html", context)
 
 
 def vendor_dashboard(request):
@@ -69,6 +87,7 @@ def vendor_dashboard(request):
         products = products.filter(price__gte=min_price)
     if max_price:
         products = products.filter(price__lte=max_price)
+    
 
     # Stats
     product_count = products.count()
@@ -91,6 +110,19 @@ def vendor_dashboard(request):
         "total_revenue": total_revenue,
         "is_authenticated": True,
         "per_page": int(per_page),
+    })
+
+def product_detail(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+
+    # Check if product is in user's wishlist
+    in_wishlist = False
+    if request.user.is_authenticated:
+        in_wishlist = Wishlist.objects.filter(user=request.user, product=product).exists()
+
+    return render(request, "shop/product_detail.html", {
+        "product": product,
+        "in_wishlist": in_wishlist,
     })
 
 
@@ -116,7 +148,8 @@ def add_product(request):
 
 @login_required
 def edit_product(request, product_id):
-    product = get_object_or_404(Product, id=product_id, vendor=request.user)
+    vendor = get_object_or_404(Vendor, user=request.user)
+    product = get_object_or_404(Product, id=product_id, vendor=vendor)
 
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
@@ -198,7 +231,25 @@ def update_cart_quantity(request, item_id):
             "cart_total": cart.total_price()      # call the method
         })
     
-# views.py
+@login_required
+def toggle_wishlist(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    wishlist_entry, created = Wishlist.objects.get_or_create(
+        user=request.user,
+        product=product
+    )
+
+    if not created:
+        # Already exists → remove
+        wishlist_entry.delete()
+        messages.info(request, "Removed from wishlist.")
+    else:
+        messages.success(request, "Added to wishlist!")
+
+    return redirect(request.META.get("HTTP_REFERER", "index"))
+
+    
 @login_required
 def rate_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -225,7 +276,16 @@ def rate_product(request, product_id):
         "form": form,
     })
 
+@login_required
+def wishlist(request):
+    wishlist_items = Wishlist.objects.filter(user=request.user).select_related('product')
+    products = [item.product for item in wishlist_items]
 
+    context = {
+        'products': products,
+        'wishlist_items': wishlist_items  # optional for hearts
+    }
+    return render(request, 'shop/wishlist.html', context)
 
 @login_required
 def checkout(request):
