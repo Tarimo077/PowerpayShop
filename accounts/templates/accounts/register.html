@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="relative flex justify-center items-center min-h-screen overflow-hidden bg-gradient-to-r from-green-100 via-orange-100 to-green-50">
+    <!-- Animated Floating Shapes -->
+  <div class="absolute w-64 h-64 bg-green-300 rounded-full opacity-40 animate-bounce -top-32 -left-32"></div>
+  <div class="absolute w-72 h-72 bg-orange-300 rounded-full opacity-30 animate-bounce -bottom-36 -right-36"></div>
+  <div class="absolute w-48 h-48 bg-green-400 rounded-full opacity-20 animate-bounce top-1/4 right-1/4"></div>
+
+
+  <div class="card w-96 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 z-10">
+
+    <div class="flex justify-center mb-4">
+      <img src="{% static 'images/pplogo.png' %}" alt="PowerPayShop Logo" class="w-2/3 h-2/3 object-contain">
+    </div>
+
+    <p class="text-center text-lg font-bold text-green-700 dark:text-green-400 mb-6">
+      Create your account
+    </p>
+
+    <form method="POST" class="space-y-5">
+    {% csrf_token %}
+    {{ form.username }}
+    {{ form.email }}
+    {{ form.password1 }}
+    {{ form.password2 }}
+
+    <div class="flex items-center space-x-2">
+        {{ form.is_vendor }}
+        <label for="{{ form.is_vendor.id_for_label }}" class="text-gray-700 dark:text-gray-200">Register as Vendor</label>
+    </div>
+
+    <div class="flex justify-center">
+        <button type="submit" 
+                class="btn bg-gradient-to-r from-green-500 to-orange-400 text-white font-bold w-1/2 hover:from-green-500 hover:to-orange-500 transition rounded-lg shadow-lg">
+            <i class="fa-solid fa-user-plus m-1"></i> Sign Up
+        </button>
+    </div>
+    </form>
+
+    <p class="mt-4 text-center text-sm text-gray-600 dark:text-gray-300">
+      Already have an account? 
+      <a href="{% url 'login' %}" class="text-green-600 dark:text-green-400 hover:text-orange-500 font-semibold">Login here</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}
