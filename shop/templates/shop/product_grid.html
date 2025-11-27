@@ -28,7 +28,7 @@
             </p>
 
             <!-- VENDOR WITH MODAL -->
-            <p class="text-orange-500 mb-2 font-bold flex items-center">
+            <p class="text-orange-500 mb-2 font-bold flex items-center text-sm">
                 <span>
                     <i class="fa-solid fa-shop m-1"></i>Vendor:
                     {{ product.vendor.shop_name|default:product.vendor.user }}
@@ -54,10 +54,17 @@
                 <span class="text-gray-600 text-xs ml-1">{{ product.rating_count }} reviews</span>
             </div>
 
-            <!-- STOCK -->
-            <p class="text-yellow-500 text-sm mb-2 font-semibold flex justify-end">
-                <i class="fa-solid fa-list-ol m-1"></i>Items left: {{ product.stock }}
-            </p>
+            <!-- Stock Status -->
+            <div class="w-full mt-3 mb-2">
+                <div class="flex justify-between mb-1">
+                    <span class="text-green-600 font-medium">Items Remaining</span>
+                    <span class="text-green-600 font-medium">{{ product.stock }} / {{ product.max_stock }}</span>
+                </div>
+                <div class="w-full bg-gray-300 rounded-full h-2">
+                    <div class="bg-green-600 h-2 rounded-full text-center" style="width: {{ product.stock_percentage }}%"></div>
+                </div>
+            </div>
+
 
             <!-- WISHLIST BUTTON -->
             {% if is_authenticated %}
@@ -78,18 +85,18 @@
                 {% if is_authenticated %}
                 <form method="POST" action="{% url 'add_to_cart' product.id %}" class="flex-1">
                     {% csrf_token %}
-                    <button class="w-full h-full flex items-center justify-center gap-2 bg-green-600 text-white rounded-lg py-2 text-sm font-semibold hover:bg-green-700 transition">
-                        <i class="fa-solid fa-cart-plus"></i> Add to cart
+                    <button class="w-full h-full flex items-center justify-center gap-1 bg-green-600 text-white rounded-lg py-2 text-xs font-semibold hover:bg-green-700 transition">
+                        <i class="fa-solid fa-cart-plus"></i> Add to Cart
                     </button>
                 </form>
                 {% else %}
-                <a href="{% url 'login' %}" class="flex-1 h-full flex items-center justify-center gap-2 bg-yellow-400 text-white py-2 rounded-lg text-sm font-semibold hover:bg-yellow-500 transition">
-                    <i class="fa-solid fa-cart-plus"></i> Add to cart
+                <a href="{% url 'login' %}" class="flex-1 h-full flex items-center justify-center gap-2 bg-yellow-400 text-white py-2 rounded-lg text-xs font-semibold hover:bg-yellow-500 transition">
+                    <i class="fa-solid fa-cart-plus"></i> Add to Cart
                 </a>
                 {% endif %}
 
                 <!-- VIEW PRODUCT BUTTON -->
-                <a href="{% url 'product_detail' product.id %}" class="flex-1 h-full flex items-center justify-center gap-2 bg-orange-500 text-white py-2 rounded-lg text-sm font-semibold hover:bg-orange-600 transition">
+                <a href="{% url 'product_detail' product.id %}" class="flex-1 h-full flex items-center justify-center gap-2 bg-orange-500 text-white py-2 rounded-lg text-xs font-semibold hover:bg-orange-600 transition">
                     <i class="fa-solid fa-eye"></i> View Product
                 </a>
             </div>

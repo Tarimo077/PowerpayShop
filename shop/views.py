@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Product, Sale, Cart, CartItem, CheckoutOrder, ProductRating, Wishlist
+from .models import Product, Sale, Cart, CartItem, CheckoutOrder, ProductRating, Wishlist, ProductGallery
 from django.contrib import messages
-from .forms import ProductForm, CheckoutForm, PaymentForm, RatingForm
+from .forms import ProductForm, CheckoutForm, PaymentForm, RatingForm, GalleryForm
 from django.db.models import Sum
 from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponse
@@ -125,6 +125,18 @@ def product_detail(request, pk):
         "in_wishlist": in_wishlist,
     })
 
+def product_image_swap(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    image_id = request.GET.get('image')
+
+    if image_id == "main":
+        image_url = product.image.url
+    else:
+        gallery_photo = get_object_or_404(ProductGallery, pk=image_id)
+        image_url = gallery_photo.image.url
+
+    # Return only the main image tag
+    return HttpResponse(f'<img id="mainProductImage" src="{image_url}" class="rounded-xl w-full max-h-96 object-contain bg-white shadow-md transition duration-300" />')
 
 @login_required
 def add_product(request):
@@ -134,16 +146,30 @@ def add_product(request):
 
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
-        if form.is_valid():
+        gallery_form = GalleryForm(request.POST, request.FILES)
+
+        if form.is_valid() and gallery_form.is_valid():
             product = form.save(commit=False)
             product.vendor = request.user
+            # Set max_stock to initial stock
+            product.max_stock = product.stock
             product.save()
+
+            # Save gallery images
+            for img in gallery_form.cleaned_data['images']:
+                ProductGallery.objects.create(product=product, image=img)
+
             messages.success(request, "Product added successfully!")
             return redirect('vendor_dashboard')
     else:
         form = ProductForm()
+        gallery_form = GalleryForm()
 
-    return render(request, 'shop/add_edit_product.html', {'form': form, 'title': 'Add Product'})
+    return render(request, 'shop/add_edit_product.html', {
+        'form': form,
+        'gallery_form': gallery_form,
+        'title': 'Add Product'
+    })
 
 
 @login_required
@@ -153,14 +179,30 @@ def edit_product(request, product_id):
 
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
-        if form.is_valid():
-            form.save()
+        gallery_form = GalleryForm(request.POST, request.FILES)
+
+        if form.is_valid() and gallery_form.is_valid():
+            updated_product = form.save(commit=False)
+            # If stock increased above max_stock, update max_stock
+            #if updated_product.stock > product.max_stock:
+            updated_product.max_stock = updated_product.stock
+            updated_product.save()
+
+            # Add new gallery images
+            for img in gallery_form.cleaned_data['images']:
+                ProductGallery.objects.create(product=product, image=img)
+
             messages.success(request, "Product updated successfully!")
             return redirect('vendor_dashboard')
     else:
         form = ProductForm(instance=product)
+        gallery_form = GalleryForm()
 
-    return render(request, 'shop/add_edit_product.html', {'form': form, 'title': 'Edit Product'})
+    return render(request, 'shop/add_edit_product.html', {
+        'form': form,
+        'gallery_form': gallery_form,
+        'title': 'Edit Product'
+    })
 
 def delete_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -173,6 +215,12 @@ def delete_product(request, product_id):
     product.delete()
     messages.success(request, "Product deleted successfully!")
     return redirect("vendor_dashboard")
+
+@login_required
+def delete_gallery_image(request, image_id):
+    image = get_object_or_404(ProductGallery, id=image_id, product__vendor=request.user)
+    image.delete()
+    return HttpResponse(status=204)
 
 @login_required
 def add_to_cart(request, product_id):
@@ -230,7 +278,56 @@ def update_cart_quantity(request, item_id):
             "item_total": item.total_price(),     # call the method
             "cart_total": cart.total_price()      # call the method
         })
-    
+
+
+@login_required
+def wishlist_page(request):
+    items = Wishlist.objects.filter(user=request.user)
+
+    # Extract product objects from wishlist entries
+    products = [w.product for w in items]
+
+    # For highlighting wishlist icons (hearts filled)
+    wishlist_items = [w.product.id for w in items]
+
+    return render(request, "shop/wishlist.html", {
+        "items": items,           # raw wishlist entries
+        "products": products,     # actual product objects
+        "wishlist_items": wishlist_items,
+        "is_authenticated": True,
+    })
+
+
+@login_required
+def wishlist_remove(request, wid):
+    item = get_object_or_404(Wishlist, id=wid, user=request.user)
+    item.delete()
+    messages.info(request, "Removed from wishlist.")
+    return redirect("wishlist_page")
+
+
+@login_required
+def wishlist_move_to_cart(request, wid):
+    item = get_object_or_404(Wishlist, id=wid, user=request.user)
+
+    # Use your existing add_to_cart logic
+    product_id = item.product.id
+
+    # Add product to cart
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    cart_item, new = CartItem.objects.get_or_create(cart=cart, product=item.product)
+
+    if not new:
+        cart_item.quantity += 1
+        cart_item.save()
+
+    # Remove from wishlist after moving to cart
+    item.delete()
+
+    messages.success(request, f"Moved {item.product.name} to your cart.")
+
+    return redirect("wishlist_page")
+
 @login_required
 def toggle_wishlist(request, product_id):
     product = get_object_or_404(Product, id=product_id)

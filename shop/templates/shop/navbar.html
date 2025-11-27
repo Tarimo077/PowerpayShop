@@ -5,8 +5,19 @@
         <img src="{% static 'images/pplogo.png' %}" alt="PowerPay Logo" style="height:45px; margin-right:10px;">
     </a>
 
-    <div class="flex items-center gap-8">
+    <div class="flex items-center gap-12">
         {% if user.is_authenticated %}
+            <a href="{% url 'wishlist_page' %}" class="relative cursor-pointer" title="see favourites"
+            class="relative flex items-center gap-2 text-gray-700 hover:text-red-500 transition">
+
+                <i class="fa-solid fa-heart text-2xl text-green-600 hover:text-orange-500 transition"></i>
+
+                {% if wishlist_count > 0 %}
+                <span class="badge badge-md bg-orange-500 text-white font-semibold text-center absolute -top-2 left-5 rounded-full w-6 h-6">
+                    {{ wishlist_count }}
+                </span>
+                {% endif %}
+            </a>
             <!-- CART BUTTON -->
             <a href="{% url 'view_cart' %}" class="relative cursor-pointer" title="view cart">
                 <i class="fa-solid fa-cart-shopping text-2xl text-green-600 hover:text-orange-500 transition"></i>

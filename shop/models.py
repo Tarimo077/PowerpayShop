@@ -12,6 +12,7 @@ class Product(models.Model):
     stock = models.IntegerField(default=0)
     image = models.ImageField(upload_to='product_images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    max_stock = models.IntegerField(default=100)  # optional: set maximum stock
 
     def average_rating(self):
         ratings = self.ratings.all()
@@ -21,9 +22,22 @@ class Product(models.Model):
 
     def rating_count(self):
         return self.ratings.count()
+    
+    def stock_percentage(self):
+        if self.max_stock == 0:
+            return 0
+        return round((self.stock / self.max_stock) * 100)
 
     def __str__(self):
         return self.name
+    
+class ProductGallery(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="gallery")
+    image = models.ImageField(upload_to='product_gallery/')
+    alt_text = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return f"{self.product.name} - {self.id}"
 
 class ProductRating(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="ratings")

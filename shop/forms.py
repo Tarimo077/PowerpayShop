@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product, CheckoutOrder, ProductRating
+from .models import Product, CheckoutOrder, ProductRating, ProductGallery
 
 class ProductForm(forms.ModelForm):
     class Meta:
@@ -12,8 +12,8 @@ class ProductForm(forms.ModelForm):
             }),
             'description': forms.Textarea(attrs={
                 'class': 'textarea textarea-bordered w-full rounded-lg focus:ring focus:ring-green-200 focus:border-green-500',
-                'placeholder': 'Product Description',
-                'rows': 3
+                'rows': 3,
+                'placeholder': 'Product Description'
             }),
             'price': forms.NumberInput(attrs={
                 'class': 'input input-bordered w-full rounded-lg focus:ring focus:ring-green-200 focus:border-green-500',
@@ -27,6 +27,27 @@ class ProductForm(forms.ModelForm):
                 'class': 'file-input mt-2 w-full'
             }),
         }
+
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = [single_file_clean(data, initial)]
+        return result
+
+class GalleryForm(forms.Form):
+    images = MultipleFileField()
+
 
 class CheckoutForm(forms.ModelForm):
     class Meta:

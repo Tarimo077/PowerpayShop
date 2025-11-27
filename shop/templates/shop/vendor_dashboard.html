@@ -164,8 +164,12 @@
             {% endif %}
 
         </div>
-
     </div>
+    <!-- PAGE LABEL -->
+    <p class="text-gray-600 font-medium mb-2 text-center">
+        Page <span class="text-green-600 font-semibold">{{ products.number }}</span>
+        of <span class="text-green-600 font-semibold">{{ products.paginator.num_pages }}</span>
+    </p>
     {% endif %}
 </div>
 <!-- DELETE MODAL -->
