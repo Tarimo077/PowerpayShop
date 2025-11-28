@@ -13,7 +13,7 @@
     <form id="filterForm"
         method="GET"
         hx-get="{% url 'index' %}"
-        hx-target="#productsGrid"
+        hx-target="#productsWrapper"
         hx-swap="innerHTML"
         hx-trigger="submit,
                     keyup delay:300ms from:#searchInput,
@@ -21,6 +21,9 @@
                     input delay:300ms from:#minPrice,
                     input delay:300ms from:#maxPrice"
         class="mb-4 flex flex-wrap items-center gap-3">
+
+        <input type="hidden" name="per_page" value="{{ per_page }}">
+
 
         <!-- SEARCH -->
         <input type="text" id="searchInput" name="search" placeholder="Search products..."
@@ -56,79 +59,30 @@
                     document.getElementById('vendorSelect').selectedIndex = 0;
                     document.getElementById('minPrice').value = '';
                     document.getElementById('maxPrice').value = '';
+
+                    // Reset per_page if present
+                    const pp = document.querySelector('input[name=per_page]');
+                    if (pp) pp.value = '{{ per_page }}';
+
+                    // Remove page field if HTMX added it
+                    const pg = document.querySelector('input[name=page]');
+                    if (pg) pg.remove();
+
                     htmx.trigger('#filterForm', 'submit');
                 ">
             <i class="fa-solid fa-filter-circle-xmark mr-1"></i> Clear
         </button>
 
+
     </form>
 
-
-    {% include 'shop/product_grid.html' %}
-    
-    <form method="get" class="mt-4 mb-4 flex justify-end">
-        <label class="mr-2 mt-2 font-semibold">Items per page:</label>
-        <select name="per_page" onchange="this.form.submit()" class="border-green-600 rounded-lg">
-            <option value="6" {% if per_page == 6 %}selected{% endif %}>6</option>
-            <option value="9" {% if per_page == 9 %}selected{% endif %}>9</option>
-            <option value="12" {% if per_page == 12 %}selected{% endif %}>12</option>
-        </select>
-    </form>
-    {% if products.has_other_pages %}
-    <div class="flex justify-center mt-6 mb-6">
-
-        <div class="flex items-center gap-2">
-
-            {# Previous Button #}
-            {% if products.has_previous %}
-                <a href="?page={{ products.previous_page_number }}&per_page={{ per_page }}{% if search %}&search={{ search }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
-                  class="px-4 py-2 rounded-full bg-white shadow hover:bg-green-600 hover:text-white transition">
-                    <i class="fa-solid fa-backward m-1"></i> Prev
-                </a>
-            {% else %}
-                <button class="px-4 py-2 rounded-full bg-gray-200 text-gray-400 cursor-not-allowed shadow">
-                    <i class="fa-solid fa-backward m-1"></i> Prev
-                </button>
-            {% endif %}
-
-            {# Page Numbers #}
-            <div class="flex gap-2">
-                {% for num in products.paginator.page_range %}
-                    {% if num == products.number %}
-                        <span class="px-4 py-2 rounded-full bg-green-600 text-white shadow font-semibold">
-                            {{ num }}
-                        </span>
-                    {% else %}
-                        <a href="?page={{ num }}&per_page={{ per_page }}{% if search %}&search={{ search }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
-                          class="px-4 py-2 rounded-full bg-white shadow hover:bg-orange-500 hover:text-white transition">
-                            {{ num }}
-                        </a>
-                    {% endif %}
-                {% endfor %}
-            </div>
-
-            {# Next Button #}
-            {% if products.has_next %}
-                <a href="?page={{ products.next_page_number }}&per_page={{ per_page }}{% if search %}&search={{ search }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
-                  class="px-4 py-2 rounded-full bg-white shadow hover:bg-green-600 hover:text-white transition">
-                    Next <i class="fa-solid fa-forward m-1"></i>
-                </a>
-            {% else %}
-                <button class="px-4 py-2 rounded-full bg-gray-200 text-gray-400 cursor-not-allowed shadow">
-                    Next <i class="fa-solid fa-forward m-1"></i>
-                </button>
-            {% endif %}
-
-        </div>
-
+    <div id="productsWrapper" class="mb-12">
+        {% include "shop/product_grid.html" %}
+        
     </div>
-    <!-- PAGE LABEL -->
-    <p class="text-gray-600 font-medium mb-2 text-center">
-        Page <span class="text-green-600 font-semibold">{{ products.number }}</span>
-        of <span class="text-green-600 font-semibold">{{ products.paginator.num_pages }}</span>
-    </p>
-    {% endif %}
 
+    
 </div>
 {% include 'footer.html' %}
+
 {% endblock %}

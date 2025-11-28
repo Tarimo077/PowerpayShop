@@ -62,7 +62,6 @@ def index_page(request):
 
     if request.headers.get('HX-Request'):
         # HTMX request → render only the grid
-        print("HTMX IN ACTION")
         return render(request, "shop/product_grid.html", context)
     
     return render(request, "shop/index.html", context)
