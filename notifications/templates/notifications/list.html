@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="container mx-auto max-w-xl mt-10">
+    <h2 class="text-2xl font-bold mb-4">Notifications</h2>
+    <a href="{% url 'notifications:read_all' %}" class="text-green-600 hover:underline mb-4 inline-block">Mark all as read</a>
+
+    <ul class="space-y-2">
+        {% for notification in notifications %}
+            <li class="{% if not notif.is_read %}bg-gray-100{% else %}bg-white{% endif %} px-4 py-2 flex justify-between items-start hover:bg-gray-200" id="notif-{{ notif.id }}">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <strong class="text-gray-700">{{ notification.title }}</strong>
+                        <p class="text-gray-500 text-sm">{{ notification.message }}</p>
+                        <small class="text-gray-400">{{ notification.created_at|naturaltime }}</small>
+                    </div>
+                    {% if not notification.is_read %}
+                        <a href="{% url 'notifications:mark_read' notification.id %}" class="text-blue-500 hover:underline">Mark read</a>
+                    {% endif %}
+                </div>
+            </li>
+        {% empty %}
+            <li class="text-gray-500">No notifications yet.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

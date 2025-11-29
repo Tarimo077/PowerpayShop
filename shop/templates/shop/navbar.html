@@ -28,6 +28,36 @@
                 </span>
                 {% endif %}
             </a>
+            
+            <!-- notifications dropdown -->
+            <div class="relative">
+                <button 
+                    id="notifDropdownBtn"
+                    class="relative text-green-600 hover:text-orange-500 text-2xl focus:outline-none"
+                    hx-get="{% url 'notifications:dropdown' %}"
+                    hx-trigger="click"
+                    hx-target="#notifDropdown"
+                    hx-swap="innerHTML">
+                    <i class="fa-solid fa-bell"></i>
+
+                    {% if unread_notif_count > 0 %}
+                    <span id="notifCount"
+                        class="badge badge-md bg-orange-500 text-white text-lg font-semibold text-center absolute -top-2 left-5 rounded-full w-6 h-6"
+                        hx-get="{% url 'notifications:unread_count' %}"
+                        hx-swap="innerHTML"
+                        hx-trigger="refresh">
+                        {{ unread_notif_count }}
+                    </span>
+                    {% endif %}
+
+                </button>
+
+                <!-- Dropdown container -->
+                <div id="notifDropdown" class="absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg z-50 hidden">
+                    <!-- loaded via HTMX -->
+                </div>
+            </div>
+
             {% include 'shop/avatar.html' %}
         {% else %}
             <a href="{% url 'login' %}" class="text-green-600 font-semibold hover:text-orange-500">Login</a>
