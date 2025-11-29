@@ -1,20 +1,130 @@
 {% extends "base.html" %}
+{% load humanize %}
 {% block content %}
 
-<div class="container mx-auto max-w-xl p-6">
-    <h2 class="text-2xl font-bold mb-3">Rate {{ product.name }}</h2>
+{% include 'shop/navbar.html' %}
+<div class="container mx-auto max-w-2xl p-8 bg-white rounded-lg shadow-lg mt-10 mb-12">
+    
+    <!-- Product Info -->
+    <div class="flex flex-col md:flex-row items-start gap-6 mb-8 bg-white p-6">
 
-    <form method="POST">
+    <!-- PRODUCT IMAGE -->
+    <div class="flex-shrink-0">
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+             class="w-72 h-72 object-contain">
+    </div>
+
+    <!-- PRODUCT INFO -->
+    <div class="flex-1 flex flex-col gap-3">
+        <!-- TITLE -->
+        <h2 class="text-2xl font-bold text-gray-700 flex items-center gap-2">
+            <i class="fa-solid fa-tag text-green-600"></i>
+            {{ product.name }}
+        </h2>
+
+        <!-- DESCRIPTION -->
+        <p class="text-gray-500 text-sm line-clamp-3 flex items-start gap-2">
+            <i class="fa-solid fa-circle-info text-gray-400 mt-0.5"></i>
+            {{ product.description }}
+        </p>
+
+        <!-- PRICE -->
+        <p class="text-green-600 font-bold text-lg flex items-center gap-2">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+            Price: Ksh. {{ product.price|intcomma }}
+        </p>
+
+        <!-- VENDOR INFO -->
+        <div class="text-orange-500 font-semibold text-sm flex items-center gap-2 mt-2">
+            <i class="fa-solid fa-shop"></i>
+            Vendor: {{ product.vendor.shop_name|default:product.vendor.user }}
+
+            <button onclick="vendorModal_{{ product.id }}.showModal()"
+                    class="ml-2 text-sm bg-orange-500 text-white px-2 py-1 rounded-xl hover:bg-orange-700 transition"
+                    title="Click to see vendor profile">
+                <i class="fa-solid fa-circle-info"></i>
+            </button>
+        </div>
+
+        {% include 'shop/vendor_modal.html' %}
+
+        <!-- RATING -->
+        <div class="flex items-center gap-1 m-1 text-yellow-500">
+            {% for i in "12345" %}
+                {% if forloop.counter <= product.average_rating %}
+                    <i class="fa-solid fa-star"></i>
+                {% else %}
+                    <i class="fa-regular fa-star"></i>
+                {% endif %}
+            {% endfor %}
+            <span class="text-gray-600 text-xs ml-1">{{ product.rating_count }} reviews</span>
+        </div>
+    </div>
+
+</div>
+
+
+    <!-- Rating Form -->
+    <form method="POST" id="ratingForm" class="mb-4 mt-4 text-center">
         {% csrf_token %}
-        <label class="block">
-            <span class="font-medium">Your Rating (1-5)</span>
-            {{ form.rating }}
-        </label>
+        <input type="hidden" name="rating" id="ratingInput" value="{{ form.rating.value|default_if_none:'' }}">
 
-        <button class="mt-4 bg-green-600 px-6 py-2 text-white rounded-lg">
+        <div class="flex items-center gap-1 text-yellow-500 mb-6 justify-center">
+            {% for i in "12345" %}
+                <i class="fa-regular fa-star fa-2x cursor-pointer star" data-value="{{ forloop.counter }}"></i>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
             Submit Rating
         </button>
     </form>
+
 </div>
+
+{% include 'footer.html' %}
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const stars = document.querySelectorAll('.star');
+    const ratingInput = document.getElementById('ratingInput');
+    let currentRating = parseInt(ratingInput.value) || 0;
+
+    function setStars(rating) {
+        stars.forEach((star, idx) => {
+            if (idx < rating) {
+                star.classList.remove('fa-regular');
+                star.classList.add('fa-solid');
+            } else {
+                star.classList.remove('fa-solid');
+                star.classList.add('fa-regular');
+            }
+        });
+    }
+
+    stars.forEach(star => {
+        // Hover effect
+        star.addEventListener('mouseover', () => {
+            setStars(star.dataset.value);
+        });
+
+        // Reset to current rating on mouseout
+        star.addEventListener('mouseout', () => {
+            setStars(currentRating);
+        });
+
+        // Click sets rating
+        star.addEventListener('click', () => {
+            currentRating = parseInt(star.dataset.value);
+            ratingInput.value = currentRating;
+            setStars(currentRating);
+        });
+    });
+
+    // Initialize stars (empty or previous rating)
+    setStars(currentRating);
+});
+</script>
+
 
 {% endblock %}

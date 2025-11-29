@@ -50,13 +50,13 @@
           <!-- Gallery Scroll -->
           <div id="galleryContainer" class="flex gap-2 overflow-x-auto scroll-smooth px-10 py-2">
             {% for img in form.instance.gallery.all %}
-            <div class="relative flex-shrink-0">
+            <div class="relative flex-shrink-0 gallery-item">
               <img src="{{ img.image.url }}" alt="{{ img.alt_text }}" class="h-24 w-24 object-cover rounded-lg border border-gray-300">
               <button 
                 type="button"
                 class="absolute top-0 right-0 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-700 transition"
                 hx-delete="{% url 'delete_gallery_image' img.id %}"
-                hx-target="closest div"
+                hx-target="closest .gallery-item"
                 hx-swap="outerHTML">
                 <i class="fa-solid fa-xmark text-xs"></i>
               </button>

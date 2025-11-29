@@ -14,6 +14,7 @@ from django.core.mail import send_mail
 import uuid
 import json
 from accounts.models import Vendor
+from django.views.decorators.http import require_http_methods
 
 
 def index_page(request):
@@ -216,10 +217,13 @@ def delete_product(request, product_id):
     return redirect("vendor_dashboard")
 
 @login_required
+@require_http_methods(["DELETE"])
 def delete_gallery_image(request, image_id):
-    image = get_object_or_404(ProductGallery, id=image_id, product__vendor=request.user)
+    vendor = get_object_or_404(Vendor, user=request.user)
+    image = get_object_or_404(ProductGallery, id=image_id, product__vendor=vendor)
     image.delete()
-    return HttpResponse(status=204)
+    return HttpResponse("", status=200)
+
 
 @login_required
 def add_to_cart(request, product_id):
@@ -238,7 +242,7 @@ def add_to_cart(request, product_id):
         item.save()
 
     messages.success(request, f"Added {product.name} to your cart.")
-    return redirect('index')
+    return redirect(request.META.get('HTTP_REFERER', 'index'))
 
 
 @login_required
@@ -302,7 +306,7 @@ def wishlist_remove(request, wid):
     item = get_object_or_404(Wishlist, id=wid, user=request.user)
     item.delete()
     messages.info(request, "Removed from wishlist.")
-    return redirect("wishlist_page")
+    return redirect(request.META.get('HTTP_REFERER', 'wishlist_page'))
 
 
 @login_required
@@ -363,7 +367,7 @@ def rate_product(request, product_id):
             rating.product = product
             rating.save()
             messages.success(request, "Rating submitted!")
-            return redirect("product_detail", product_id=product.id)
+            return redirect("product_detail", pk=product.id)
     else:
         form = RatingForm(instance=rating_obj)
 
