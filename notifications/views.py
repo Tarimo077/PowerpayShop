@@ -8,18 +8,30 @@ from django.contrib import messages
 @login_required
 def notification_list(request):
     notifications = request.user.notifications.all()
-    return render(request, 'notifications/list.html', {'notifications': notifications})
+    unread_exists = notifications.filter(is_read=False).exists()
+    return render(request, 'notifications/list.html', {'notifications': notifications, "unread_exists": unread_exists})
 
 
 @login_required
-def mark_all_as_read(request):
+def mark_all_as_read_list(request):
     request.user.notifications.filter(is_read=False).update(is_read=True)
     return redirect('notifications:list')
 
 @login_required
+def mark_all_as_read(request):
+    request.user.notifications.filter(is_read=False).update(is_read=True)
+    return HttpResponse('')
+
+@login_required
 def dropdown(request):
-    notifications = request.user.notifications.all().order_by('-created_at')[:5]
-    html = render_to_string('notifications/dropdown.html', {'notifications': notifications})
+    # Only get unread notifications
+    notifications = request.user.notifications.filter(is_read=False).order_by('-created_at')[:5]
+    unread_exists = notifications.exists()
+    
+    html = render_to_string(
+        'notifications/dropdown.html',
+        {'notifications': notifications, 'unread_exists': unread_exists}
+    )
     return HttpResponse(html)
 
 @login_required
@@ -41,3 +53,15 @@ def mark_read(request, notif_id):
     notif.is_read = True
     notif.save()
     return HttpResponse('')  
+
+@login_required
+def mark_read_list(request, notif_id):
+    notif = get_object_or_404(request.user.notifications, id=notif_id)
+    notif.is_read = True
+    notif.save()
+
+    html = render_to_string('notifications/single_notification.html', {
+        'notification': notif
+    })
+
+    return HttpResponse(html)

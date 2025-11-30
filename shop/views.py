@@ -15,6 +15,7 @@ import uuid
 import json
 from accounts.models import Vendor
 from django.views.decorators.http import require_http_methods
+from notifications.utils import notify
 
 
 def index_page(request):
@@ -150,7 +151,7 @@ def add_product(request):
 
         if form.is_valid() and gallery_form.is_valid():
             product = form.save(commit=False)
-            product.vendor = request.user
+            product.vendor = request.user.vendor
             # Set max_stock to initial stock
             product.max_stock = product.stock
             product.save()
@@ -158,7 +159,13 @@ def add_product(request):
             # Save gallery images
             for img in gallery_form.cleaned_data['images']:
                 ProductGallery.objects.create(product=product, image=img)
-
+            
+            notify(
+                request.user,
+                "New Product",
+                f"{product.name} has been added",
+                "success"
+            )
             messages.success(request, "Product added successfully!")
             return redirect('vendor_dashboard')
     else:
@@ -191,7 +198,12 @@ def edit_product(request, product_id):
             # Add new gallery images
             for img in gallery_form.cleaned_data['images']:
                 ProductGallery.objects.create(product=product, image=img)
-
+            notify(
+                request.user,
+                "Product Change",
+                f"{updated_product.name} has been edited",
+                "info"
+            )
             messages.success(request, "Product updated successfully!")
             return redirect('vendor_dashboard')
     else:
@@ -208,11 +220,17 @@ def delete_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
     # Ensure vendor owns the product
-    if request.user != product.vendor:
+    if request.user.vendor != product.vendor:
         messages.error(request, "Not allowed.")
         return redirect("vendor_dashboard")
 
     product.delete()
+    notify(
+                request.user,
+                "Product Deletion",
+                f"{product.name} has been deleted",
+                "warning"
+            )
     messages.success(request, "Product deleted successfully!")
     return redirect("vendor_dashboard")
 

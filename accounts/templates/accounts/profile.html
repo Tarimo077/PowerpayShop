@@ -2,7 +2,12 @@
 {% load static %}
 {% block content %}
 
-{% include 'shop/navbar.html' %}
+
+<div class="grid min-h-screen"
+     style="grid-template-rows: auto 1fr auto;">  <!-- fallback if arbitrary grid rows are not enabled -->
+
+  <!-- Header -->
+  {% include 'shop/navbar.html' %}
 
 <div class="container mx-auto p-6 max-w-6xl">
 
@@ -89,7 +94,7 @@
 </div>
 
 {% include 'footer.html' %}
-
+</div>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const avatar = document.querySelector(".avatar-placeholder");
