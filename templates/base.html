@@ -60,6 +60,8 @@
         modalBox.classList.add('bg-red-400','text-red-800');
       {% elif message.level_tag == 'success' %}
         modalBox.classList.add('bg-green-400','text-green-800');
+      {% elif message.level_tag == 'info' %}
+        modalBox.classList.add('bg-blue-400','text-blue-800');
       {% else %}
         modalBox.classList.add('bg-yellow-400','text-yellow-800');
       {% endif %}
