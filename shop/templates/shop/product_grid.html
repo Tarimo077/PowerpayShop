@@ -28,7 +28,7 @@
             </p>
 
             <!-- VENDOR WITH MODAL -->
-            <p class="text-orange-500 mb-2 font-bold flex items-center text-sm">
+            <p class="text-orange-500 mb-2 font-semibold flex text-sm">
                 <span>
                     <i class="fa-solid fa-shop m-1"></i>Vendor:
                     {{ product.vendor.shop_name|default:product.vendor.user }}
@@ -80,26 +80,44 @@
             </form>
             {% endif %}
 
-            <div class="flex flex-col md:flex-row gap-2 mt-2">
+            <div class="flex gap-2 mt-2 w-full">
                 <!-- ADD TO CART -->
                 {% if is_authenticated %}
                 <form method="POST" action="{% url 'add_to_cart' product.id %}" class="flex-1">
                     {% csrf_token %}
-                    <button class="w-full h-full flex items-center justify-center gap-1 bg-green-600 text-white rounded-lg py-2 text-xs font-semibold hover:bg-green-700 transition">
+                    <button
+                        class="w-full flex items-center justify-center gap-1 bg-yellow-500 text-white rounded-lg py-2 text-xs font-semibold hover:bg-yellow-600 transition">
                         <i class="fa-solid fa-cart-plus"></i> Add to Cart
                     </button>
                 </form>
                 {% else %}
-                <a href="{% url 'login' %}" class="flex-1 h-full flex items-center justify-center gap-2 bg-yellow-400 text-white py-2 rounded-lg text-xs font-semibold hover:bg-yellow-500 transition">
+                <a href="{% url 'login' %}"
+                class="flex-1 w-full flex items-center justify-center gap-1 bg-yellow-500 text-white rounded-lg py-2 text-xs font-semibold hover:bg-yellow-600 transition">
                     <i class="fa-solid fa-cart-plus"></i> Add to Cart
                 </a>
                 {% endif %}
 
-                <!-- VIEW PRODUCT BUTTON -->
-                <a href="{% url 'product_detail' product.id %}" class="flex-1 h-full flex items-center justify-center gap-2 bg-orange-500 text-white py-2 rounded-lg text-xs font-semibold hover:bg-orange-600 transition">
+                <!-- VIEW PRODUCT -->
+                <a href="{% url 'product_detail' product.id %}"
+                class="flex-1 w-full flex items-center justify-center gap-1 bg-orange-500 text-white rounded-lg py-2 text-xs font-semibold hover:bg-orange-600 transition">
                     <i class="fa-solid fa-eye"></i> View Product
                 </a>
             </div>
+
+            <!-- BUY NOW BELOW -->
+            {% if is_authenticated %}
+            <a href="{% url 'buy_now' product.id %}"
+            class="mt-2 w-full flex items-center justify-center gap-1 bg-green-600 text-white py-2 rounded-lg text-xs font-semibold hover:bg-green-700 transition">
+                <i class="fa-solid fa-bolt"></i> Buy Now
+            </a>
+            {% else %}
+            <a href="{% url 'login' %}"
+            class="mt-2 w-full flex items-center justify-center gap-1 bg-red-600 text-white py-2 rounded-lg text-xs font-semibold hover:bg-red-700 transition">
+                <i class="fa-solid fa-bolt"></i> Buy Now
+            </a>
+            {% endif %}
+
+
         </div>
         {% empty %}
         <p class="text-gray-500">No products found.</p>

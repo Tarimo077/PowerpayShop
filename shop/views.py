@@ -242,6 +242,21 @@ def delete_gallery_image(request, image_id):
     image.delete()
     return HttpResponse("", status=200)
 
+@login_required
+def buy_now(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    # Get or create user's cart
+    cart, created = Cart.objects.get_or_create(user=request.user)
+
+    # Add item (qty=1) OR update if already exists
+    item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+    if not created:
+        item.quantity += 1
+        item.save()
+
+    # Redirect to cart page
+    return redirect('view_cart')
 
 @login_required
 def add_to_cart(request, product_id):
@@ -278,7 +293,7 @@ def view_cart(request):
 def remove_from_cart(request, item_id):
     item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
     item.delete()
-    messages.success(request, "Item removed from cart.")
+    messages.success(request, f"{item.product.name} removed from cart.")
     return redirect('view_cart')
 
 @login_required
@@ -323,7 +338,7 @@ def wishlist_page(request):
 def wishlist_remove(request, wid):
     item = get_object_or_404(Wishlist, id=wid, user=request.user)
     item.delete()
-    messages.info(request, "Removed from wishlist.")
+    messages.info(request, f"{item.product.name} removed from wishlist.")
     return redirect(request.META.get('HTTP_REFERER', 'wishlist_page'))
 
 
@@ -361,9 +376,9 @@ def toggle_wishlist(request, product_id):
     if not created:
         # Already exists → remove
         wishlist_entry.delete()
-        messages.info(request, "Removed from wishlist.")
+        messages.info(request, f"{product.name} removed from wishlist.")
     else:
-        messages.success(request, "Added to wishlist!")
+        messages.success(request, f"{product.name} added to wishlist!")
 
     return redirect(request.META.get("HTTP_REFERER", "index"))
 
