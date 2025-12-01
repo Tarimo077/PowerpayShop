@@ -1,23 +1,20 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate
-from django.core.mail import send_mail
 from django.contrib import messages
 from django.contrib.auth import login
-from .models import EmailOTP, User
-from .forms import LoginForm, OTPForm, RegistrationForm, UserProfileForm, VendorProfileForm
+from .models import EmailOTP, User, Vendor
+from .forms import LoginForm, RegistrationForm, UserProfileForm, VendorProfileForm
 import random
 from django.contrib import messages
-from django.utils import timezone
-from datetime import timedelta
 from django.contrib.auth.decorators import login_required
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.contrib.auth.views import PasswordResetView
 from django.utils.html import strip_tags
-from django.contrib.auth.forms import PasswordResetForm
 from django.urls import reverse_lazy
-from django.conf import settings
 import datetime
+from django.contrib.admin.views.decorators import staff_member_required
+from notifications.utils import notify
 
 MAX_ATTEMPTS = 5
 
@@ -150,27 +147,40 @@ def register_view(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            # Set vendor status
+
+            # User wants to be a vendor
             user.is_vendor = form.cleaned_data.get("is_vendor", False)
-            user.save()
-            # Auto-login
-            login(request, user)
-            messages.success(request, "Registration successful!")
+
+            # Vendor must be approved manually by admin
             if user.is_vendor:
-                return redirect('profile')
-            else:
-                return redirect("index")  # Landing page
-        else:
-            messages.error(request, "Please fix the errors below.")
+                user.is_vendor_approved = False
+                user.is_customer = False
+            
+            user.save()
+
+            # Create a vendor placeholder profile ONLY if user checked 'is_vendor'
+            if user.is_vendor:
+                Vendor.objects.create(user=user)
+
+            login(request, user)
+            messages.success(request, "Account created successfully!")
+
+            if user.is_vendor:
+                messages.info(request, "Your vendor account requires admin approval.")
+                return redirect("index")
+            
+            return redirect("index")
+
     else:
         form = RegistrationForm()
-    
+
     return render(request, "accounts/register.html", {"form": form})
+
 
 @login_required
 def profile_page(request):
     user = request.user
-    is_vendor = user.is_vendor
+    is_vendor = user.is_vendor_approved
 
     if request.method == "POST":
         # Determine which form was submitted
@@ -202,3 +212,39 @@ def profile_page(request):
         "is_vendor": is_vendor
     }
     return render(request, "accounts/profile.html", context)
+
+@staff_member_required
+def vendor_admin_list(request):
+    pending = User.objects.filter(is_vendor=True, is_vendor_approved=False)
+    approved = User.objects.filter(is_vendor=True, is_vendor_approved=True)
+
+    return render(request, "accounts/vendors_list.html", {
+        "pending": pending,
+        "approved": approved
+    })
+
+@staff_member_required
+def vendor_approve(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+
+    if not user.is_vendor:
+        messages.error(request, "This user is not requesting vendor access.")
+        return redirect("vendor_admin_list")
+
+    # Approve vendor
+    user.is_vendor_approved = True
+    user.save()
+
+    # Create vendor profile if missing
+    Vendor.objects.get_or_create(user=user)
+
+    # Notify vendor
+    notify(
+        user,
+        "Vendor Account Approved",
+        "Your vendor account has been approved by the admin.",
+        "success"
+    )
+
+    messages.success(request, f"{user.username} is now an approved vendor.")
+    return redirect("vendor_admin_list")

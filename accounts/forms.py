@@ -74,10 +74,39 @@ class RegistrationForm(UserCreationForm):
         label="Register as Vendor",
         widget=forms.CheckboxInput(attrs={"class": "checkbox checkbox-success"})
     )
+    # Vendor fields (initially empty)
+    shop_name = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            "placeholder": "Shop Name",
+            "class": "input input-bordered w-full border-green-300 rounded-lg",
+        })
+    )
+    description = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            "placeholder": "Short Shop Description",
+            "class": "textarea textarea-bordered w-full rounded-lg",
+            "rows": 3,
+        })
+    )
+    address = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            "placeholder": "Business Address",
+            "class": "input input-bordered w-full border-green-300 rounded-lg",
+        })
+    )
+    logo = forms.ImageField(
+        required=False, 
+        widget=forms.FileInput(attrs={
+            "class": "file-input file-input-bordered w-full"
+    })
+    )
 
     class Meta:
         model = User
-        fields = ["username", "email", "password1", "password2", "is_vendor"]
+        fields = ["username", "email", "password1", "password2", "is_vendor", "shop_name", "description", "address", "logo"]
 
 
 # ======================

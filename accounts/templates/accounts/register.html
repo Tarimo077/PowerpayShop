@@ -30,6 +30,14 @@
         <label for="{{ form.is_vendor.id_for_label }}" class="text-gray-700 dark:text-gray-200">Register as Vendor</label>
     </div>
 
+    <!-- Hidden Vendor Form -->
+    <div id="vendorFields" class="hidden mt-4 space-y-3">
+        {{ form.shop_name }}
+        {{ form.description }}
+        {{ form.address }}
+        {{ form.logo }}
+    </div>
+
     <div class="flex justify-center">
         <button type="submit" 
                 class="btn bg-gradient-to-r from-green-500 to-orange-400 text-white font-bold w-1/2 hover:from-green-500 hover:to-orange-500 transition rounded-lg shadow-lg">
@@ -45,4 +53,23 @@
 
   </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const checkbox = document.getElementById("id_is_vendor");
+    const vendorFields = document.getElementById("vendorFields");
+
+    if (!checkbox || !vendorFields) return;
+
+    // Ensure hidden class matches initial state
+    vendorFields.classList.toggle("hidden", !checkbox.checked);
+
+    // Toggle on change
+    checkbox.addEventListener("change", () => {
+        vendorFields.classList.toggle("hidden", !checkbox.checked);
+    });
+});
+</script>
+
+
 {% endblock %}

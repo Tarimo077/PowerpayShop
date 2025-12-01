@@ -85,6 +85,8 @@ TEMPLATES = [
                 'shop.context_processors.cart_item_count',
                 'shop.context_processors.wishlist_count',
                 'shop.context_processors.unread_notifications_count',
+                'shop.context_processors.is_approved_vendor',
+                'shop.context_processors.is_admin'
             ],
         },
     },

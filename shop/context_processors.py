@@ -21,3 +21,19 @@ def wishlist_count(request):
             "wishlist_count": Wishlist.objects.filter(user=request.user).count()
         }
     return {"wishlist_count": 0}
+
+def is_approved_vendor(request):
+    user = request.user
+    return {
+        "is_approved_vendor": (
+            user.is_authenticated 
+            and user.is_vendor 
+            and user.is_vendor_approved 
+            and hasattr(user, "vendor")
+        )
+    }
+
+def is_admin(request):
+    return {
+        "is_admin": request.user.is_authenticated and request.user.is_staff
+    }

@@ -72,8 +72,8 @@ def index_page(request):
 def vendor_dashboard(request):
     """Vendor-only view"""
     user = request.user
-    if not (user.is_authenticated and hasattr(user, "vendor")):
-        return redirect("index")  # Redirect non-vendors
+    if not (user.is_authenticated and user.is_vendor and user.is_vendor_approved and hasattr(user, "vendor")):
+        return redirect("index") # Redirect non-vendors
     vendor_instance = request.user.vendor
     products = Product.objects.filter(vendor=vendor_instance)
 
@@ -141,7 +141,7 @@ def product_image_swap(request, pk):
 
 @login_required
 def add_product(request):
-    if not request.user.is_vendor:
+    if not request.user.is_vendor_approved:
         messages.error(request, "Only vendors can add products.")
         return redirect('index')
 
@@ -219,20 +219,34 @@ def edit_product(request, product_id):
 def delete_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
-    # Ensure vendor owns the product
+    # Ensure user is authenticated
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    # Ensure user is a vendor + approved + has vendor profile
+    if not (request.user.is_vendor and request.user.is_vendor_approved and hasattr(request.user, "vendor")):
+        messages.error(request, "You must be an approved vendor to perform this action.")
+        return redirect("index")
+
+    # Ensure this vendor owns the product
     if request.user.vendor != product.vendor:
-        messages.error(request, "Not allowed.")
+        messages.error(request, "Not allowed. You can only delete your own products.")
         return redirect("vendor_dashboard")
 
+    # Delete product
     product.delete()
+
+    # Send notification
     notify(
-                request.user,
-                "Product Deletion",
-                f"{product.name} has been deleted",
-                "warning"
-            )
+        request.user,
+        "Product Deleted",
+        f"{product.name} has been removed from your shop.",
+        "warning"
+    )
+
     messages.success(request, "Product deleted successfully!")
     return redirect("vendor_dashboard")
+
 
 @login_required
 @require_http_methods(["DELETE"])

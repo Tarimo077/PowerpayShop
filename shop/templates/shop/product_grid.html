@@ -1,76 +1,15 @@
-<!-- PRODUCTS GRID -->
- {% load humanize %}
- <div id="productsGrid">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+{% load humanize %}
+<div id="productsGrid" class="container mx-auto px-4 py-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         {% for product in products %}
-        <div class="card bg-white shadow-md rounded-xl p-3 flex flex-col relative">
-
-            <!-- PRODUCT IMAGE -->
-            {% if product.image %}
-            <img src="{{ product.image.url }}" class="rounded-lg w-full max-h-48 object-contain bg-white">
-            {% endif %}
-
-            <!-- TITLE -->
-            <h2 class="text-lg font-semibold text-gray-700 mb-4 truncate">
-                <i class="fa-solid fa-tag m-1"></i>{{ product.name }}
-            </h2>
-
-            <!-- DESCRIPTION -->
-            <p class="text-gray-500 text-sm mb-2 line-clamp-2">
-                <i class="fa-solid fa-circle-info m-1"></i>{{ product.description }}
-            </p>
-
-            <!-- PRICE -->
-            <p class="text-green-600 font-bold mb-2">
-                <i class="fa-solid fa-hand-holding-dollar m-1"></i>
-                Price: Ksh. {{ product.price|intcomma }}
-            </p>
-
-            <!-- VENDOR WITH MODAL -->
-            <p class="text-orange-500 mb-2 font-semibold flex text-sm">
-                <span>
-                    <i class="fa-solid fa-shop m-1"></i>Vendor:
-                    {{ product.vendor.shop_name|default:product.vendor.user }}
-                </span>
-                <button onclick="vendorModal_{{ product.id }}.showModal()"
-                    class="text-sm bg-orange-500 text-white px-2 py-1 rounded-xl hover:bg-orange-700 transition ml-2"
-                    title="Click to see vendor profile">
-                    <i class="fa-solid fa-circle-info"></i>
-                </button>
-            </p>
-
-            {% include 'shop/vendor_modal.html' %}
-
-            <!-- RATING -->
-            <div class="flex items-center gap-1 m-1 text-yellow-500">
-                {% for i in "12345" %}
-                    {% if forloop.counter <= product.average_rating %}
-                        <i class="fa-solid fa-star"></i>
-                    {% else %}
-                        <i class="fa-regular fa-star"></i>
-                    {% endif %}
-                {% endfor %}
-                <span class="text-gray-600 text-xs ml-1">{{ product.rating_count }} reviews</span>
-            </div>
-
-            <!-- Stock Status -->
-            <div class="w-full mt-3 mb-2">
-                <div class="flex justify-between mb-1">
-                    <span class="text-green-600 font-medium">Items Remaining</span>
-                    <span class="text-green-600 font-medium">{{ product.stock }} / {{ product.max_stock }}</span>
-                </div>
-                <div class="w-full bg-gray-300 rounded-full h-2">
-                    <div class="bg-green-600 h-2 rounded-full text-center" style="width: {{ product.stock_percentage }}%"></div>
-                </div>
-            </div>
-
+        <div class="group card bg-white shadow-md rounded-xl hover:shadow-lg transition flex flex-col relative">
 
             <!-- WISHLIST BUTTON -->
             {% if is_authenticated %}
-            <form method="POST" action="{% url 'toggle_wishlist' product.id %}" class="absolute top-3 right-3">
+            <form method="POST" action="{% url 'toggle_wishlist' product.id %}" class="absolute top-3 right-3 z-20">
                 {% csrf_token %}
-                <button type="submit" class="p-2 rounded-full bg-white shadow hover:bg-red-50 transition">
+                <button type="submit" onclick="event.stopPropagation()" class="p-2 rounded-full bg-white shadow hover:bg-red-50 transition">
                     {% if product.id in wishlist_items %}
                         <i class="fa-solid fa-heart text-red-500 text-lg"></i>
                     {% else %}
@@ -80,51 +19,101 @@
             </form>
             {% endif %}
 
-            <div class="flex gap-2 mt-2 w-full">
-                <!-- ADD TO CART -->
+            <!-- ENTIRE CLICKABLE AREA (except buttons) -->
+            <a href="{% url 'product_detail' product.id %}" class="flex flex-col p-3 rounded-xl text-inherit no-underline">
+                <!-- PRODUCT IMAGE -->
+                {% if product.image %}
+                <img src="{{ product.image.url }}" class="rounded-lg w-full max-h-48 object-contain bg-white mb-3">
+                {% endif %}
+
+                <!-- TITLE -->
+                <h2 class="text-lg font-semibold text-gray-700 mb-2 truncate group-hover:text-orange-600 transition">
+                    <i class="fa-solid fa-tag m-1"></i>{{ product.name }}
+                </h2>
+
+                <!-- DESCRIPTION -->
+                <p class="text-gray-500 text-sm mb-2 line-clamp-2">
+                    <i class="fa-solid fa-circle-info m-1"></i>{{ product.description }}
+                </p>
+
+                <!-- PRICE -->
+                <p class="text-green-600 font-bold mb-2">
+                    <i class="fa-solid fa-hand-holding-dollar m-1"></i>
+                    Price: Ksh. {{ product.price|intcomma }}
+                </p>
+
+                <!-- VENDOR WITH MODAL -->
+                <p class="text-orange-500 mb-2 font-semibold flex text-sm">
+                    <span>
+                        <i class="fa-solid fa-shop m-1"></i>Vendor:
+                        {{ product.vendor.shop_name|default:product.vendor.user }}
+                    </span>
+                    <button type="button"
+                            class="text-sm bg-orange-500 text-white px-2 py-1 rounded-xl hover:bg-orange-700 transition ml-2"
+                            title="Click to see vendor profile"
+                            onclick="event.preventDefault(); event.stopPropagation(); vendorModal_{{ product.id }}.showModal();">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </button>
+                </p>
+
+                {% include 'shop/vendor_modal.html' %}
+
+                <!-- RATING -->
+                <div class="flex items-center gap-1 m-1 text-yellow-500">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= product.average_rating %}
+                            <i class="fa-solid fa-star"></i>
+                        {% else %}
+                            <i class="fa-regular fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                    <span class="text-gray-600 text-xs ml-1">{{ product.rating_count }} reviews</span>
+                </div>
+
+                <!-- Stock Status -->
+                <div class="w-full mt-3 mb-2">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-green-600 font-medium">Items Remaining</span>
+                        <span class="text-green-600 font-medium">{{ product.stock }} / {{ product.max_stock }}</span>
+                    </div>
+                    <div class="w-full bg-gray-300 rounded-full h-2">
+                        <div class="bg-green-600 h-2 rounded-full text-center" style="width: {{ product.stock_percentage }}%"></div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- ACTION BUTTONS: Add to Cart & Buy Now (outside <a>) -->
+            <div class="flex gap-2 mt-2 p-3">
                 {% if is_authenticated %}
                 <form method="POST" action="{% url 'add_to_cart' product.id %}" class="flex-1">
                     {% csrf_token %}
-                    <button
+                    <button type="submit" onclick="event.stopPropagation()"
                         class="w-full flex items-center justify-center gap-1 bg-yellow-500 text-white rounded-lg py-2 text-xs font-semibold hover:bg-yellow-600 transition">
                         <i class="fa-solid fa-cart-plus"></i> Add to Cart
                     </button>
                 </form>
+                <a href="{% url 'buy_now' product.id %}" onclick="event.stopPropagation()"
+                    class="flex-1 w-full flex items-center justify-center gap-1 bg-green-600 text-white py-2 rounded-lg text-xs font-semibold hover:bg-green-700 transition">
+                    <i class="fa-solid fa-bolt"></i> Buy Now
+                </a>
                 {% else %}
-                <a href="{% url 'login' %}"
-                class="flex-1 w-full flex items-center justify-center gap-1 bg-yellow-500 text-white rounded-lg py-2 text-xs font-semibold hover:bg-yellow-600 transition">
+                <a href="{% url 'login' %}" onclick="event.stopPropagation()"
+                    class="flex-1 w-full flex items-center justify-center gap-1 bg-yellow-500 text-white rounded-lg py-2 text-xs font-semibold hover:bg-yellow-600 transition">
                     <i class="fa-solid fa-cart-plus"></i> Add to Cart
                 </a>
-                {% endif %}
-
-                <!-- VIEW PRODUCT -->
-                <a href="{% url 'product_detail' product.id %}"
-                class="flex-1 w-full flex items-center justify-center gap-1 bg-orange-500 text-white rounded-lg py-2 text-xs font-semibold hover:bg-orange-600 transition">
-                    <i class="fa-solid fa-eye"></i> View Product
+                <a href="{% url 'login' %}" onclick="event.stopPropagation()"
+                    class="flex-1 w-full flex items-center justify-center gap-1 bg-red-600 text-white py-2 rounded-lg text-xs font-semibold hover:bg-red-700 transition">
+                    <i class="fa-solid fa-bolt"></i> Buy Now
                 </a>
+                {% endif %}
             </div>
-
-            <!-- BUY NOW BELOW -->
-            {% if is_authenticated %}
-            <a href="{% url 'buy_now' product.id %}"
-            class="mt-2 w-full flex items-center justify-center gap-1 bg-green-600 text-white py-2 rounded-lg text-xs font-semibold hover:bg-green-700 transition">
-                <i class="fa-solid fa-bolt"></i> Buy Now
-            </a>
-            {% else %}
-            <a href="{% url 'login' %}"
-            class="mt-2 w-full flex items-center justify-center gap-1 bg-red-600 text-white py-2 rounded-lg text-xs font-semibold hover:bg-red-700 transition">
-                <i class="fa-solid fa-bolt"></i> Buy Now
-            </a>
-            {% endif %}
-
 
         </div>
         {% empty %}
-        <p class="text-gray-500">No products found.</p>
+        <p class="text-gray-500 col-span-3">No products found.</p>
         {% endfor %}
 
     </div>
 </div>
 
 {% include "shop/pagination.html" %}
-

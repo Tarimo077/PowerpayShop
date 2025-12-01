@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import login_view, verify_otp, resend_otp, CustomPasswordResetView, register_view, profile_page
+from .views import login_view, verify_otp, resend_otp, CustomPasswordResetView, register_view, profile_page, vendor_admin_list, vendor_approve
 from django.contrib.auth import views as auth_views
 from .forms import StyledPasswordResetForm, StyledSetPasswordForm
 
@@ -29,4 +29,7 @@ urlpatterns = [
     path("password-reset-complete/", auth_views.PasswordResetCompleteView.as_view(
         template_name="accounts/password_reset_complete.html"
     ), name="password_reset_complete"),
+    path("vendors/", vendor_admin_list, name="vendor_admin_list"),
+    path("vendors/approve/<int:user_id>/", vendor_approve, name="vendor_approve"),
+
 ]

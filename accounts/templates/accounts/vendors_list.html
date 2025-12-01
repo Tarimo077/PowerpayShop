@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+
+<div class="grid min-h-screen" style="grid-template-rows: auto 1fr auto;">
+
+  <!-- Header -->
+  {% include 'shop/navbar.html' %}
+
+  <div class="container mx-auto px-4 mt-4 mb-4">
+
+    <!-- Pending Vendors -->
+    <section>
+      <h2 class="text-3xl font-extrabold mb-6 text-orange-500 dark:text-gray-100">Pending Vendor Approvals</h2>
+
+      {% for user in pending %}
+      {% with vendor=user.vendor %}
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center p-6 bg-yellow-50 border-l-4 border-r-4 border-yellow-500 rounded-lg shadow-sm hover:shadow-md transition mb-4">
+        <!-- Vendor Info -->
+        <div class="flex items-center space-x-4">
+          {% if vendor.logo %}
+          <img src="{{ vendor.logo.url }}" alt="{{ vendor.shop_name }}" class="w-16 h-16 rounded-full object-contain border border-gray-300">
+          {% else %}
+          <div class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">No Logo</div>
+          {% endif %}
+          <div class="space-y-3">
+            <p class="font-semibold text-gray-800 dark:text-gray-200 text-lg"><i class="fa-solid fa-user mr-2"></i>{{ user.username }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400"><i class="fa-solid fa-envelope mr-2"></i>{{ user.email }}</p>
+            {% if user.phone %}<p class="text-sm text-gray-600 dark:text-gray-400"><i class="fa-solid fa-phone mr-2"></i> {{ user.phone }}</p>{% endif %}
+            {% if vendor.shop_name %}<p class="text-sm text-gray-700 dark:text-gray-300 font-medium"><i class="fa-solid fa-shop mr-2"></i> {{ vendor.shop_name }}</p>{% endif %}
+            {% if vendor.address %}<p class="text-sm text-gray-600 dark:text-gray-400"><i class="fa-solid fa-location-dot mr-2"></i> {{ vendor.address }}</p>{% endif %}
+            {% if vendor.description %}<p class="text-sm text-gray-600 dark:text-gray-400 mt-1"><i class="fa-solid fa-address-card mr-2"></i>{{ vendor.description|truncatechars:40 }}</p>{% endif %}
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-4 md:mt-0 flex items-center space-x-4">
+          <span class="px-3 py-1 bg-yellow-600 text-white rounded-full text-sm font-medium">Pending</span>
+          <a href="{% url 'vendor_approve' user.id %}" 
+             class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition shadow">
+            Approve
+          </a>
+        </div>
+      </div>
+      {% endwith %}
+      {% empty %}
+      <p class="text-gray-500 dark:text-gray-400 italic">No pending vendors.</p>
+      {% endfor %}
+    </section>
+
+    <hr class="my-8 border-gray-300 dark:border-gray-600">
+
+    <!-- Approved Vendors -->
+    <section>
+      <h2 class="text-3xl font-extrabold mb-6 text-green-500 dark:text-gray-100">Approved Vendors</h2>
+
+      {% for user in approved %}
+      {% with vendor=user.vendor %}
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center p-6 bg-green-50 border-l-4 border-r-4 border-green-500 rounded-lg shadow-sm hover:shadow-md transition mb-4">
+        <!-- Vendor Info -->
+        <div class="flex items-center space-x-4">
+          {% if vendor.logo %}
+          <img src="{{ vendor.logo.url }}" alt="{{ vendor.shop_name }}" class="w-16 h-16 rounded-full object-contain border border-gray-300">
+          {% else %}
+          <div class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">No Logo</div>
+          {% endif %}
+          <div class="space-y-3">
+            <p class="font-semibold text-gray-800 dark:text-gray-200 text-lg"><i class="fa-solid fa-user mr-2"></i>{{ user.username }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400"><i class="fa-solid fa-envelope mr-2"></i>{{ user.email }}</p>
+            {% if user.phone %}<p class="text-sm text-gray-600 dark:text-gray-400"><i class="fa-solid fa-phone mr-2"></i> {{ user.phone }}</p>{% endif %}
+            {% if vendor.shop_name %}<p class="text-sm text-gray-700 dark:text-gray-300 font-medium"><i class="fa-solid fa-shop mr-2"></i> {{ vendor.shop_name }}</p>{% endif %}
+            {% if vendor.address %}<p class="text-sm text-gray-600 dark:text-gray-400"><i class="fa-solid fa-location-dot mr-2"></i> {{ vendor.address }}</p>{% endif %}
+            {% if vendor.description %}<p class="text-sm text-gray-600 dark:text-gray-400 mt-1"><i class="fa-solid fa-address-card mr-2"></i>{{ vendor.description|truncatechars:40 }}</p>{% endif %}
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="mt-4 md:mt-0">
+          <span class="px-3 py-1 bg-green-600 text-white rounded-full text-sm font-medium">Approved</span>
+        </div>
+      </div>
+      {% endwith %}
+      {% empty %}
+      <p class="text-gray-500 dark:text-gray-400 italic">No approved vendors yet.</p>
+      {% endfor %}
+    </section>
+
+  </div>
+
+  <!-- Footer -->
+  {% include 'footer.html' %}
+
+</div>
+
+{% endblock %}

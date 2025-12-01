@@ -11,12 +11,12 @@ class VendorInline(admin.StackedInline):
 
 class CustomUserAdmin(BaseUserAdmin):
     model = User
-    list_display = ('username', 'email', 'is_vendor', 'is_staff', 'is_active')
-    list_filter = ('is_vendor', 'is_staff', 'is_active')
+    list_display = ('username', 'email', 'is_vendor', 'is_vendor_approved', 'is_staff', 'is_active')
+    list_filter = ('is_vendor', 'is_vendor_approved', 'is_staff', 'is_active')
     
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),
-        ('Permissions', {'fields': ('is_vendor', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Permissions', {'fields': ('is_vendor', 'is_vendor_approved', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login', 'date_joined')}),
     )
     add_fieldsets = (

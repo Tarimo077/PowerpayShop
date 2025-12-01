@@ -87,6 +87,8 @@ document.addEventListener('click', function(event){
     const dropdown = document.getElementById('notifDropdown');
     const btn = document.getElementById('notifDropdownBtn');
 
+    if (!btn || !dropdown) return; // <-- prevent errors if elements don't exist
+
     if (btn.contains(event.target)) {
         dropdown.classList.toggle('hidden');
     } else if (!dropdown.contains(event.target)) {
@@ -94,6 +96,7 @@ document.addEventListener('click', function(event){
     }
 });
 </script>
+
 
 <style>
   body {
