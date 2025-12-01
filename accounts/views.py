@@ -95,11 +95,18 @@ def verify_otp(request):
             # Successful login
             user = otp_obj.user
             login(request, user)
+
             # Clear session and OTP
             request.session.pop("otp_user_id")
             otp_obj.delete()
             messages.success(request, "Login successful!")
-            return redirect("index")  # Change to your landing page
+
+            # Redirect based on user type
+            if user.is_vendor and user.is_vendor_approved:
+                return redirect("vendor_dashboard")
+            else:
+                return redirect("index")  # Default landing page
+
         else:
             otp_obj.attempts += 1
             otp_obj.save()
@@ -109,6 +116,7 @@ def verify_otp(request):
         "email": otp_obj.user.email
     }
     return render(request, "accounts/verify_otp.html", context)
+
 
 def send_otp_email(user, otp):
     subject = "Your PowerPayShop OTP"
