@@ -44,6 +44,7 @@ class ProductRating(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     rating = models.PositiveSmallIntegerField(validators=[MaxValueValidator(5)],default=5)  # 1–5 stars
     created_at = models.DateTimeField(auto_now_add=True)
+    review = models.TextField(blank=True, null=True)
 
     class Meta:
         unique_together = ("product", "user")  # user can rate once

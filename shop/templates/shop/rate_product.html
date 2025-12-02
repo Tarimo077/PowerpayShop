@@ -81,6 +81,14 @@
             {% endfor %}
         </div>
 
+        <!-- Review Text -->
+        <div class="mt-4 px-4">
+            <textarea name="review"
+                    rows="4"
+                    class="w-full border rounded-lg p-3 focus:outline-none focus:ring focus:ring-green-300"
+                    placeholder="Write your review here...">{{ form.review.value|default_if_none:"" }}</textarea>
+        </div>
+
         <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
             Submit Rating
         </button>

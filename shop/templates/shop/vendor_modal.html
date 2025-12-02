@@ -1,14 +1,15 @@
-<dialog id="vendorModal_{{ product.id }}" 
-        class="modal p-4 rounded-lg backdrop:bg-black/20 backdrop:backdrop-blur-sm transition-all w-1/5">
+<dialog id="vendorModal_{{ product.id }}"
+    class="modal p-2 sm:p-4 rounded-lg backdrop:bg-black/20 backdrop:backdrop-blur-sm transition-all">
 
-    <div class="modal-box relative">
+    <div class="modal-box relative w-full max-w-lg md:max-w-xl lg:max-w-2xl mx-auto">
+
         <!-- Close Button -->
-        <form method="dialog">
+        <form method="dialog" class="p-1"> 
             <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-1">✕</button>
         </form>
-
+        
         <!-- Header -->
-        <h3 class="text-2xl font-bold mb-6 text-green-700 flex items-center gap-2">
+        <h3 class="text-2xl font-bold mb-6 text-green-700 flex items-center gap-2 mt-4">
             <i class="fa-solid fa-store"></i>
             Vendor Details
         </h3>
@@ -17,14 +18,18 @@
         <div class="space-y-4">
 
             <!-- Logo & Shop Name -->
-            <div class="flex items-center gap-4 bg-gray-50 p-4 rounded-lg">
+            <div class="flex items-center gap-4 bg-gray-100 p-4 rounded-lg">
                 {% if product.vendor.logo %}
-                    <img src="{{ product.vendor.logo.url }}" alt="Vendor Logo" class="w-16 h-16 rounded-full object-contain border border-green-300">
+                    <img src="{{ product.vendor.logo.url }}" alt="Vendor Logo"
+                        class="w-16 h-16 rounded-full object-contain border border-green-300">
                 {% else %}
-                    <div class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-green-600 font-bold text-xl border border-green-300">
+                    <div
+                        class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center
+                               text-green-600 font-bold text-xl border border-green-300">
                         {{ product.vendor.shop_name|default:product.vendor.user|slice:":1"|upper }}
                     </div>
                 {% endif %}
+
                 <div>
                     <p class="font-semibold text-gray-700 text-lg">Shop Name</p>
                     <p class="text-gray-600 text-sm">
@@ -34,7 +39,7 @@
             </div>
 
             <!-- Email -->
-            <div class="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+            <div class="flex items-start gap-3 bg-gray-100 p-3 rounded-lg">
                 <i class="fa-solid fa-envelope text-green-600 text-xl mt-1"></i>
                 <div>
                     <p class="font-semibold text-gray-700">Email</p>
@@ -45,7 +50,7 @@
             </div>
 
             <!-- Phone -->
-            <div class="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+            <div class="flex items-start gap-3 bg-gray-100 p-3 rounded-lg">
                 <i class="fa-solid fa-phone text-green-600 text-xl mt-1"></i>
                 <div>
                     <p class="font-semibold text-gray-700">Phone</p>
@@ -56,7 +61,7 @@
             </div>
 
             <!-- Address -->
-            <div class="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+            <div class="flex items-start gap-3 bg-gray-100 p-3 rounded-lg">
                 <i class="fa-solid fa-location-dot text-green-600 text-xl mt-1"></i>
                 <div>
                     <p class="font-semibold text-gray-700">Address</p>
@@ -67,7 +72,7 @@
             </div>
 
             <!-- Description -->
-            <div class="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+            <div class="flex items-start gap-3 bg-gray-100 p-3 rounded-lg">
                 <i class="fa-solid fa-info-circle text-green-600 text-xl mt-1"></i>
                 <div>
                     <p class="font-semibold text-gray-700">Description</p>
@@ -78,7 +83,7 @@
             </div>
 
             <!-- Product Count -->
-            <div class="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+            <div class="flex items-start gap-3 bg-gray-100 p-3 rounded-lg">
                 <i class="fa-solid fa-boxes-stacked text-green-600 text-xl mt-1"></i>
                 <div>
                     <p class="font-semibold text-gray-700">Total Products</p>
@@ -91,3 +96,4 @@
         </div>
     </div>
 </dialog>
+

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
-<html lang="en" data-theme="light">  <!-- enables DaisyUI themes -->
+<html lang="en" >  <!-- enables DaisyUI themes -->
 <head>
     <script src="https://kit.fontawesome.com/69d2af506e.js" crossorigin="anonymous"></script>
     <link rel="icon" href="{% static 'images/favicon.ico' %}">
@@ -96,8 +96,32 @@ document.addEventListener('click', function(event){
     }
 });
 </script>
+<!-- 
+<script>
+    // Load saved theme on page load
+    document.documentElement.setAttribute(
+        "data-theme",
+        localStorage.getItem("theme") || "light"
+    );
 
+    // Save theme on toggle
+    document.addEventListener("change", function (e) {
+        if (e.target.classList.contains("theme-controller")) {
+            const theme = e.target.value;
+            document.documentElement.setAttribute("data-theme", theme);
+            localStorage.setItem("theme", theme);
+        }
+    });
 
+    // Sync toggle state on load
+    const savedTheme = localStorage.getItem("theme");
+    const toggle = document.querySelector(".theme-controller");
+    if (toggle && savedTheme === toggle.value) {
+        toggle.checked = true;
+    }
+</script>
+
+-->
 <style>
   body {
     font-family: "Saira";
@@ -105,6 +129,7 @@ document.addEventListener('click', function(event){
 @view-transition {
     navigation: auto; /* smooth transitions on DOM updates */
 }
-</style>  
+</style>
+  
 </body>
 </html>

@@ -110,5 +110,10 @@ class RatingForm(forms.ModelForm):
         widgets = {
             "rating": forms.NumberInput(attrs={
                 "min": 1, "max": 5, "class": "input input-bordered w-24"
+            }),
+            "review": forms.Textarea(attrs={
+                'class': 'textarea textarea-bordered w-full rounded-lg focus:ring focus:ring-green-200 focus:border-green-500',
+                'rows': 4,
+                'placeholder': 'Write your review (optional)...'
             })
         }
