@@ -27,6 +27,15 @@
       {% endfor %}
     </ul>
 
+    <form method="get" class="mt-4 mb-4 flex justify-end">
+        <label class="mr-2 mt-2 font-semibold">Items per page:</label>
+        <select name="per_page" onchange="this.form.submit()" class="border-green-600 rounded-lg">
+            <option value="5" {% if per_page == 5 %}selected{% endif %}>5</option>
+            <option value="10" {% if per_page == 10 %}selected{% endif %}>10</option>
+            <option value="20" {% if per_page == 20 %}selected{% endif %}>20</option>
+        </select>
+    </form>
+
     {# Simple Pagination #}
     {% if notifications.has_other_pages %}
       <div class="flex justify-center mt-6 mb-6 gap-2">

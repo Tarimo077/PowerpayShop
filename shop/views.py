@@ -116,15 +116,25 @@ def vendor_dashboard(request):
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
 
-    # Check if product is in user's wishlist
+    # Wishlist check
     in_wishlist = False
     if request.user.is_authenticated:
         in_wishlist = Wishlist.objects.filter(user=request.user, product=product).exists()
 
+    # Similar products from same vendor
+    similar_products = Product.objects.filter(
+        vendor=product.vendor
+    ).exclude(pk=product.pk)[:3]
+
     return render(request, "shop/product_detail.html", {
         "product": product,
         "in_wishlist": in_wishlist,
+        "similar_products": similar_products,
+        "is_authenticated": request.user.is_authenticated,
+        "wishlist_items": Wishlist.objects.filter(user=request.user).values_list("product_id", flat=True) if request.user.is_authenticated else [],
     })
+
+
 
 def product_image_swap(request, pk):
     product = get_object_or_404(Product, pk=pk)

@@ -16,7 +16,7 @@
     
     {% include 'shop/product_grid.html' with products=products wishlist_items=wishlist_items %}
 
-
+    {% include "shop/pagination.html" %}
     {% else %}
         <p class="text-gray-500 text-lg mt-24 mb-80 text-center">Your wishlist is empty.</p>
     {% endif %}

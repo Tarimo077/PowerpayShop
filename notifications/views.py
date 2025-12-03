@@ -10,7 +10,7 @@ def notification_list(request):
     notifications_qs = request.user.notifications.all().order_by('-created_at')
     unread_exists = notifications_qs.filter(is_read=False).exists()
 
-    per_page = int(request.GET.get('per_page', 10))  # default 10 per page
+    per_page = int(request.GET.get('per_page', 5))  # default 10 per page
     page_number = request.GET.get('page', 1)
     paginator = Paginator(notifications_qs, per_page)
     notifications_page = paginator.get_page(page_number)
