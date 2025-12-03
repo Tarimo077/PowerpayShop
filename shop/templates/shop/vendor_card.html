@@ -1,0 +1,94 @@
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center p-6 bg-gray-50 
+    {% if vendor.is_suspended %}
+        border-l-4 border-r-4 border-red-500
+    {% elif not user.is_vendor_approved %}
+        border-l-4 border-r-4 border-orange-500
+    {% else %}
+        border-l-4 border-r-4 border-green-500
+    {% endif %}
+    rounded-lg shadow-sm hover:shadow-md transition mb-4">
+  
+  <!-- Vendor Info -->
+  <div class="flex items-center space-x-4">
+    {% if vendor.logo %}
+      <img src="{{ vendor.logo.url }}" alt="{{ vendor.shop_name }}" class="w-16 h-16 rounded-full object-contain border border-gray-300">
+    {% else %}
+      <div class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">No Logo</div>
+    {% endif %}
+    <div class="space-y-2">
+      <p class="font-semibold text-gray-800 dark:text-gray-200 text-lg"><i class="fa-solid fa-user mr-2"></i>{{ user.username }}</p>
+      <p class="text-sm text-gray-600 dark:text-gray-400"><i class="fa-solid fa-envelope mr-2"></i>{{ user.email }}</p>
+      <p class="text-sm text-gray-600 dark:text-gray-400"><i class="fa-solid fa-phone mr-2"></i>{{ user.phone|default:"N/A" }}</p>
+      <p class="text-sm text-gray-700 dark:text-gray-300 font-medium"><i class="fa-solid fa-shop mr-2"></i>{{ vendor.shop_name|default:"N/A" }}</p>
+      <p class="text-sm text-gray-600 dark:text-gray-400"><i class="fa-solid fa-location-dot mr-2"></i>{{ vendor.address|default:"N/A" }}</p>
+      <p class="text-sm text-gray-600 dark:text-gray-400 mt-1"><i class="fa-solid fa-address-card mr-2"></i>{{ vendor.description|truncatechars:40|default:"N/A" }}</p>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="mt-4 md:mt-0 flex items-center space-x-2">
+    {% if not user.is_vendor_approved %}
+      <a href="{% url 'vendor_approve' user.id %}" class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition shadow">Approve</a>
+    {% endif %}
+
+    {% if vendor.is_suspended %}
+      <button onclick="openSuspendModal('{{ user.id }}', 'unsuspend')" class="px-4 py-2 bg-yellow-500 text-white rounded-lg font-medium hover:bg-yellow-600 transition shadow">Unsuspend</button>
+    {% elif user.is_vendor_approved %}
+      <button onclick="openSuspendModal('{{ user.id }}', 'suspend')" class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition shadow">Suspend</button>
+    {% endif %}
+
+    {% if not user.is_vendor_approved and not vendor.is_suspended %}
+      <span class="px-3 py-1 bg-yellow-600 text-white rounded-full text-sm font-medium">Pending</span>
+    {% elif user.is_vendor_approved %}
+      <span class="px-3 py-1 bg-green-600 text-white rounded-full text-sm font-medium">Approved</span>
+    {% elif vendor.is_suspended %}
+      <span class="px-3 py-1 bg-red-600 text-white rounded-full text-sm font-medium">Suspended</span>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Suspension Confirmation Modal -->
+<dialog id="suspendModal" class="modal">
+  <form method="POST" class="modal-box">
+    {% csrf_token %}
+    <h3 id="suspendModalTitle" class="font-bold text-lg mb-4">Confirm Action</h3>
+    <p id="suspendModalText" class="mb-4">Are you sure you want to suspend this vendor?</p>
+    <div class="modal-action">
+      <button type="button" class="btn bg-red-500 text-white p-2" onclick="closeSuspendModal()">Cancel</button>
+      <button type="submit" id="suspendModalFormBtn" class="btn bg-green-500 text-white p-2">Confirm</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  function openSuspendModal(userId, action) {
+    const modal = document.getElementById('suspendModal');
+    const title = document.getElementById('suspendModalTitle');
+    const text = document.getElementById('suspendModalText');
+    const formBtn = document.getElementById('suspendModalFormBtn');
+    const form = modal.querySelector('form');
+
+    if(action === 'suspend') {
+      title.textContent = 'Suspend Vendor';
+      text.textContent = 'Are you sure you want to suspend this vendor?';
+      form.action = `/accounts/vendors/suspend/${userId}/`;
+      formBtn.textContent = 'Suspend';
+      formBtn.classList.remove('btn-yellow');
+      formBtn.classList.add('btn-red');
+    } else {
+      title.textContent = 'Unsuspend Vendor';
+      text.textContent = 'Are you sure you want to unsuspend this vendor?';
+      form.action = `/accounts/vendors/unsuspend/${userId}/`;
+      formBtn.textContent = 'Unsuspend';
+      formBtn.classList.remove('btn-red');
+      formBtn.classList.add('btn-yellow');
+    }
+
+    modal.showModal();
+  }
+
+  function closeSuspendModal() {
+    const modal = document.getElementById('suspendModal');
+    modal.close();
+  }
+</script>

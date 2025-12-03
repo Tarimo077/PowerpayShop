@@ -26,12 +26,14 @@ def is_approved_vendor(request):
     user = request.user
     return {
         "is_approved_vendor": (
-            user.is_authenticated 
-            and user.is_vendor 
-            and user.is_vendor_approved 
+            user.is_authenticated
+            and user.is_vendor
+            and user.is_vendor_approved
             and hasattr(user, "vendor")
+            and not user.vendor.is_suspended  # check suspension
         )
     }
+
 
 def is_admin(request):
     return {

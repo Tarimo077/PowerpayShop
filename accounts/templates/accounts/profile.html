@@ -82,6 +82,22 @@
                     {{ vendor_form.address.errors }}
                 </div>
 
+                <div class="mb-4">
+                    {{ vendor_form.logo.label_tag }}
+
+                    {% if vendor_form.instance.logo %}
+                        <div class="mb-2">
+                            <p class="text-sm text-gray-500">Current logo:</p>
+                            <img src="{{ vendor_form.instance.logo.url }}" 
+                                alt="Vendor Logo" 
+                                class="w-24 h-24 object-contain rounded-lg border border-green-300">
+                        </div>
+                    {% endif %}
+
+                    {{ vendor_form.logo }}
+                    {{ vendor_form.logo.errors }}
+                </div>
+
                 <button type="submit" name="vendor_form_submit"
                         class="btn bg-green-600 text-white rounded-lg py-2 px-4 hover:bg-green-700 transition mt-4">
                     <i class="fa-solid fa-floppy-disk m-1"></i>Update Vendor Info

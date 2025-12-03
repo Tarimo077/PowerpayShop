@@ -65,7 +65,7 @@
                             <i class="fa-regular fa-star"></i>
                         {% endif %}
                     {% endfor %}
-                    <span class="text-gray-600 text-xs ml-2">{{ product.rating_count }} reviews</span>
+                    <a href="{% url 'rate_product' product.id %}" class="text-blue-600 hover:underline text-sm ml-2">{{ product.rating_count }} ratings</a>
                 </div>
 
                 <!-- Description -->

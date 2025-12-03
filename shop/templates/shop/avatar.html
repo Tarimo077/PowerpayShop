@@ -17,14 +17,14 @@
 
         <li class="mt-2 hover:bg-gray-200 rounded-md p-1">
             <a href="{% url 'profile' %}">
-                <i class="fa-solid fa-user mr-2"></i> Profile
+                <i class="fa-solid fa-user mr-2 text-lg"></i> Profile
             </a>
         </li>
 
         {% if is_admin %}
         <li class="mt-2 hover:bg-gray-200 rounded-md p-1">
             <a href="{% url 'vendor_admin_list' %}">
-                <i class="fa-solid fa-user-tie mr-2"></i> Admin Panel
+                <i class="fa-solid fa-user-tie mr-2 text-lg"></i> Admin Panel
             </a>
         </li>
         {% endif %}
@@ -32,7 +32,7 @@
         {% if is_approved_vendor %}
         <li class="mt-2 hover:bg-gray-200 rounded-md p-1">
             <a href="{% url 'vendor_dashboard' %}">
-                <i class="fa-solid fa-store mr-2"></i> Vendor Dashboard
+                <i class="fa-solid fa-store mr-2 text-lg"></i> Vendor Dashboard
             </a>
         </li>
         {% endif %}
@@ -41,7 +41,7 @@
             <form method="POST" action="{% url 'logout' %}">
                 {% csrf_token %}
                 <button type="submit" class="text-red-600">
-                    <i class="fa-solid fa-right-from-bracket mr-2"></i> Logout
+                    <i class="fa-solid fa-right-from-bracket mr-2 text-lg"></i> Logout
                 </button>
             </form>
         </li>

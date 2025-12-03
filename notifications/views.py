@@ -2,14 +2,25 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.http import HttpResponse
+from django.core.paginator import Paginator
 
 
 @login_required
 def notification_list(request):
-    notifications = request.user.notifications.all()
-    unread_exists = notifications.filter(is_read=False).exists()
-    return render(request, 'notifications/list.html', {'notifications': notifications, "unread_exists": unread_exists})
+    notifications_qs = request.user.notifications.all().order_by('-created_at')
+    unread_exists = notifications_qs.filter(is_read=False).exists()
 
+    per_page = int(request.GET.get('per_page', 10))  # default 10 per page
+    page_number = request.GET.get('page', 1)
+    paginator = Paginator(notifications_qs, per_page)
+    notifications_page = paginator.get_page(page_number)
+
+    context = {
+        'notifications': notifications_page,  # Page object
+        'per_page': per_page,
+        'unread_exists': unread_exists,
+    }
+    return render(request, 'notifications/list.html', context)
 
 @login_required
 def mark_all_as_read_list(request):

@@ -15,6 +15,9 @@ from django.urls import reverse_lazy
 import datetime
 from django.contrib.admin.views.decorators import staff_member_required
 from notifications.utils import notify
+from django.core.paginator import Paginator
+from itertools import chain
+from django.db.models import Q
 
 MAX_ATTEMPTS = 5
 
@@ -102,8 +105,9 @@ def verify_otp(request):
             messages.success(request, "Login successful!")
 
             # Redirect based on user type
-            if user.is_vendor and user.is_vendor_approved:
+            if user.is_vendor and user.is_vendor_approved and hasattr(user, 'vendor') and not user.vendor.is_suspended:
                 return redirect("vendor_dashboard")
+
             else:
                 return redirect("index")  # Default landing page
 
@@ -223,13 +227,52 @@ def profile_page(request):
 
 @staff_member_required
 def vendor_admin_list(request):
-    pending = User.objects.filter(is_vendor=True, is_vendor_approved=False)
-    approved = User.objects.filter(is_vendor=True, is_vendor_approved=True)
+    search_query = request.GET.get('q', '')
+    per_page = int(request.GET.get('per_page', 6))
+    page_number = int(request.GET.get('page', 1))
 
-    return render(request, "accounts/vendors_list.html", {
-        "pending": pending,
-        "approved": approved
-    })
+    # Base querysets
+    pending_qs = User.objects.filter(is_vendor=True, is_vendor_approved=False)
+    approved_qs = User.objects.filter(is_vendor=True, is_vendor_approved=True, vendor__is_suspended=False)
+    suspended_qs = User.objects.filter(is_vendor=True, is_vendor_approved=True, vendor__is_suspended=True)
+
+    # Apply search filter
+    if search_query:
+        pending_qs = pending_qs.filter(
+            Q(username__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(vendor__shop_name__icontains=search_query)
+        )
+        approved_qs = approved_qs.filter(
+            Q(username__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(vendor__shop_name__icontains=search_query)
+        )
+        suspended_qs = suspended_qs.filter(
+            Q(username__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(vendor__shop_name__icontains=search_query)
+        )
+
+    # Pagination
+    pending_page = Paginator(pending_qs, per_page).get_page(page_number)
+    approved_page = Paginator(approved_qs, per_page).get_page(page_number)
+    suspended_page = Paginator(suspended_qs, per_page).get_page(page_number)
+
+    # All vendors for "All" tab
+    all_vendors_list = list(chain(pending_qs, approved_qs, suspended_qs))
+    all_vendors_page = Paginator(all_vendors_list, per_page).get_page(page_number)
+
+    context = {
+        'all_vendors': all_vendors_page,
+        'pending': pending_page,
+        'approved': approved_page,
+        'suspended': suspended_page,
+        'per_page': per_page,
+        'search_query': search_query
+    }
+
+    return render(request, "accounts/vendors_list.html", context)
 
 @staff_member_required
 def vendor_approve(request, user_id):
@@ -249,10 +292,48 @@ def vendor_approve(request, user_id):
     # Notify vendor
     notify(
         user,
-        "Vendor Account Approved",
+        "Vendor Approval",
         "Your vendor account has been approved by the admin.",
         "success"
     )
 
     messages.success(request, f"{user.username} is now an approved vendor.")
+    return redirect("vendor_admin_list")
+
+
+@staff_member_required
+def vendor_suspend(request, user_id):
+    user = get_object_or_404(User, id=user_id, is_vendor=True, is_vendor_approved=True)
+    vendor = user.vendor
+    vendor.is_suspended = True
+    vendor.save()
+
+    # Notify vendor
+    notify(
+        user,
+        "Vendor Suspension",
+        "Your vendor account has been suspended by the admin.",
+        "error"
+    )
+
+    messages.warning(request, f"{user.username} has been suspended.")
+    return redirect("vendor_admin_list")
+
+
+@staff_member_required
+def vendor_unsuspend(request, user_id):
+    user = get_object_or_404(User, id=user_id, is_vendor=True, is_vendor_approved=True)
+    vendor = user.vendor
+    vendor.is_suspended = False
+    vendor.save()
+
+    # Notify vendor
+    notify(
+        user,
+        "Vendor Re-Activation",
+        "Your vendor account has been re-activated by the admin.",
+        "success"
+    )
+
+    messages.success(request, f"{user.username} has been re-activated.")
     return redirect("vendor_admin_list")

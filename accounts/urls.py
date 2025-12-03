@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import login_view, verify_otp, resend_otp, CustomPasswordResetView, register_view, profile_page, vendor_admin_list, vendor_approve
+from .views import login_view, verify_otp, resend_otp, CustomPasswordResetView, register_view, profile_page, vendor_admin_list, vendor_approve, vendor_suspend, vendor_unsuspend
 from django.contrib.auth import views as auth_views
 from .forms import StyledPasswordResetForm, StyledSetPasswordForm
 
@@ -31,5 +31,7 @@ urlpatterns = [
     ), name="password_reset_complete"),
     path("vendors/", vendor_admin_list, name="vendor_admin_list"),
     path("vendors/approve/<int:user_id>/", vendor_approve, name="vendor_approve"),
+    path('vendors/suspend/<int:user_id>/', vendor_suspend, name='vendor_suspend'),
+    path('vendors/unsuspend/<int:user_id>/', vendor_unsuspend, name='vendor_unsuspend'),
 
 ]

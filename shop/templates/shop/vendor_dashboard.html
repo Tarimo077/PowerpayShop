@@ -177,33 +177,41 @@
     </p>
     {% endif %}
 </div>
+
 <!-- DELETE MODAL -->
 <div id="deleteModal"
-     class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center hidden">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-80">
-        <h2 class="text-lg font-bold mb-3 text-gray-800">Delete Product</h2>
+     class="fixed inset-0 bg-black bg-opacity-50 hidden">
 
-        <p class="text-gray-600 mb-5">
-            Are you sure you want to delete this product? This action cannot be undone.
-        </p>
+    <!-- Centering wrapper -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
 
-        <form id="deleteForm" method="POST">
-            {% csrf_token %}
-            <div class="flex justify-end gap-3">
-                <button type="button"
-                        onclick="closeDeleteModal()"
-                        class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
-                    Cancel
-                </button>
+        <div class="bg-white p-6 rounded-lg shadow-lg w-80">
+            <h2 class="text-lg font-bold mb-3 text-gray-800">Delete Product</h2>
 
-                <button type="submit"
-                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                    Delete
-                </button>
-            </div>
-        </form>
+            <p class="text-gray-600 mb-5">
+                Are you sure you want to delete this product? This action cannot be undone.
+            </p>
+
+            <form id="deleteForm" method="POST">
+                {% csrf_token %}
+                <div class="flex justify-end gap-3">
+                    <button type="button"
+                            onclick="closeDeleteModal()"
+                            class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+                        Cancel
+                    </button>
+
+                    <button type="submit"
+                            class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                        Delete
+                    </button>
+                </div>
+            </form>
+        </div>
+
     </div>
 </div>
+
 
 {% include 'footer.html' %}
 </div>

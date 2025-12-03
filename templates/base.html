@@ -24,25 +24,42 @@
     </main>
 
     <!-- DaisyUI Modal for messages -->
-<dialog id="messageModal" class="modal opacity-0 transform -translate-y-96 transition-all duration-500 rounded-lg">
-  <div class="modal-box max-w-2xl shadow-2xl p-4 relative">
-    
-    <!-- Close button -->
-    <button class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 text-white outline-none border-none" onclick="closeModal()">✕</button>
-    
-    <!-- Modal title -->
-    <h3 id="modalTitle" class="text-xl text-center font-bold text-white mb-2">Message</h3>
+<dialog id="messageModal" class="modal items-start pt-6">
+  <div id="modalBox"
+    class="modal-box max-w-md w-full rounded-2xl shadow-2xl p-6 relative animate-fadeIn transition-all">
 
-    <!-- Modal content -->
-    <p id="modalMessage" class="text-white text-lg py-2">Message content</p>
+    <!-- Close Button -->
+    <button onclick="closeModal()"
+      class="btn btn-sm outline-none btn-ghost absolute right-3 top-3 text-white hover:text-gray-200">
+      ✕
+    </button>
+
+    <!-- Icon + Title Row -->
+    <div class="flex items-center gap-2 mb-3">
+      <div id="modalIconWrapper"
+        class="w-10 h-10 rounded-full flex items-center justify-center">
+        <i id="modalIcon" class="fa-solid fa-info text-xl text-white"></i>
+      </div>
+
+      <h3 id="modalTitle" class="text-2xl text-white font-bold mb-3">
+        Message
+      </h3>
+    </div>
+
+    <!-- Message -->
+    <p id="modalMessage" class="text-white text-center mb-3 text-lg leading-relaxed">
+      Message content
+    </p>
 
   </div>
 </dialog>
+
+
 <script>
   function closeModal() {
     const modal = document.getElementById("messageModal");
     modal.classList.add("opacity-0","-translate-y-10");
-    setTimeout(() => modal.close(), 500); // wait for animation
+    setTimeout(() => modal.close(), 500);
   }
 
   {% if messages %}
@@ -50,32 +67,46 @@
     const modalTitle = document.getElementById("modalTitle");
     const modalMessage = document.getElementById("modalMessage");
     const modalBox = modal.querySelector('.modal-box');
+    const iconWrapper = document.getElementById("modalIconWrapper");
+    const icon = document.getElementById("modalIcon");
 
     {% for message in messages %}
       modalTitle.textContent = "{{ message.tags|capfirst }}";
       modalMessage.textContent = "{{ message|escapejs }}";
 
-      modalBox.classList.remove('bg-red-100','bg-green-100','bg-yellow-100','text-red-800','text-green-800','text-yellow-800');
+      // Reset styles
+      modalBox.className = "modal-box max-w-md w-full rounded-2xl shadow-2xl p-4 relative animate-fadeIn transition-all";
+      iconWrapper.className = "w-10 h-10 rounded-full flex items-center justify-center";
+      icon.className = "fa-solid text-lg text-white";
+
       {% if message.level_tag == 'error' %}
-        modalBox.classList.add('bg-red-400','text-red-800');
+        modalBox.classList.add('bg-red-500');
+        iconWrapper.classList.add('bg-red-700');
+        icon.classList.add('fa-circle-exclamation');
       {% elif message.level_tag == 'success' %}
-        modalBox.classList.add('bg-green-400','text-green-800');
+        modalBox.classList.add('bg-green-500');
+        iconWrapper.classList.add('bg-green-700');
+        icon.classList.add('fa-square-check');
       {% elif message.level_tag == 'info' %}
-        modalBox.classList.add('bg-blue-400','text-blue-800');
+        modalBox.classList.add('bg-blue-500');
+        iconWrapper.classList.add('bg-blue-700');
+        icon.classList.add('fa-info');
       {% else %}
-        modalBox.classList.add('bg-yellow-400','text-yellow-800');
+        modalBox.classList.add('bg-yellow-500');
+        iconWrapper.classList.add('bg-yellow-700');
+        icon.classList.add('fa-exclamation');
       {% endif %}
 
       modal.showModal();
       modal.classList.remove("opacity-0","-translate-y-10");
 
-      // Auto-close after 4 seconds
       setTimeout(() => {
-          closeModal();
-      }, 4000);
+        closeModal();
+      }, 3000);
     {% endfor %}
   {% endif %}
 </script>
+
 <script>
 document.body.addEventListener("htmx:configRequest", (event) => {
     const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
@@ -96,32 +127,6 @@ document.addEventListener('click', function(event){
     }
 });
 </script>
-<!-- 
-<script>
-    // Load saved theme on page load
-    document.documentElement.setAttribute(
-        "data-theme",
-        localStorage.getItem("theme") || "light"
-    );
-
-    // Save theme on toggle
-    document.addEventListener("change", function (e) {
-        if (e.target.classList.contains("theme-controller")) {
-            const theme = e.target.value;
-            document.documentElement.setAttribute("data-theme", theme);
-            localStorage.setItem("theme", theme);
-        }
-    });
-
-    // Sync toggle state on load
-    const savedTheme = localStorage.getItem("theme");
-    const toggle = document.querySelector(".theme-controller");
-    if (toggle && savedTheme === toggle.value) {
-        toggle.checked = true;
-    }
-</script>
-
--->
 <style>
   body {
     font-family: "Saira";
@@ -130,6 +135,27 @@ document.addEventListener('click', function(event){
     navigation: auto; /* smooth transitions on DOM updates */
 }
 </style>
+<style>
+#messageModal::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.animate-fadeIn {
+  animation: dropIn 0.35s ease-out;
+}
+
+@keyframes dropIn {
+  from {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
+
   
 </body>
 </html>

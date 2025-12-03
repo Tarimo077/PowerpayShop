@@ -22,7 +22,7 @@ class Vendor(models.Model):
     description = models.TextField(blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
     logo = models.ImageField(upload_to="vendor_logos/", blank=True, null=True)
-
+    is_suspended = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

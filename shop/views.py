@@ -244,7 +244,7 @@ def delete_product(request, product_id):
         "warning"
     )
 
-    messages.success(request, "Product deleted successfully!")
+    messages.warning(request, "Product deleted successfully!")
     return redirect("vendor_dashboard")
 
 
