@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Product, Sale, Cart, CartItem, CheckoutOrder, ProductRating, Wishlist, ProductGallery
 from django.contrib import messages
 from .forms import ProductForm, CheckoutForm, PaymentForm, RatingForm, GalleryForm
-from django.db.models import Sum
+from django.db.models import Sum, Avg, Count
 from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponse
 import requests
@@ -126,14 +126,40 @@ def product_detail(request, pk):
         vendor=product.vendor
     ).exclude(pk=product.pk)[:3]
 
+    # Reviews and ratings
+    ratings_qs = product.ratings.all()
+    overall_rating = ratings_qs.aggregate(avg=Avg('rating'))['avg'] or 0
+    rating_count = ratings_qs.count()
+
+    # Count of each star
+    star_counts = ratings_qs.values('rating').annotate(count=Count('rating'))
+    star_summary = {i: 0 for i in range(1, 6)}
+    for item in star_counts:
+        star_summary[item['rating']] = item['count']
+
+    # Calculate percentage for each star for the bars
+    star_percentages = {}
+    for star in range(1, 6):
+        if rating_count > 0:
+            star_percentages[star] = round(star_summary.get(star, 0) / rating_count * 100)
+        else:
+            star_percentages[star] = 0
+
     return render(request, "shop/product_detail.html", {
         "product": product,
         "in_wishlist": in_wishlist,
         "similar_products": similar_products,
         "is_authenticated": request.user.is_authenticated,
         "wishlist_items": Wishlist.objects.filter(user=request.user).values_list("product_id", flat=True) if request.user.is_authenticated else [],
+        # Ratings
+        "ratings": ratings_qs,
+        "overall_rating": overall_rating,
+        "rating_count": rating_count,
+        "star_summary": star_summary,
+        "star_percentages": star_percentages,
+        "star_range": [1, 2, 3, 4, 5],
+        "star_range_reverse": [5, 4, 3, 2, 1],  # For displaying 5→1 stars
     })
-
 
 
 def product_image_swap(request, pk):

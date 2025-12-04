@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load humanize %}
+{% load custom_filters %}
 {% block content %}
 
 <div class="grid min-h-screen" style="grid-template-rows: auto 1fr auto;">
@@ -60,10 +61,9 @@
                                   <i class="fa-regular fa-star"></i>
                               {% endif %}
                           {% endfor %}
-                          <a href="{% url 'rate_product' product.id %}"
-                             class="text-blue-600 hover:underline text-sm ml-2">
-                             {{ product.rating_count }} ratings
-                          </a>
+                          <p class="text-sm ml-2">
+                             {{ product.rating_count }} {% if product.rating_count == 1 %} rating {% else %} ratings {% endif %}
+                          </p>
                       </div>
 
                       <p class="text-3xl font-semibold text-green-600 mb-6">
@@ -156,12 +156,77 @@
 
 
       <!-- SIMILAR PRODUCTS SECTION -->
-      <div class="mt-8 bg-yellow-50 shadow-lg rounded-2xl p-6">
-          <h2 class="text-xl font-semibold text-yellow-600">More Products From {{ product.vendor.shop_name }}</h2>
-          <div class="divider divider-warning mt-0"></div>
+        <div class="mt-8 bg-blue-50 shadow-lg rounded-2xl p-6">
+          <h2 class="text-xl font-semibold text-blue-600">More Products From {{ product.vendor.shop_name }}</h2>
+          <div class="divider divider-info mt-0"></div>
 
           {% include "shop/product_grid.html" with products=similar_products %}
-      </div>
+        </div>
+
+       <div class="bg-orange-50 shadow-lg rounded-xl p-6 mt-4">
+            <h3 class="text-xl font-semibold text-orange-400">Customer Reviews</h3>
+            <div class="divider divider-warning mt-0"></div>
+            <!-- Overall Rating -->
+            <div class="flex items-center mb-4">
+                <div class="text-2xl font-bold mr-2
+                {% if product.average_rating <= 2 %} text-red-500
+                {% elif product.average_rating > 2 and product.average_rating <= 4 %} text-yellow-500
+                {% else %} text-green-500 
+                {% endif %}
+                ">{% if rating_count == 0 %}__ {% else %}{{ product.average_rating|floatformat:1 }}{% endif %}/5</div>
+                <div class="flex text-yellow-500">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= product.average_rating %}
+                        <i class="fa-solid fa-star"></i>
+                    {% else %}
+                        <i class="fa-regular fa-star"></i>
+                    {% endif %}
+                {% endfor %}
+                </div>
+                <span class="ml-2 text-gray-500">( {{ rating_count }} reviews)</span>
+            </div>
+
+            <!-- Star Summary -->
+            <div class="mb-6">
+            {% for star in star_range_reverse %}
+                <div class="flex items-center text-sm mb-1">
+                <span class="w-12">{{ star }} star</span>
+                <div class="flex-1 h-3 bg-gray-200 rounded-full mx-2">
+                    <div class="h-3 bg-yellow-500 rounded-full" style="width: {{ star_percentages|get_item:star }}%;"></div>
+                </div>
+                <span class="w-8 text-right">{{ star_summary|get_item:star }}</span>
+                </div>
+            {% endfor %}
+            </div>
+
+
+            <!-- Individual Reviews -->
+            <div>
+                {% for review in ratings %}
+                <div class="border-b border-gray-200 py-3">
+                    <div class="flex items-center mb-1">
+                    <div class="flex text-sm">
+                        {% for i in star_range %}
+                        {% if i <= review.rating %}
+                            <span class="text-yellow-500"><i class="fa-solid fa-star"></i></span>
+                        {% else %}
+                            <span class="text-gray-300"><i class="fa-regular fa-star"></i></span>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    <span class="ml-2 text-gray-500 text-sm">{{ review.user.username }}</span>
+                    </div>
+                    {% if review.review %}
+                    <p class="text-gray-700 ml-4">{{ review.review }}</p>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p class="text-gray-500">No reviews yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+
 
   </div>
 
