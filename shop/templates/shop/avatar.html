@@ -1,8 +1,13 @@
-<!-- Avatar Dropdown Container -->
-<div id="navbarAvatarDropdown" class="relative text-lg">
+<!-- Avatar / Hamburger Container -->
+<div id="navbarAvatarDropdown" class="relative text-lg flex items-center">
 
-    <!-- Avatar Button (Trigger) -->
-    <button id="navbarAvatarBtn" type="button" class="avatar avatar-online cursor-pointer">
+    <!-- Hamburger menu (small screens) -->
+    <button id="mobileMenuBtn" class="md:hidden text-green-600 text-2xl mr-2">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <!-- Avatar Button (Trigger) - only on medium+ screens -->
+    <button id="navbarAvatarBtn" type="button" class="avatar avatar-online cursor-pointer hidden md:flex">
         <div class="bg-green-600 text-white w-12 h-12 flex items-center justify-center rounded-full">
             <span class="text-xl font-bold">
                 {{ request.user.username|first|upper }}
@@ -12,7 +17,7 @@
 
     <!-- Dropdown Menu (Hidden by default) -->
     <ul id="navbarAvatarMenu"
-        class="menu menu-sm absolute right-0 mt-2 p-2 w-52 rounded-lg
+        class="menu menu-sm absolute right-0 top-10 mt-2 p-2 w-52 rounded-lg
                shadow-2xl bg-white hidden z-50">
 
         <li class="mt-2 hover:bg-gray-200 rounded-md p-1">
@@ -46,23 +51,96 @@
             </form>
         </li>
 
-
     </ul>
 </div>
+
+<!-- MOBILE SIDE DRAWER (hidden by default) -->
+<div id="mobileMenu" class="fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+    <div class="flex justify-between items-center p-4 border-b">
+        <span class="text-lg font-semibold">Menu</span>
+        <button id="closeMobileMenu" class="text-green-600 text-2xl">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+    <ul class="flex flex-col p-4 gap-2">
+        <li class="hover:bg-gray-200 rounded-md p-2">
+            <a href="{% url 'profile' %}" class="flex items-center gap-2">
+                <i class="fa-solid fa-user"></i> Profile
+            </a>
+        </li>
+        {% if is_admin %}
+        <li class="hover:bg-gray-200 rounded-md p-2">
+            <a href="{% url 'vendor_admin_list' %}" class="flex items-center gap-2">
+                <i class="fa-solid fa-user-tie"></i> Admin Panel
+            </a>
+        </li>
+        {% endif %}
+        {% if is_approved_vendor %}
+        <li class="hover:bg-gray-200 rounded-md p-2">
+            <a href="{% url 'vendor_dashboard' %}" class="flex items-center gap-2">
+                <i class="fa-solid fa-store"></i> Vendor Dashboard
+            </a>
+        </li>
+        {% endif %}
+        <li class="hover:bg-gray-200 rounded-md p-2">
+            <form method="POST" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="text-red-600 flex items-center gap-2">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </form>
+        </li>
+    </ul>
+</div>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    const btn = document.getElementById("navbarAvatarBtn");
-    const menu = document.getElementById("navbarAvatarMenu");
+    const avatarBtn = document.getElementById("navbarAvatarBtn");
+    const avatarMenu = document.getElementById("navbarAvatarMenu");
+    const mobileBtn = document.getElementById("mobileMenuBtn");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const closeMobileBtn = document.getElementById("closeMobileMenu");
 
-    btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        menu.classList.toggle("hidden");
+    // --- Avatar Dropdown (medium+ screens) ---
+    if(avatarBtn && avatarMenu){
+        avatarBtn.addEventListener("click", (e) => {
+            e.stopPropagation(); // Prevent document click listener from firing immediately
+            avatarMenu.classList.toggle("hidden");
+        });
+    }
+
+    // Close avatar dropdown if clicking outside
+    document.addEventListener("click", (e) => {
+        if(avatarMenu && avatarBtn && !avatarMenu.contains(e.target) && !avatarBtn.contains(e.target)){
+            avatarMenu.classList.add("hidden");
+        }
     });
 
-    // Close dropdown if clicking outside
+    // --- Mobile Side Drawer (small screens) ---
+
+    // Hamburger button functionality (open)
+    if(mobileBtn && mobileMenu){
+        mobileBtn.addEventListener("click", (e) => {
+            e.stopPropagation(); // Stop propagation to prevent document click from closing it instantly
+            mobileMenu.classList.remove("translate-x-full");
+        });
+    }
+
+    // Close side drawer (close button inside menu)
+    if(closeMobileBtn && mobileMenu){
+        closeMobileBtn.addEventListener("click", () => {
+            mobileMenu.classList.add("translate-x-full");
+        });
+    }
+
+    // Close drawer if clicking outside of the menu or the mobile button
     document.addEventListener("click", (e) => {
-        if (!menu.contains(e.target) && !btn.contains(e.target)) {
-            menu.classList.add("hidden");
+        // Ensure all elements exist and the menu is currently open
+        const isMenuOpen = mobileMenu && !mobileMenu.classList.contains("translate-x-full");
+
+        // Check if the click is outside the menu AND not the menu button itself
+        if (isMenuOpen && !mobileMenu.contains(e.target) && e.target !== mobileBtn && !mobileBtn.contains(e.target)) {
+             mobileMenu.classList.add("translate-x-full");
         }
     });
 });
