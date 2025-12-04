@@ -67,33 +67,33 @@ class CheckoutForm(forms.ModelForm):
             "address_detail": forms.TextInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
 
             # Household Info
-            "gender": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full"}),
+            "gender": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
             "age": forms.NumberInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
             "national_id": forms.NumberInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "education": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "marital_status": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "employment": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full"}),
+            "education": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
+            "marital_status": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
+            "employment": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
             "economic_activity": forms.TextInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "monthly_income": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full"}),
+            "monthly_income": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
 
-            "buying_method": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "other_loans": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full"}),
+            "buying_method": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
+            "other_loans": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
 
             # Cooking / Energy
-            "cooking_fuel": forms.CheckboxSelectMultiple(attrs={"class": "input input-bordered rounded-lg"}),
-            "stove_type": forms.CheckboxSelectMultiple(attrs={"class": "input input-bordered rounded-lg"}),
-            "is_cook_user": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "grid_connection": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "utility_provider": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full"}),
+            "cooking_fuel": forms.CheckboxSelectMultiple(attrs={"class": "space-y-2 rounded-full cursor-pointer"}),
+            "stove_type": forms.CheckboxSelectMultiple(attrs={"class": "space-y-2 rounded-full cursor-pointer"}),
+            "is_cook_user": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
+            "grid_connection": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
+            "utility_provider": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
             "monthly_electricity_cost": forms.NumberInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
 
             # Loan-related fields
-            "appliance_financed": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full"}),
+            "appliance_financed": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
             "repayment_period": forms.NumberInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "financier": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full"}),
+            "financier": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
 
             # Home/Business usage
-            "home_or_business": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full"}),
+            "home_or_business": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
         }
 
 

@@ -247,13 +247,28 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
     btn.addEventListener("click", () => {
         const tab = btn.dataset.tab;
 
+        // Reset all buttons
         document.querySelectorAll(".tab-btn").forEach(b => 
             b.classList.remove("bg-green-600","text-white"));
         btn.classList.add("bg-green-600","text-white");
 
-        document.querySelectorAll(".tab-content").forEach(t => t.classList.add("hidden"));
-        document.getElementById(tab).classList.remove("hidden");
+        // Hide all tab contents
+        document.querySelectorAll(".tab-content").forEach(t => {
+            t.classList.add("hidden");
+            t.classList.remove("block"); // ensure proper display reset
+        });
+
+        // Show the selected tab
+        const activeTab = document.getElementById(tab);
+        activeTab.classList.remove("hidden");
+        activeTab.classList.add("block"); // explicitly set display
     });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const firstTab = document.getElementById("tab1");
+    firstTab.classList.remove("hidden");
+    firstTab.classList.add("block");
 });
 
 

@@ -66,7 +66,6 @@
                           </a>
                       </div>
 
-                      <p class="text-gray-700 mb-6">{{ product.description }}</p>
                       <p class="text-3xl font-semibold text-green-600 mb-6">
                           Ksh. {{ product.price|intcomma }}
                       </p>
@@ -123,11 +122,12 @@
               <!-- VENDOR CARD (Half height, smaller) -->
               <div class="bg-green-50 shadow-md rounded-xl p-6 border border-green-200 h-2/3 space-y-12">
                   <h3 class="text-lg font-semibold text-green-700 mb-3">Vendor Information</h3>
+                  
                   <div class="flex items-center gap-4 mb-4">
                       {% if product.vendor.logo %}
                           <img src="{{ product.vendor.logo.url }}" class="w-24 h-24 object-contain rounded-full border border-green-300">
                       {% else %}
-                          <div class="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-green-600 font-bold">
+                          <div class="w-24 h-24 text-3xl bg-green-200 rounded-full flex items-center justify-center text-green-600 font-bold">
                               {{ product.vendor.shop_name|slice:":1"|upper }}
                           </div>
                       {% endif %}
@@ -146,9 +146,19 @@
 
       </div>
 
+      <div class="bg-white shadow-lg rounded-2xl p-6 mt-8">
+        <h3 class="text-xl font-semibold text-green-700">Product Description</h3>
+        <div class="divider divider-success mt-0"></div>
+        <p class="text-gray-700">
+            {{ product.description }}
+        </p>
+      </div>
+
+
       <!-- SIMILAR PRODUCTS SECTION -->
-      <div class="mt-10">
-          <h2 class="text-2xl font-bold text-green-600 mb-4">More Products From {{ product.vendor.shop_name }}</h2>
+      <div class="mt-8 bg-yellow-50 shadow-lg rounded-2xl p-6">
+          <h2 class="text-xl font-semibold text-yellow-600">More Products From {{ product.vendor.shop_name }}</h2>
+          <div class="divider divider-warning mt-0"></div>
 
           {% include "shop/product_grid.html" with products=similar_products %}
       </div>

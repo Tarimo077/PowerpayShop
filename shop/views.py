@@ -500,6 +500,9 @@ def checkout(request):
         payment_form = PaymentForm()
 
     items = cart.items.all()
+    print("FORM:", form)
+    print("PAYMENT FORM:", payment_form)
+
 
     return render(request, "shop/checkout.html", {
         "form": form,

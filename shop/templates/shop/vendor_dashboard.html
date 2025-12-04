@@ -31,16 +31,16 @@
     </div>
 
     <!-- Filters -->
-    <form method="GET" class="flex flex-col md:flex-row gap-4 mb-8 items-center">
+    <form method="GET" class="mb-4 flex flex-wrap items-center gap-3">
         <input type="text" name="search" placeholder="Search products..."
                value="{{ request.GET.search|default:'' }}"
                class="input input-bordered w-full md:w-64 rounded-lg focus:border-green-500 focus:outline-0">
         <input type="number" name="min_price" placeholder="Min Price"
                value="{{ request.GET.min_price|default:'' }}"
-               class="input input-bordered w-full md:w-28 rounded-lg focus:border-green-500 focus:outline-0">
+               class="input input-bordered w-full md:w-32 rounded-lg focus:border-green-500 focus:outline-0">
         <input type="number" name="max_price" placeholder="Max Price"
                value="{{ request.GET.max_price|default:'' }}"
-               class="input input-bordered w-full md:w-28 rounded-lg focus:border-green-500 focus:outline-0">
+               class="input input-bordered w-full md:w-32 rounded-lg focus:border-green-500 focus:outline-0">
 
         <button type="submit" class="btn bg-green-500 text-white px-2 py-2 rounded-lg hover:bg-green-700">
             <i class="fa-solid fa-filter m-1"></i> Apply

@@ -4,136 +4,129 @@
 {% load static %}
 
 <div class="grid min-h-screen"
-     style="grid-template-rows: auto 1fr auto;">  <!-- fallback if arbitrary grid rows are not enabled -->
+     style="grid-template-rows: auto 1fr auto;">  
 
-  <!-- Header -->
   {% include 'shop/navbar.html' %}
 
-    <div class="max-w-6xl mx-auto p-6 mt-4 mb-4">
+  <div class="max-w-6xl mx-auto p-4 sm:p-6 mt-4 mb-4">
 
-        <h2 class="text-3xl font-bold text-green-700 mb-8">Your Cart</h2>
+    <h2 class="text-2xl sm:text-3xl font-bold text-green-700 mb-6 sm:mb-8">
+        Your Cart
+    </h2>
 
-        {% if cart.items.all %}
+    {% if cart.items.all %}
 
-        <div class="overflow-x-auto">
-            <table class="min-w-full table-auto border-collapse rounded-lg overflow-hidden shadow-lg bg-white mb-6">
+    <!-- ⭐ ALL-IN-ONE BIG CARD ⭐ -->
+    <div class="bg-white p-4 sm:p-8 rounded-2xl shadow-lg border border-green-100">
 
-                <thead class="bg-green-600 text-white">
-                    <tr>
-                        <th class="px-4 py-3 text-left">Image</th>
-                        <th class="px-4 py-3 text-left">Product</th>
-                        <th class="px-4 py-3 text-left">Vendor</th>
-                        <th class="px-4 py-3 text-left">Quantity</th>
-                        <th class="px-4 py-3 text-left">Unit Price</th>
-                        <th class="px-4 py-3 text-left">Total</th>
-                        <th class="px-4 py-3 text-left">Actions</th>
-                    </tr>
-                </thead>
+        <!-- PRODUCT CARDS INSIDE -->
+        <div class="grid gap-4">
 
-                <tbody>
-                    {% for item in cart.items.all %}
-                    <tr id="row-{{ item.id }}" class="border-b hover:bg-gray-50 transition">
+            {% for item in cart.items.all %}
+            <div id="row-{{ item.id }}" class="p-4">
 
-                        <!-- image -->
-                        <td class="px-4 py-3">
-                            {% if item.product.image %}
-                            <img src="{{ item.product.image.url }}" class="w-16 h-16 object-contain rounded">
-                            {% else %}
-                            <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-500">
-                                No Image
-                            </div>
-                            {% endif %}
-                        </td>
+                <div class="flex gap-4">
 
-                        <!-- name -->
-                        <td class="px-4 py-3 font-semibold text-gray-700">
-                            {{ item.product.name }}
-                        </td>
+                    <!-- IMAGE -->
+                    {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" class="w-24 h-24 object-contain rounded-lg p-1 border border-green-500">
+                    {% else %}
+                    <div class="w-20 h-20 bg-gray-200 rounded flex items-center justify-center text-gray-500">
+                        No Image
+                    </div>
+                    {% endif %}
 
-                        <!-- vendor -->
-                        <td class="px-4 py-3 text-gray-600">
-                            {{ item.product.vendor.shop_name|default:item.product.vendor.user }}
-                        </td>
+                    <!-- MAIN DETAILS -->
+                    <div class="flex-1">
 
-                        <!-- qty with AJAX buttons -->
-                        <td class="px-4 py-3">
-                            <div class="flex items-center gap-2">
+                        <p class="font-bold text-gray-800 text-lg">{{ item.product.name }}</p>
 
-                                <button onclick="changeQty('{{ item.id }}', -1)"
-                                    class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">−</button>
+                        <p class="text-gray-600 text-sm">
+                            Vendor: {{ item.product.vendor.shop_name|default:item.product.vendor.user }}
+                        </p>
 
-                                <input id="qty-{{ item.id }}" 
-                                    type="number" min="1"
-                                    value="{{ item.quantity }}"
-                                    class="w-16 text-center border rounded"
-                                    onchange="directQtyChange('{{ item.id }}')">
+                        <p class="mt-1 text-green-600 font-bold">
+                            Unit: Ksh. {{ item.product.price|intcomma }}
+                        </p>
 
-                                <button onclick="changeQty('{{ item.id }}', 1)"
-                                    class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">+</button>
+                        <p id="item-total-{{ item.id }}" class="text-green-700 font-bold mt-1">
+                            Total: Ksh. {{ item.total_price|intcomma }}
+                        </p>
 
-                            </div>
-                        </td>
+                    </div>
+                </div>
 
-                        <!-- price -->
-                        <td class="px-4 py-3 text-green-600 font-bold">
-                            Ksh. {{ item.product.price|intcomma }}
-                        </td>
+                <!-- QTY + ACTIONS -->
+                <div class="flex justify-between items-center mt-4">
 
-                        <!-- total -->
-                        <td id="item-total-{{ item.id }}" class="px-4 py-3 text-green-700 font-bold">
-                            Ksh. {{ item.total_price|intcomma }}
-                        </td>
+                    <div class="flex items-center gap-2">
 
-                        <!-- actions -->
-                        <td class="px-4 py-3 sm:w-20">
-                            <a href="{% url 'remove_from_cart' item.id %}"
-                            class="flex items-center justify-center gap-1 w-full bg-red-600 text-white py-2 px-2 rounded-lg hover:bg-red-700 transition">
-                                <i class="fa-solid fa-trash"></i>
-                                <span class="hidden sm:inline">Remove</span>
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
+                        <button onclick="changeQty('{{ item.id }}', -1)"
+                            class="px-3 bg-green-600 text-white rounded hover:bg-green-700">
+                            -
+                        </button>
 
-            </table>
-        </div>
+                        <input id="qty-{{ item.id }}" 
+                            type="number" min="1"
+                            value="{{ item.quantity }}"
+                            class="w-14 text-center border rounded">
 
-        <!-- TOTAL + CHECKOUT -->
-        <div class="mt-10 flex justify-end mb-8">
-            <div class="bg-white p-5 rounded-xl shadow-md w-72 border border-green-100">
+                        <button onclick="changeQty('{{ item.id }}', 1)"
+                            class="px-3 bg-green-600 text-white rounded hover:bg-green-700">
+                            +
+                        </button>
 
-                <h3 class="text-lg font-semibold text-gray-700">Cart Total:</h3>
+                    </div>
 
-                <p id="cart-total" class="text-2xl font-bold text-green-600 mt-2 mb-4">
-                    Ksh. {{ cart.total_price|intcomma }}
-                </p>
+                    <a href="{% url 'remove_from_cart' item.id %}"
+                    class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 text-sm">
+                        <i class="fa-solid fa-trash"></i> Remove
+                    </a>
 
-                <a href="{% url 'checkout' %}"
-                class="btn w-full mt-4 bg-gradient-to-r from-green-600 to-orange-500 text-white rounded-lg p-2">
-                Proceed to Checkout
-                </a>
+                </div>
 
             </div>
+            {% endfor %}
         </div>
 
-        {% else %}
+        <!-- TOTAL + CHECKOUT INSIDE SAME CARD -->
+        <div class="mt-10 border-t border-green-500 pt-6">
 
-        <p class="text-gray-600 text-2xl text-center mt-14">Your cart is empty.</p>
+            <h3 class="text-lg font-semibold text-gray-700">Cart Total:</h3>
 
-        <div class="text-center mt-24 mb-16">
-            <a href="{% url 'index' %}" class="btn bg-green-600 text-white rounded-full px-6 py-2">
-                Continue Shopping
+            <p id="cart-total"
+               class="text-2xl text-end sm:text-3xl font-bold text-green-600 mt-2 mb-4">
+                Ksh. {{ cart.total_price|intcomma }}
+            </p>
+
+            <a href="{% url 'checkout' %}"
+               class="btn w-full bg-gradient-to-r from-green-600 to-orange-500 text-white rounded-xl p-3 text-lg">
+               Proceed to Checkout
             </a>
+
         </div>
-
-
-        {% endif %}
 
     </div>
-{% include 'footer.html' %}
+    <!-- END BIG CARD -->
+
+    {% else %}
+
+    <p class="text-gray-600 text-xl sm:text-2xl text-center mt-14">Your cart is empty.</p>
+
+    <div class="text-center mt-16 mb-20">
+        <a href="{% url 'index' %}"
+           class="btn bg-green-600 text-white rounded-full px-6 py-2">
+            Continue Shopping
+        </a>
+    </div>
+
+    {% endif %}
+
+  </div>
+
+  {% include 'footer.html' %}
 </div>
-<!-- AJAX Script -->
+
 <script>
 function formatCurrency(num) {
     return "Ksh. " + Number(num).toLocaleString("en-KE", {
@@ -146,7 +139,6 @@ function changeQty(itemId, delta) {
     const input = document.getElementById(`qty-${itemId}`);
     let newQty = parseInt(input.value) + delta;
     if (newQty < 1) newQty = 1;
-
     input.value = newQty;
     sendQtyUpdate(itemId, newQty);
 }
@@ -154,10 +146,8 @@ function changeQty(itemId, delta) {
 function directQtyChange(itemId) {
     const input = document.getElementById(`qty-${itemId}`);
     let newQty = parseInt(input.value);
-
     if (newQty < 1) newQty = 1;
     input.value = newQty;
-
     sendQtyUpdate(itemId, newQty);
 }
 
@@ -174,11 +164,9 @@ function sendQtyUpdate(itemId, newQty) {
     })
     .then(res => res.json())
     .then(data => {
-        // Update item row total with formatted currency
         document.getElementById(`item-total-${itemId}`).innerText =
             formatCurrency(data.item_total);
 
-        // Update cart total
         document.getElementById("cart-total").innerText =
             formatCurrency(data.cart_total);
     })
