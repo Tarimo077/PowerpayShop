@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="grid min-h-screen" style="grid-template-rows: auto 1fr auto;">
+    
+    {% include 'shop/navbar.html' %}
+
+
+<div class="max-w-3xl mx-auto bg-white shadow-lg rounded-xl p-6 mt-10 mb-8">
+
+    <h2 class="text-2xl font-bold text-green-600 mb-4">
+        <i class="fa-solid fa-ticket mr-2"></i>Ticket #{{ ticket.id }}
+    </h2>
+
+    <div class="space-y-4 rounded-lg p-4 bg-green-50">
+        <p><strong>User:</strong> {{ ticket.user.username }}</p>
+        <p><strong>Subject:</strong> {{ ticket.get_subject_display }}</p>
+        <p><strong>Description:</strong> {{ ticket.description }}</p>
+        <p><strong>Priority:</strong> <span class="
+            {% if ticket.priority == 'low' %} text-green-600
+            {% elif ticket.priority == 'medium' %} text-yellow-600
+            {% else %} text-red-600 {% endif %}
+            font-semibold">{{ ticket.get_priority_display }}</span></p>
+        <p><strong>Status:</strong> <span class="px-3 py-1 text-white rounded-md text-sm font-semibold
+                                    {% if ticket.status == 'open' %} bg-yellow-500
+                                    {% elif ticket.status == 'in_progress' %} bg-blue-500
+                                    {% else %} bg-green-600 {% endif %}">
+                                    {{ ticket.get_status_display }}
+                                </span></p>
+        <p><strong>Created:</strong> {{ ticket.created_at }}</p>
+    </div>
+
+    <form method="POST" class="mt-6 flex flex-col gap-4">
+        {% csrf_token %}
+
+        <label class="font-semibold">Reply to User:</label>
+        <textarea name="reply" class="border rounded-lg p-3 w-full h-32">{{ ticket.reply }}</textarea>
+
+        <label class="font-semibold">Update Status:</label>
+        <select name="status" class="border rounded-lg p-3">
+            {% for key, value in ticket.STATUS_CHOICES %}
+                <option value="{{ key }}" {% if ticket.status == key %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
+            Save Changes
+        </button>
+    </form>
+</div>
+
+{% include 'footer.html' %}
+{% endblock %}
