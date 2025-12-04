@@ -218,6 +218,7 @@
                     </div>
                     {% if review.review %}
                     <p class="text-gray-700 ml-4">{{ review.review }}</p>
+                    <p class="text-gray-700 text-end text-xs">{{ review.created_at|naturalday }}</p>
                     {% endif %}
                 </div>
                 {% empty %}

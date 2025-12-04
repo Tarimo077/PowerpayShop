@@ -41,5 +41,7 @@ class CheckoutOrderAdmin(admin.ModelAdmin):
 
 @admin.register(ProductRating)
 class ProductRatingAdmin(admin.ModelAdmin):
-    list_display = ('product', 'user', 'rating', 'created_at')
+    list_display = ('product', 'user', 'rating', 'review', 'created_at')
     ordering = ('-created_at',)
+    list_filter = ('rating', 'created_at', 'product')  # optional, for easier filtering
+    search_fields = ('product__name', 'user__username', 'review')  # optional, for easier search
