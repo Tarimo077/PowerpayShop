@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Product, Sale, Cart, CartItem, CheckoutOrder, ProductRating, Wishlist, ProductGallery
 from django.contrib import messages
 from .forms import ProductForm, CheckoutForm, PaymentForm, RatingForm, GalleryForm
-from django.db.models import Sum, Avg, Count
+from django.db.models import Sum, Avg, Count, Q
 from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponse
 import requests
@@ -68,6 +68,25 @@ def index_page(request):
     
     return render(request, "shop/index.html", context)
 
+def product_search(request):
+    query = request.GET.get("q", "")
+
+    products = Product.objects.filter(
+        Q(name__icontains=query) | 
+        Q(vendor__shop_name__icontains=query)
+    ) if query else []
+
+    # If HTMX request → return partial
+    if request.headers.get("HX-Request"):
+        return render(request, "shop/search_results.html", {"products": products})
+
+    # Standard full-page view
+    return render(request, "shop/product_search.html", {
+        "query": query,
+        "products": products,
+        
+        "is_authenticated": request.user.is_authenticated,
+    })
 
 def vendor_dashboard(request):
     """Vendor-only view"""

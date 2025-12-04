@@ -127,6 +127,13 @@ document.addEventListener('click', function(event){
     }
 });
 </script>
+<script>
+document.body.addEventListener('htmx:afterSwap', (event) => {
+    if (event.target.id === "search-results") {
+        document.getElementById("search-results").classList.remove("hidden");
+    }
+});
+</script>
 <style>
   body {
     font-family: "Saira";
