@@ -33,7 +33,7 @@
                 <strong>Status:</strong>
                 <span class="px-3 py-1 text-white rounded-md text-sm font-semibold
                     {% if ticket.status == 'open' %} bg-yellow-500
-                    {% elif ticket.status == 'processing' %} bg-blue-600
+                    {% elif ticket.status == 'in_progress' %} bg-blue-600
                     {% else %} bg-green-600 {% endif %}">
                     {{ ticket.get_status_display }}
                 </span>
