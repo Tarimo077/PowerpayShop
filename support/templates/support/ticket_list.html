@@ -27,6 +27,7 @@
                             <th class="px-6 py-4 text-left text-lg">Status</th>
                             <th class="px-6 py-4 text-left text-lg">Priority</th>
                             <th class="px-6 py-4 text-left text-lg">Created</th>
+                            <th class="px-6 py-4 text-left text-lg">Actions</th>
                         </tr>
                     </thead>
 
@@ -57,6 +58,12 @@
 
                             <td class="px-6 py-4 text-gray-500">
                                 {{ ticket.created_at|date:"M d, Y H:i" }}
+                            </td>
+
+                            <td class="px-6 py-4">
+                                <a href="{% url 'ticket_detail' ticket.id %}" class="btn rounded-lg text-white text-sm bg-blue-500 p-2">
+                                    Details
+                                </a>
                             </td>
 
                         </tr>

@@ -36,3 +36,16 @@ class Ticket(models.Model):
 
     def __str__(self):
         return f"[{self.status}] {self.subject}"
+
+
+class TicketMessage(models.Model):
+    ticket = models.ForeignKey(Ticket, related_name="messages", on_delete=models.CASCADE)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ("created_at",)
+
+    def __str__(self):
+        return f"Message on Ticket #{self.ticket.id}"
