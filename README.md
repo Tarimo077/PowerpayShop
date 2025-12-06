@@ -55,6 +55,8 @@ This project integrates:
 
 ## 📁 Project Structure
 
+```
+
 project_root/
 │
 ├── accounts/
@@ -94,7 +96,7 @@ project_root/
 │
 ├── manage.py
 
-
+```
 ---
 
 ## 🛠️ Installation and Setup
@@ -109,8 +111,8 @@ project_root/
 1.  **Clone the Repository:**
 
     ```bash
-    git clone [Your Repository URL]
-    cd POWERPAYSHOP
+    git clone https://github.com/Tarimo077/PowerpayShop.git
+    cd PowerpayShop
     ```
 
 2.  **Create and Activate Virtual Environment:**
@@ -158,3 +160,25 @@ project_root/
 
 ---
 
+## 🧪 Testing
+
+```bash
+python manage.py test
+```
+
+---
+
+## 📤 Deployment Tips
+
+- Use `gunicorn` or `daphne` with `pm2` or `supervisor`
+- Configure `nginx` as reverse proxy
+- Run `collectstatic`
+- Set `DEBUG = False` and add allowed hosts
+
+---
+
+## 🙋 Contact
+
+If you have any questions, please open an issue or contact:
+
+- **Jeff Tarimo** — [GitHub](https://github.com/Tarimo077) | [Email](mailto:tarimojeff@gmail.com)
