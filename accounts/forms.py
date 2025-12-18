@@ -112,24 +112,61 @@ class RegistrationForm(UserCreationForm):
 # ======================
 # USER & VENDOR PROFILE FORMS
 # ======================
-
 class UserProfileForm(forms.ModelForm):
-    username = forms.CharField(widget=forms.TextInput(attrs={
-        "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
-    }))
-    email = forms.EmailField(widget=forms.EmailInput(attrs={
-        "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
-    }))
-    first_name = forms.CharField(required=False, widget=forms.TextInput(attrs={
-        "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
-    }))
-    last_name = forms.CharField(required=False, widget=forms.TextInput(attrs={
-        "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
-    }))
+
+    username = forms.CharField(
+        widget=forms.TextInput(attrs={
+            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
+        })
+    )
+
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
+        })
+    )
+
+    first_name = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
+        })
+    )
+
+    last_name = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
+        })
+    )
+
+    require_otp = forms.BooleanField(
+        required=False,
+        label="Enable Two-Factor Authentication (OTP)",
+        widget=forms.CheckboxInput(attrs={
+            "class": "toggle ",
+        })
+    )
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name']
+        fields = [
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'require_otp',
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        user = self.instance
+
+        # Vendors & Admins → OTP locked ON
+        if user.is_vendor or user.is_staff or user.is_superuser:
+            self.fields['require_otp'].disabled = True
+            self.fields['require_otp'].help_text = "OTP is mandatory for vendors and admins."
 
 
 class VendorProfileForm(forms.ModelForm):

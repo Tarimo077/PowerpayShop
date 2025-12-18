@@ -11,8 +11,9 @@ class VendorInline(admin.StackedInline):
 
 class CustomUserAdmin(BaseUserAdmin):
     model = User
-    list_display = ('username', 'email', 'is_vendor', 'is_vendor_approved', 'is_staff', 'is_active')
+    list_display = ('username', 'email', 'is_vendor', 'is_vendor_approved', 'is_staff', 'is_active', 'require_otp')
     list_filter = ('is_vendor', 'is_vendor_approved', 'is_staff', 'is_active')
+    list_editable = ("require_otp",)
     
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),

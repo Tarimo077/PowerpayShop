@@ -48,6 +48,20 @@
                     {{ user_form.email.errors }}
                 </div>
 
+                <div class="flex items-center justify-between">
+                    <label>
+                        Enable Two-Factor Authentication (OTP)
+                    </label>
+
+                    {{ user_form.require_otp }}
+                </div>
+
+                {% if user_form.require_otp.help_text %}
+                    <p class="text-sm italic text-red-400 mb-4">
+                        {{ user_form.require_otp.help_text }}
+                    </p>
+                {% endif %}
+
                 <button type="submit"
                         class="btn bg-green-600 text-white rounded-lg py-2 px-4 hover:bg-green-700 transition">
                     <i class="fa-solid fa-floppy-disk m-1"></i>Update User Info

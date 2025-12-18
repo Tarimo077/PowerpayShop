@@ -21,7 +21,6 @@ from django.db.models import Q
 
 MAX_ATTEMPTS = 5
 
-
 def login_view(request):
     if request.method == "POST":
         form = LoginForm(request.POST)
@@ -33,20 +32,24 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
 
             if user:
-                EmailOTP.objects.filter(user=user).delete()  # remove old OTPs
-                # Generate OTP
-                otp = str(random.randint(100000, 999999))
+                # ✅ OTP NOT REQUIRED → Login immediately
+                if not user.require_otp:
+                    login(request, user)
+                    messages.success(request, "Login successful.")
+                    return redirect("dashboard")  # change as needed
 
-                # Save OTP
+                # 🔐 OTP REQUIRED
+                EmailOTP.objects.filter(user=user).delete()
+
+                otp = str(random.randint(100000, 999999))
                 EmailOTP.objects.create(user=user, otp=otp)
 
                 send_otp_email(user, otp)
                 messages.success(request, "An OTP has been sent to your email.")
 
-                # Store user temporarily in session
                 request.session["otp_user_id"] = user.id
-
                 return redirect("verify_otp")
+
             else:
                 messages.error(request, "Invalid username or password")
     else:
