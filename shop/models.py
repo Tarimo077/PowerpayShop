@@ -3,6 +3,7 @@ from accounts.models import Vendor, User
 from django.conf import settings
 from multiselectfield import MultiSelectField
 from django.core.validators import MaxValueValidator
+from django.utils import timezone
 
 class Product(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name="products")
@@ -51,6 +52,48 @@ class ProductRating(models.Model):
 
     def __str__(self):
         return f"{self.product.name} - {self.rating} stars"
+
+
+class PromoCode(models.Model):
+    DISCOUNT_TYPE_CHOICES = (
+        ('percentage', 'Percentage'),
+        ('fixed', 'Fixed Amount'),
+    )
+
+    vendor = models.ForeignKey(
+        Vendor, 
+        on_delete=models.CASCADE, 
+        related_name='promo_codes'
+    )
+
+    code = models.CharField(max_length=20, unique=True)
+    discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPE_CHOICES)
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2)
+
+    products = models.ManyToManyField(Product, blank=True, related_name='promo_codes')
+
+    is_active = models.BooleanField(default=True)
+    usage_limit = models.PositiveIntegerField(null=True, blank=True)
+    used_count = models.PositiveIntegerField(default=0)
+
+    valid_from = models.DateTimeField(default=timezone.now)
+    valid_to = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_valid(self):
+        now = timezone.now()
+        if not self.is_active:
+            return False
+        if self.valid_to and now > self.valid_to:
+            return False
+        if self.usage_limit and self.used_count >= self.usage_limit:
+            return False
+        return True
+
+    def __str__(self):
+        return f"{self.code} ({self.vendor.shop_name})"
+
 
 class Wishlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

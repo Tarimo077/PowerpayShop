@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Product, Sale, Cart, CartItem, CheckoutOrder, ProductRating, Wishlist, ProductGallery
+from .models import Product, PromoCode, Sale, Cart, CartItem, CheckoutOrder, ProductRating, Wishlist, ProductGallery
 from django.contrib import messages
-from .forms import ProductForm, CheckoutForm, PaymentForm, RatingForm, GalleryForm
+from .forms import ProductForm, CheckoutForm, PaymentForm, RatingForm, GalleryForm, PromoCodeForm
 from django.db.models import Sum, Avg, Count, Q
 from django.core.paginator import Paginator
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 import requests
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
@@ -16,6 +16,7 @@ import json
 from accounts.models import Vendor
 from django.views.decorators.http import require_http_methods
 from notifications.utils import notify
+from django.urls import reverse
 
 
 def index_page(request):
@@ -88,15 +89,18 @@ def product_search(request):
         "is_authenticated": request.user.is_authenticated,
     })
 
+
 def vendor_dashboard(request):
     """Vendor-only view"""
     user = request.user
     if not (user.is_authenticated and user.is_vendor and user.is_vendor_approved and hasattr(user, "vendor")):
-        return redirect("index") # Redirect non-vendors
-    vendor_instance = request.user.vendor
-    products = Product.objects.filter(vendor=vendor_instance)
+        return redirect("index")  # Redirect non-vendors
 
-    # Filters
+    vendor_instance = user.vendor
+    products = Product.objects.filter(vendor=vendor_instance)
+    promo_codes = PromoCode.objects.filter(vendor=vendor_instance)
+
+    # Filters for products
     search = request.GET.get("search")
     min_price = request.GET.get("min_price")
     max_price = request.GET.get("max_price")
@@ -107,7 +111,6 @@ def vendor_dashboard(request):
         products = products.filter(price__gte=min_price)
     if max_price:
         products = products.filter(price__lte=max_price)
-    
 
     # Stats
     product_count = products.count()
@@ -125,12 +128,14 @@ def vendor_dashboard(request):
 
     return render(request, "shop/vendor_dashboard.html", {
         "products": page_obj,
+        "promo_codes": promo_codes,
         "product_count": product_count,
         "total_sales": total_sales,
         "total_revenue": total_revenue,
         "is_authenticated": True,
         "per_page": int(per_page),
     })
+
 
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
@@ -488,6 +493,54 @@ def wishlist(request):
         'wishlist_items': wishlist_items  # optional for hearts
     }
     return render(request, 'shop/wishlist.html', context)
+
+@login_required
+def create_promo_code(request):
+    if not request.user.is_vendor or not request.user.is_vendor_approved:
+        return HttpResponseForbidden()
+
+    vendor = request.user.vendor
+
+    if request.method == "POST":
+        form = PromoCodeForm(request.POST, vendor=vendor)
+        if form.is_valid():
+            promo = form.save(commit=False)
+            promo.vendor = vendor
+            promo.save()
+            form.save_m2m()
+            messages.success(request, "Promo code created successfully!")
+            # Redirect to dashboard with #promotions fragment
+            return redirect(reverse("vendor_dashboard") + "#promotions")
+    else:
+        form = PromoCodeForm(vendor=vendor)
+
+    return render(request, "shop/vendor_promo_form.html", {"form": form})
+
+@login_required
+def edit_promo(request, promo_id):
+    vendor = request.user.vendor
+    promo = get_object_or_404(PromoCode, id=promo_id, vendor=vendor)
+    
+    if request.method == "POST":
+        # Added vendor=vendor here so the product list stays filtered during edit
+        form = PromoCodeForm(request.POST, instance=promo, vendor=vendor)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Promo code updated!")
+            return redirect(reverse("vendor_dashboard") + "#promotions")
+    else:
+        form = PromoCodeForm(instance=promo, vendor=vendor)
+        
+    return render(request, "shop/vendor_promo_form.html", {"form": form, "edit": True, "promo": promo})
+
+@login_required
+def delete_promo(request, promo_id):
+    promo = get_object_or_404(PromoCode, id=promo_id, vendor=request.user.vendor)
+    if request.method == "POST":
+        promo.delete()
+        messages.success(request, "Promo code deleted.")
+        return redirect(reverse("vendor_dashboard") + "#promotions")
+    return render(request, "shop/vendor_promo_confirm_delete.html", {"promo": promo})
 
 @login_required
 def checkout(request):

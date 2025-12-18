@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="grid min-h-screen" style="grid-template-rows: auto 1fr auto;">
+  {% include 'shop/navbar.html' %}
+
+  <div class="max-w-2xl mx-auto mt-10 mb-8">
+    <div class="card bg-white shadow-lg rounded-xl p-6">
+      <h2 class="text-2xl font-bold text-green-600 mb-6">
+        {% if promo %}Edit Promo Code{% else %}Create Promo Code{% endif %}
+      </h2>
+
+      <form method="POST">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="mb-4">
+          {{ form.code.label_tag }}
+          {{ form.code }}
+          {{ form.code.errors }}
+        </div>
+
+        <div class="mb-4">
+          {{ form.discount_type.label_tag }}
+          {{ form.discount_type }}
+          {{ form.discount_type.errors }}
+        </div>
+
+        <div class="mb-4">
+          {{ form.discount_value.label_tag }}
+          {{ form.discount_value }}
+          {{ form.discount_value.errors }}
+        </div>
+
+        <div class="mb-4">
+          {{ form.products.label_tag }}
+          {{ form.products }}
+          {{ form.products.errors }}
+        </div>
+
+        <div class="mb-4">
+          {{ form.valid_from.label_tag }}
+          {{ form.valid_from }}
+          {{ form.valid_from.errors }}
+        </div>
+
+        <div class="mb-4">
+          {{ form.valid_to.label_tag }}
+          {{ form.valid_to }}
+          {{ form.valid_to.errors }}
+        </div>
+
+        <div class="mb-4">
+          {{ form.usage_limit.label_tag }}
+          {{ form.usage_limit }}
+          {{ form.usage_limit.errors }}
+        </div>
+
+        <div class="mb-4">
+          {{ form.is_active.label_tag }}
+          {{ form.is_active }}
+          {{ form.is_active.errors }}
+        </div>
+
+        <button type="submit" class="btn bg-green-600 text-white rounded-lg py-2 px-4 hover:bg-green-700 transition">
+          {% if promo %}Update Promo{% else %}Create Promo{% endif %}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {% include 'footer.html' %}
+</div>
+{% endblock %}

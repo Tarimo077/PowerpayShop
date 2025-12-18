@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product, CheckoutOrder, ProductRating, ProductGallery
+from .models import Product, PromoCode, CheckoutOrder, ProductRating, ProductGallery
 
 class ProductForm(forms.ModelForm):
     class Meta:
@@ -27,6 +27,29 @@ class ProductForm(forms.ModelForm):
                 'class': 'file-input mt-2 w-full'
             }),
         }
+
+class PromoCodeForm(forms.ModelForm):
+    class Meta:
+        model = PromoCode
+        fields = ["code", "discount_type", "discount_value", "products", "valid_from", "valid_to", "usage_limit", "is_active"]
+        
+        # Adding 'class' attributes to widgets for alignment and styling
+        widgets = {
+            "code": forms.TextInput(attrs={'class': 'w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500'}),
+            "discount_type": forms.Select(attrs={'class': 'w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500'}),
+            "discount_value": forms.NumberInput(attrs={'class': 'w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500'}),
+            "products": forms.CheckboxSelectMultiple(attrs={'class': 'rounded border-gray-300 ml-2 focus:ring-green-500'}),
+            "valid_from": forms.DateTimeInput(attrs={"type": "datetime-local", 'class': 'w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500'}),
+            "valid_to": forms.DateTimeInput(attrs={"type": "datetime-local", 'class': 'w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500'}),
+            "usage_limit": forms.NumberInput(attrs={'class': 'w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500'}),
+            "is_active": forms.CheckboxInput(attrs={'class': 'rounded border-gray-300 text-green-600 focus:ring-green-500'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        vendor = kwargs.pop('vendor', None)
+        super(PromoCodeForm, self).__init__(*args, **kwargs)
+        if vendor:
+            self.fields['products'].queryset = self.fields['products'].queryset.filter(vendor=vendor)
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
