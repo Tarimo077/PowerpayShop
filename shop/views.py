@@ -373,22 +373,38 @@ def remove_from_cart(request, item_id):
 @login_required
 def update_cart_quantity(request, item_id):
     if request.method == "POST":
-        new_qty = int(request.POST.get("quantity"))
+        new_qty = int(request.POST.get("quantity", 1))
         item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
-
-        if new_qty < 1:
-            new_qty = 1
-
-        item.quantity = new_qty
+        item.quantity = max(1, new_qty)
         item.save()
 
         cart = item.cart
+        subtotal = cart.total_price()
+        discount = 0
+        
+        promo_code = request.POST.get('promo_code')
+        if promo_code:
+            try:
+                promo = PromoCode.objects.get(code__iexact=promo_code, is_active=True)
+                if promo.is_valid():
+                    # Recalculate discount ONLY for the specific product linked to the promo
+                    applicable_item = cart.items.filter(product=promo.product).first()
+                    if applicable_item:
+                        item_total = applicable_item.total_price()
+                        if promo.discount_type == 'percentage':
+                            discount = (promo.discount_value / 100) * item_total
+                        else:
+                            discount = promo.discount_value
+            except PromoCode.DoesNotExist:
+                pass
 
         return JsonResponse({
-            "item_total": item.total_price(),     # call the method
-            "cart_total": cart.total_price()      # call the method
+            "item_total": item.total_price(),
+            "cart_total": subtotal,
+            "discount_amount": float(discount),
+            "new_total": float(max(0, subtotal - discount))
         })
-
+    
 
 @login_required
 def wishlist_page(request):
@@ -494,6 +510,55 @@ def wishlist(request):
     }
     return render(request, 'shop/wishlist.html', context)
 
+
+@login_required
+def apply_promo(request):
+    if request.method == "POST":
+        code_text = request.POST.get('code', '').strip()
+        try:
+            cart = Cart.objects.get(user=request.user)
+            promo = PromoCode.objects.get(code__iexact=code_text, is_active=True)
+
+            if not promo.is_valid():
+                return JsonResponse({'success': False, 'message': 'Code is expired or inactive'})
+
+            cart_items = cart.items.all()
+            discount = 0
+            applicable_products = promo.products.all()
+            found_applicable_product = False
+
+            for item in cart_items:
+                # If no products are selected in M2M, it applies to everything
+                # OR if the specific item product is in the allowed list
+                if not applicable_products.exists() or item.product in applicable_products:
+                    found_applicable_product = True
+                    item_total = item.total_price()
+                    
+                    if promo.discount_type == 'percentage':
+                        discount += (promo.discount_value / 100) * item_total
+                    else:
+                        # Fixed discount usually applies once per qualifying product type
+                        discount += promo.discount_value
+
+            if not found_applicable_product:
+                return JsonResponse({
+                    'success': False, 
+                    'message': 'This code does not apply to any items in your cart.'
+                })
+
+            subtotal = cart.total_price()
+            request.session['applied_promo'] = promo.code
+
+            return JsonResponse({
+                'success': True,
+                'subtotal': float(subtotal),
+                'discount_amount': float(discount),
+                'new_total': float(max(0, subtotal - discount))
+            })
+
+        except PromoCode.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Invalid promo code'})
+
 @login_required
 def create_promo_code(request):
     if not request.user.is_vendor or not request.user.is_vendor_approved:
@@ -542,71 +607,110 @@ def delete_promo(request, promo_id):
         return redirect(reverse("vendor_dashboard") + "#promotions")
     return render(request, "shop/vendor_promo_confirm_delete.html", {"promo": promo})
 
+
 @login_required
 def checkout(request):
-    # get cart
     try:
         cart = Cart.objects.get(user=request.user)
     except Cart.DoesNotExist:
         messages.error(request, "Cart is empty.")
         return redirect("index")
 
-    cart_total = cart.total_price()
+    # 1. Handle Promo Calculation for Display and Processing
+    subtotal = cart.total_price()
+    discount = 0
+    promo_code_str = request.session.get('applied_promo')
+    promo_obj = None
+
+    if promo_code_str:
+        try:
+            from .models import PromoCode 
+            promo_obj = PromoCode.objects.get(code__iexact=promo_code_str, is_active=True)
+            
+            if promo_obj.is_valid():
+                # Get all products linked to this promo
+                applicable_products = promo_obj.products.all()
+                
+                # If products are specified, only discount those specific items
+                if applicable_products.exists():
+                    found_any = False
+                    for item in cart.items.all():
+                        if item.product in applicable_products:
+                            found_any = True
+                            item_total = item.total_price()
+                            if promo_obj.discount_type == 'percentage':
+                                discount += (promo_obj.discount_value / 100) * item_total
+                            else:
+                                # For fixed amount on M2M, usually applied once per qualifying product
+                                discount += promo_obj.discount_value
+                    
+                    # If none of the qualifying products are in the cart anymore
+                    if not found_any:
+                        request.session.pop('applied_promo', None)
+                        promo_obj = None
+                        discount = 0
+                else:
+                    # Fallback: Store-wide promo (no specific products selected)
+                    if promo_obj.discount_type == 'percentage':
+                        discount = (promo_obj.discount_value / 100) * subtotal
+                    else:
+                        discount = promo_obj.discount_value
+
+        except PromoCode.DoesNotExist:
+            request.session.pop('applied_promo', None)
+
+    # Ensure final amount isn't negative
+    final_amount = max(0, subtotal - discount)
 
     if request.method == "POST":
         form = CheckoutForm(request.POST)
         payment_form = PaymentForm(request.POST)
 
         if form.is_valid() and payment_form.is_valid():
-
-            # Save order first
             order = form.save(commit=False)
             order.user = request.user
+            order.total_amount = final_amount 
             order.save()
 
-            # Generate payment reference for STK push
             ref = f"order-{order.id}-{uuid.uuid4().hex[:6]}"
             order.payment_ref = ref
             order.save()
 
-            # Trigger STK Push
             mpesa_phone = payment_form.cleaned_data["mpesa_phone"]
-            amount = int(cart_total)
+            amount_to_charge = int(final_amount) 
 
             success, resp = initiate_stk_push(
-                amount=amount,
+                amount=amount_to_charge,
                 contact=mpesa_phone,
                 ref=ref
             )
 
-            # Send customer + vendor emails
-            send_checkout_emails(order, cart_total, ref)
-
             if success:
-                # Save session vars for "processing" page
+                if promo_obj:
+                    promo_obj.used_count += 1
+                    promo_obj.save()
+                    request.session.pop('applied_promo', None)
+
+                send_checkout_emails(order, final_amount, ref)
                 request.session["checkout_ref"] = ref
                 request.session["checkout_order_id"] = order.id
-
                 return redirect("checkout_success")
-
             else:
                 messages.error(request, f"Payment failed: {resp}")
                 return redirect("checkout")
-
     else:
         form = CheckoutForm(initial={"email": request.user.email})
         payment_form = PaymentForm()
-
-    items = cart.items.all()
 
     return render(request, "shop/checkout.html", {
         "form": form,
         "payment_form": payment_form,
         "cart": cart,
-        "items": items,
-        "cart_total": cart.total_price(),
+        "items": cart.items.all(),
+        "subtotal": subtotal,
+        "discount": discount,
+        "cart_total": final_amount,
     })
-
 
 @login_required
 def checkout_success(request):

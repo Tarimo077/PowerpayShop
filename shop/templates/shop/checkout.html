@@ -217,23 +217,46 @@
 
         <!-- RIGHT SIDE SUMMARY -->
         <div class="w-full md:w-1/2 mt-14">
-            <div class="bg-white p-6 rounded-xl shadow-lg">
-                <h3 class="text-lg font-semibold mb-4">Order Summary</h3>
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-50">
+                <h3 class="text-lg font-semibold mb-4 border-b pb-2">Order Summary</h3>
 
-                {% for item in items %}
-                <div class="py-3 flex items-center gap-3 border-b">
-                    <img src="{{ item.product.image.url }}" class="w-16 h-16 object-contain rounded">
-                    <div>
-                        <div class="font-semibold">{{ item.product.name }}</div>
-                        <div class="text-sm text-gray-500">Ksh. {{ item.product.price|intcomma }} × {{ item.quantity }}</div>
+                <div class="max-h-96 overflow-y-auto">
+                    {% for item in items %}
+                    <div class="py-3 flex items-center gap-3 border-b border-gray-50">
+                        {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" class="w-16 h-16 object-contain rounded">
+                        {% endif %}
+                        <div>
+                            <div class="font-semibold text-gray-800">{{ item.product.name }}</div>
+                            <div class="text-sm text-gray-500">Ksh. {{ item.product.price|intcomma }} × {{ item.quantity }}</div>
+                        </div>
+                        <div class="ml-auto font-bold text-gray-700">Ksh. {{ item.total_price|intcomma }}</div>
                     </div>
-                    <div class="ml-auto font-bold">Ksh. {{ item.total_price|intcomma }}</div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
 
-                <div class="flex justify-between font-semibold mt-4">
-                    <span>Total:</span>
-                    <span>Ksh. {{ cart_total|intcomma }}</span>
+                <div class="mt-6 space-y-2">
+                    <div class="flex justify-between text-gray-600">
+                        <span>Subtotal:</span>
+                        <span>Ksh. {{ subtotal|intcomma }}</span>
+                    </div>
+
+                    {% if discount > 0 %}
+                    <div class="flex justify-between text-orange-600 font-medium italic">
+                        <span>Promo Discount:</span>
+                        <span>- Ksh. {{ discount|intcomma }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="flex justify-between font-bold text-xl border-t pt-4 text-green-700">
+                        <span>Total to Pay:</span>
+                        <span>Ksh. {{ cart_total|intcomma }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400 uppercase tracking-wider">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Secure Checkout
                 </div>
             </div>
         </div>
