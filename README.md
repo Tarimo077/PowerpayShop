@@ -22,6 +22,7 @@ Managed by the `shop` app:
 - Product listings and dynamic display for users
 - Shopping flow support (orders, sales tracking)
 - Vendor dashboard for inventory management
+- Promotional codes management for discounts on products
 - Admin dashboard to:
   - Approve vendors
   - Suspend vendors
