@@ -69,6 +69,7 @@
                         <input id="qty-{{ item.id }}" 
                             type="number" min="1"
                             value="{{ item.quantity }}"
+                            onchange="directQtyChange('{{ item.id }}')"
                             class="w-14 text-center border rounded">
 
                         <button onclick="changeQty('{{ item.id }}', 1)"
@@ -91,41 +92,26 @@
 
         <!-- TOTAL + CHECKOUT INSIDE SAME CARD -->
         <div class="mt-10 border-t border-green-500 pt-6">
-            <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-dashed border-green-300">
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Have a promo code?</label>
-                <div class="flex gap-2">
-                    <input type="text" id="promo-input" placeholder="Enter code" 
-                        class="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none uppercase">
-                    <button id="apply-btn" onclick="applyPromo()" 
-                            class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-black transition font-bold">
-                        Apply
-                    </button>
+    
+            <div class="space-y-2 mb-6 px-4">
+                <div class="flex justify-between text-gray-600">
+                    <span>Subtotal:</span>
+                    <span id="subtotal" class="font-bold text-gray-800">Ksh. {{ cart.total_price|intcomma }}</span>
                 </div>
-                <div id="promo-status-container" class="mt-2 hidden items-center justify-between">
-                    <p id="promo-message" class="text-sm font-medium"></p>
-                    <button onclick="removePromo()" class="text-xs text-red-600 underline font-bold hover:text-red-800">
-                        Remove Code
-                    </button>
+
+                <div id="discount-row" class="hidden justify-between text-orange-600 font-medium italic">
+                    <span>Discount:</span>
+                    <span id="discount-amount">- Ksh. 0.00</span>
+                </div>
+
+                <div class="flex justify-between text-2xl font-black text-green-700 border-t border-dashed pt-4">
+                    <span>Total:</span>
+                    <span id="cart-total">Ksh. {{ cart.total_price|intcomma }}</span>
                 </div>
             </div>
 
-            <div class="space-y-2">
-                <div class="flex justify-between items-center text-gray-700">
-                    <span class="font-medium">Subtotal:</span>
-                    <span id="subtotal" class="font-bold">Ksh. {{ cart.total_price|intcomma }}</span>
-                </div>
-                
-                <div id="discount-row" class="hidden justify-between items-center text-orange-600">
-                    <span class="font-medium">Discount:</span>
-                    <span id="discount-amount" class="font-bold">- Ksh. 0.00</span>
-                </div>
-
-                <div class="border-t border-gray-100 pt-4 mt-4">
-                    <h3 class="text-lg font-semibold text-gray-700 text-right">Final Total:</h3>
-                    <p id="cart-total" class="text-3xl text-right font-bold text-green-600 mt-1 mb-6">
-                        Ksh. {{ cart.total_price|intcomma }}
-                    </p>
-                </div>
+            <div class="mb-6 px-4">
+                <input type="hidden" id="promo-input" value="{{ request.session.applied_promo|default:'' }}">
             </div>
 
             <a href="{% url 'checkout' %}"
@@ -164,81 +150,6 @@ function formatCurrency(num) {
     });
 }
 
-// New helper to keep UI in sync
-function updatePriceUI(subtotal, discount, total) {
-    // Fallback to 0 if values are missing to prevent NaN
-    const s = subtotal || 0;
-    const d = discount || 0;
-    const t = total || 0;
-
-    document.getElementById("subtotal").innerText = formatCurrency(s);
-    
-    const discountRow = document.getElementById('discount-row');
-    if (d > 0) {
-        discountRow.classList.remove('hidden');
-        discountRow.classList.add('flex');
-        document.getElementById('discount-amount').innerText = "- " + formatCurrency(d);
-    } else {
-        discountRow.classList.add('hidden');
-        discountRow.classList.remove('flex');
-    }
-    
-    document.getElementById("cart-total").innerText = formatCurrency(t);
-}
-
-function removePromo() {
-    // 1. Clear input
-    document.getElementById('promo-input').value = "";
-    
-    // 2. Hide message container
-    document.getElementById('promo-status-container').classList.add('hidden');
-    document.getElementById('promo-status-container').classList.remove('flex');
-
-    // 3. Get the raw subtotal text and clean it properly
-    // This removes "Ksh.", commas, and spaces
-    const subtotalText = document.getElementById('subtotal').innerText;
-    const cleanNumber = subtotalText.replace('Ksh.', '').replace(/,/g, '').trim();
-    const subtotal = parseFloat(cleanNumber);
-    
-    // 4. Reset UI
-    if (!isNaN(subtotal)) {
-        updatePriceUI(subtotal, 0, subtotal);
-    }
-}
-
-function applyPromo() {
-    const code = document.getElementById('promo-input').value;
-    const container = document.getElementById('promo-status-container');
-    const msg = document.getElementById('promo-message');
-    const csrfToken = "{{ csrf_token }}";
-
-    if (!code) return;
-
-    fetch("{% url 'apply_promo' %}", {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": csrfToken,
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: `code=${code}`
-    })
-    .then(res => res.json())
-    .then(data => {
-        container.classList.remove('hidden');
-        msg.classList.remove('text-green-600', 'text-red-600');
-        
-        if (data.success) {
-            msg.innerText = "Code '" + code.toUpperCase() + "' applied!";
-            msg.classList.add('text-green-600');
-            updatePriceUI(data.subtotal, data.discount_amount, data.new_total);
-        } else {
-            msg.innerText = data.message;
-            msg.classList.add('text-red-600');
-            document.getElementById('discount-row').classList.add('hidden');
-        }
-    });
-}
-
 // Updated sendQtyUpdate to handle active promos
 function sendQtyUpdate(itemId, newQty) {
     const csrfToken = "{{ csrf_token }}";
@@ -258,6 +169,21 @@ function sendQtyUpdate(itemId, newQty) {
         // Use the new UI helper
         updatePriceUI(data.cart_total, data.discount_amount || 0, data.new_total || data.cart_total);
     });
+}
+
+// New helper to keep UI in sync
+function updatePriceUI(subtotal, discount, total) {
+    document.getElementById("subtotal").innerText = formatCurrency(subtotal);
+    
+    if (discount > 0) {
+        document.getElementById('discount-row').classList.remove('hidden');
+        document.getElementById('discount-row').classList.add('flex');
+        document.getElementById('discount-amount').innerText = "- " + formatCurrency(discount);
+    } else {
+        document.getElementById('discount-row').classList.add('hidden');
+    }
+    
+    document.getElementById("cart-total").innerText = formatCurrency(total);
 }
 
 function changeQty(itemId, delta) {

@@ -123,7 +123,7 @@ class CheckoutForm(forms.ModelForm):
 class PaymentForm(forms.Form):
     mpesa_phone = forms.CharField(
         label="Phone (Mpesa, start with 254...)",
-        widget=forms.NumberInput(attrs={"class":"input input-bordered w-full","placeholder":"2547XXXXXXXX"})
+        widget=forms.NumberInput(attrs={"class":"input input-bordered w-full","placeholder":"254XXXXXXXXX"})
     )
 
 class RatingForm(forms.ModelForm):
