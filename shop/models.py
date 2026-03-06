@@ -104,25 +104,6 @@ class Wishlist(models.Model):
         unique_together = ('user', 'product')
 
 
-class Sale(models.Model):
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('paid', 'Paid'),
-        ('shipped', 'Shipped'),
-        ('completed', 'Completed'),
-    ]
-
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='sales')
-    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='purchases')
-    vendor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sales')
-    quantity = models.PositiveIntegerField(default=1)
-    total_price = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
-
-    def __str__(self):
-        return f"{self.quantity} x {self.product.name} for {self.customer.username} [{self.status}]"
-
 class Cart(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -169,10 +150,20 @@ class CheckoutOrder(models.Model):
     ('bio_ethanol', 'Bio-ethanol'),
     ('other', 'Other'),
     ]
+
+    PAYMENT_STATUS = [
+        ("pending", "Pending"),
+        ("paid", "Paid"),
+        ("failed", "Failed"),
+        ("cancelled", "Cancelled"),
+    ]
     
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     payment_ref = models.CharField(max_length=200, blank=True, null=True)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default="pending")
+    mpesa_receipt = models.CharField(max_length=100, blank=True, null=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     # Basic info
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -226,3 +217,24 @@ class CheckoutOrder(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.buying_method}"
+    
+
+class Sale(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('shipped', 'Shipped'),
+        ('completed', 'Completed'),
+    ]
+
+    order = models.ForeignKey(CheckoutOrder, on_delete=models.CASCADE, related_name="sales")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='sales')
+    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='purchases')
+    vendor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sales')
+    quantity = models.PositiveIntegerField(default=1)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product.name} for {self.customer.username} [{self.status}]"

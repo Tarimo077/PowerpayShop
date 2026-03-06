@@ -36,7 +36,7 @@ def login_view(request):
                 if not user.require_otp:
                     login(request, user)
                     messages.success(request, "Login successful.")
-                    return redirect("dashboard")  # change as needed
+                    return redirect("index")  # change as needed
 
                 # 🔐 OTP REQUIRED
                 EmailOTP.objects.filter(user=user).delete()

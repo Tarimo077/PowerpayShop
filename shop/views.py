@@ -609,7 +609,6 @@ def delete_promo(request, promo_id):
         return redirect(reverse("vendor_dashboard") + "#promotions")
     return render(request, "shop/vendor_promo_confirm_delete.html", {"promo": promo})
 
-
 @login_required
 def checkout(request):
     try:
@@ -619,8 +618,7 @@ def checkout(request):
         return redirect("index")
 
     subtotal = cart.total_price()
-    
-    # Initialize defaults for GET request
+
     discount = 0
     final_amount = subtotal
     promo_obj = None
@@ -628,73 +626,87 @@ def checkout(request):
     if request.method == "POST":
         form = CheckoutForm(request.POST)
         payment_form = PaymentForm(request.POST)
-        
-        # 1. GET THE CODE FROM THE HIDDEN INPUT (NOT SESSION)
-        promo_code_str = request.POST.get('promo_code', '').strip()
+
+        promo_code_str = request.POST.get("promo_code", "").strip()
 
         if form.is_valid() and payment_form.is_valid():
-            # 2. SECURE SERVER-SIDE RE-CALCULATION
+
+            # Promo code validation
             if promo_code_str:
                 try:
-                    from .models import PromoCode
                     promo_obj = PromoCode.objects.get(code__iexact=promo_code_str, is_active=True)
-                    
+
                     if promo_obj.is_valid():
                         applicable_products = promo_obj.products.all()
-                        
+
                         if applicable_products.exists():
-                            # Product-specific logic
                             for item in cart.items.all():
                                 if item.product in applicable_products:
-                                    if promo_obj.discount_type == 'percentage':
+                                    if promo_obj.discount_type == "percentage":
                                         discount += (promo_obj.discount_value / 100) * item.total_price()
                                     else:
                                         discount += promo_obj.discount_value
                         else:
-                            # Store-wide logic
-                            if promo_obj.discount_type == 'percentage':
+                            if promo_obj.discount_type == "percentage":
                                 discount = (promo_obj.discount_value / 100) * subtotal
                             else:
                                 discount = promo_obj.discount_value
-                except PromoCode.DoesNotExist:
-                    discount = 0 # Invalid code submitted, ignore it
 
-            # Calculate final amount securely
+                except PromoCode.DoesNotExist:
+                    discount = 0
+
             final_amount = max(0, subtotal - discount)
 
+            # Create order
             order = form.save(commit=False)
             order.user = request.user
-            order.total_amount = final_amount 
+            order.total_amount = final_amount
+            order.payment_status = "pending"
             order.save()
 
+            # Generate payment reference
             ref = f"order-{order.id}-{uuid.uuid4().hex[:6]}"
             order.payment_ref = ref
             order.save()
 
+            # Create sales BEFORE payment
+            for item in cart.items.all():
+                Sale.objects.create(
+                    order=order,
+                    product=item.product,
+                    customer=request.user,
+                    vendor=item.product.vendor.user,
+                    quantity=item.quantity,
+                    total_price=item.total_price(),
+                    status="pending"
+                )
+
             mpesa_phone = payment_form.cleaned_data["mpesa_phone"]
-            
-            # Use the calculated final_amount for M-Pesa
+
             success, resp = initiate_stk_push(
-                amount=int(final_amount), 
+                amount=int(final_amount),
                 contact=mpesa_phone,
                 ref=ref
             )
 
             if success:
+
                 if promo_obj:
                     promo_obj.used_count += 1
                     promo_obj.save()
-                
-                # IMPORTANT: We no longer need to pop from session!
+
                 send_checkout_emails(order, final_amount, ref)
+
                 request.session["checkout_ref"] = ref
                 request.session["checkout_order_id"] = order.id
+
                 return redirect("checkout_success")
+
             else:
                 messages.error(request, f"Payment failed: {resp}")
                 return redirect("checkout")
+
     else:
-        # GET request: Initial state
         form = CheckoutForm(initial={"email": request.user.email})
         payment_form = PaymentForm()
 
@@ -710,76 +722,126 @@ def checkout(request):
 
 @login_required
 def checkout_success(request):
-    # Show friendly page telling user to confirm payment from phone
+
     ref = request.session.get("checkout_ref")
     order_id = request.session.get("checkout_order_id")
+
+    order = None
+    if order_id:
+        try:
+            order = CheckoutOrder.objects.get(id=order_id)
+        except CheckoutOrder.DoesNotExist:
+            order = None
+
     return render(request, "shop/checkout_success.html", {
         "ref": ref,
-        "order_id": order_id,
+        "order": order,
     })
 
-
 def initiate_stk_push(amount, contact, ref):
-    """
-    Calls external STK push endpoint. Returns (success_bool, response_json_or_text)
-    """
+
     url = getattr(settings, "MPESA_ENDPOINT")
+
     payload = {
         "amount": int(amount),
         "contact": str(contact),
         "ref": str(ref)
     }
+
     try:
-        r = requests.post(url, json=payload, timeout=10)
+        r = requests.post(url, json=payload, timeout=15)
         r.raise_for_status()
-        return True, r.json() if r.headers.get("content-type","").startswith("application/json") else r.text
+
+        if r.headers.get("content-type", "").startswith("application/json"):
+            return True, r.json()
+        else:
+            return True, r.text
+
     except Exception as e:
         return False, str(e)
 
+
 @csrf_exempt
 def payment_callback(request):
-    """
-    Endpoint for the payment provider to POST payment confirmations.
-    Expected payload format depends on provider. Example (pseudo):
-    { "ref": "order-123-abc", "status": "success", "amount": 1000, "mpesa_receipt": "ABC123" }
-    """
+
     if request.method != "POST":
-        return JsonResponse({"detail":"Method not allowed"}, status=405)
+        return JsonResponse({"detail": "Method not allowed"}, status=405)
 
     try:
-        data = request.POST.dict() if request.POST else request.body and json.loads(request.body)
+        data = json.loads(request.body)
     except Exception:
-        data = {}
+        return JsonResponse({"detail": "Invalid JSON"}, status=400)
 
-    ref = data.get("ref") or data.get("reference")
-    status = data.get("status") or data.get("payment_status") or "unknown"
-
-    # find order by ref - note we didn't save ref to order by default; 
-    # if you want to link ref->order, add a field payment_ref on CheckoutOrder
-    if not ref:
-        return JsonResponse({"detail":"ref missing"}, status=400)
-
-    # find matching order or sale(s)
-    # We'll try to find CheckoutOrder with payment_ref or find sales created recently with matching ref in metadata
     try:
-        order = CheckoutOrder.objects.filter(submitted_at__isnull=False).filter().first()
-    except Exception:
-        order = None
+        callback = data["Body"]["stkCallback"]
+    except KeyError:
+        return JsonResponse({"detail": "Invalid callback structure"}, status=400)
 
-    # Update sales linked to the order: find Sales with created_at after order time and status pending, etc.
-    # This is implementation-specific. Example: mark all pending sales for the user as 'paid'
-    if status.lower() in ("success", "paid", "completed"):
-        # find Sales for this user that are pending - this is a safe heuristic
-        # If your system stores payment_ref on order or sale, use that instead.
-        sales = Sale.objects.filter(status="pending")
-        for s in sales:
-            s.status = "paid"
-            s.save()
-        # optionally send email to vendor and user acknowledging payment
-        return JsonResponse({"detail":"updated"}, status=200)
-    else:
-        return JsonResponse({"detail":"unhandled status"}, status=200)
+    result_code = callback.get("ResultCode")
+    merchant_request_id = callback.get("MerchantRequestID")
 
+    if not merchant_request_id:
+        return JsonResponse({"detail": "Reference missing"}, status=400)
+
+    try:
+        order = CheckoutOrder.objects.get(payment_ref=merchant_request_id)
+    except CheckoutOrder.DoesNotExist:
+        return JsonResponse({"detail": "Order not found"}, status=404)
+
+    # Payment cancelled or failed
+    if result_code != 0:
+        order.payment_status = "failed"
+        order.save()
+        return JsonResponse({"detail": "Payment failed"}, status=200)
+
+    metadata = callback.get("CallbackMetadata", {}).get("Item", [])
+
+    meta = {item["Name"]: item.get("Value") for item in metadata if "Name" in item}
+
+    receipt = meta.get("MpesaReceiptNumber")
+
+    # Update order
+    order.payment_status = "paid"
+    order.mpesa_receipt = receipt
+    order.save()
+
+    # Update sales
+    sales = order.sales.all()
+
+    for sale in sales:
+        sale.status = "paid"
+        sale.save()
+
+        # Reduce stock
+        product = sale.product
+        product.stock -= sale.quantity
+        product.save()
+
+    # Clear cart
+    cart = Cart.objects.filter(user=order.user).first()
+    if cart:
+        cart.items.all().delete()
+
+    return JsonResponse({"detail": "Payment processed"}, status=200)
+
+
+@login_required
+def check_payment_status(request):
+
+    order_id = request.session.get("checkout_order_id")
+
+    if not order_id:
+        return JsonResponse({"status": "unknown"})
+
+    try:
+        order = CheckoutOrder.objects.get(id=order_id)
+    except CheckoutOrder.DoesNotExist:
+        return JsonResponse({"status": "unknown"})
+
+    return JsonResponse({
+        "status": order.payment_status,
+        "receipt": order.mpesa_receipt
+    })
 
 def send_checkout_emails(order, cart_total, ref):
     # user email
