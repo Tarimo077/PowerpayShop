@@ -176,15 +176,13 @@ def register_view(request):
             # Create a vendor placeholder profile ONLY if user checked 'is_vendor'
             #if user.is_vendor:
                 #Vendor.objects.create(user=user)
-
-            login(request, user)
             messages.success(request, "Account created successfully!")
 
             if user.is_vendor:
                 messages.info(request, "Your vendor account requires admin approval.")
-                return redirect("index")
+                return redirect("login")
             
-            return redirect("index")
+            return redirect("login")
 
     else:
         form = RegistrationForm()
