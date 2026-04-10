@@ -227,7 +227,7 @@ class Sale(models.Model):
         ('completed', 'Completed'),
     ]
 
-    order = models.ForeignKey(CheckoutOrder, on_delete=models.CASCADE, related_name="sales")
+    order = models.ForeignKey(CheckoutOrder, on_delete=models.CASCADE, related_name="sales", null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='sales')
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='purchases')
     vendor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sales')
