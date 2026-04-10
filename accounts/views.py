@@ -174,8 +174,8 @@ def register_view(request):
             user.save()
 
             # Create a vendor placeholder profile ONLY if user checked 'is_vendor'
-            if user.is_vendor:
-                Vendor.objects.create(user=user)
+            #if user.is_vendor:
+                #Vendor.objects.create(user=user)
 
             login(request, user)
             messages.success(request, "Account created successfully!")
