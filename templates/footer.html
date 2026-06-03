@@ -1,51 +1,41 @@
 {% load static %}
-<footer class="bg-white text-gray-700 border-t border-gray-200 mt-auto">
-  <div class="container mx-auto px-2 py-10 flex flex-col md:flex-row md:justify-between md:items-start gap-8">
-
-    <!-- Branding -->
-    <div class="flex flex-col items-start gap-4 md:gap-6">
-      <div class="flex items-center gap-3">
-        <img src="{% static 'images/pplogo.png' %}" alt="PowerPay Logo" class="h-12">
-      </div>
-
-      <!-- Social Icons -->
-      <div class="flex gap-3 mt-2">
-        <a href="#" class="w-16 h-16 flex items-center justify-center rounded-full bg-gray-100 text-black hover:bg-blue-50 hover:scale-110 transition-transform">
-          <i class="fa-brands fa-square-x-twitter text-2xl"></i>
-        </a>
-        <a href="#" class="w-16 h-16 flex items-center justify-center rounded-full bg-gray-100 text-red-500 hover:bg-red-50 hover:scale-110 transition-transform">
-          <i class="fa-brands fa-youtube text-2xl"></i>
-        </a>
-        <a href="#" class="w-16 h-16 flex items-center justify-center rounded-full bg-gray-100 text-blue-700 hover:bg-blue-50 hover:scale-110 transition-transform">
-          <i class="fa-brands fa-square-facebook text-2xl"></i>
-        </a>
+<footer class="shop-footer">
+  <div class="shop-shell py-10 grid gap-8 md:grid-cols-[1.4fr_.8fr_.8fr] items-start">
+    <div class="space-y-4">
+      <a href="{% url 'index' %}" class="inline-flex items-center gap-3">
+        <img src="{% static 'images/pplogo.png' %}" alt="PowerPay Logo" class="h-12 object-contain">
+      </a>
+      <p class="max-w-md text-sm shop-muted leading-relaxed">
+        Appliances For The Next Billion.
+      </p>
+      <div class="flex gap-3">
+        <a href="#" class="shop-icon-btn" aria-label="X / Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+        <a href="#" class="shop-icon-btn" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+        <a href="#" class="shop-icon-btn" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
       </div>
     </div>
 
-    <!-- Company + Legal Links -->
-    <div class="flex flex-col md:flex-row gap-8 md:gap-16 md:items-start md:justify-end">
-      <!-- Company -->
+    <div class="flex gap-6 justify-between p-6">
       <div>
-        <h6 class="font-bold text-gray-800 mb-2">Company</h6>
-        <nav class="flex flex-col gap-4">
-          <a href="#" class="link link-hover hover:text-green-600 transition">About Us</a>
-          <a href="#" class="link link-hover hover:text-green-600 transition">Contact</a>
+        <h6 class="font-black text-gray-900 mb-3">Company</h6>
+        <nav class="grid gap-2 text-sm shop-muted">
+          <a href="#" class="hover:text-green-700 transition">About PowerPay</a>
+          <a href="#" class="hover:text-green-700 transition">Contact</a>
+          <a href="{% url 'support_ticket_list' %}" class="hover:text-green-700 transition">Support</a>
         </nav>
       </div>
 
-      <!-- Legal -->
       <div>
-        <h6 class="font-bold text-gray-800 mb-2">Legal</h6>
-        <nav class="flex flex-col gap-4">
-          <a href="#" class="link link-hover hover:text-green-600 transition">Terms of Use</a>
-          <a href="#" class="link link-hover hover:text-green-600 transition">Privacy Policy</a>
+        <h6 class="font-black text-gray-900 mb-3">Marketplace</h6>
+        <nav class="grid gap-2 text-sm shop-muted">
+          <a href="{% url 'index' %}" class="hover:text-green-700 transition">Browse products</a>
+          <a href="{% url 'wishlist_page' %}" class="hover:text-green-700 transition">Favourites</a>
+          <a href="{% url 'view_cart' %}" class="hover:text-green-700 transition">Cart</a>
         </nav>
       </div>
     </div>
   </div>
-
-  <!-- Bottom bar -->
-  <div class="border-t border-gray-200 text-gray-500 text-sm py-4 text-center">
-    &copy; 2025 Powerpay Africa Ltd. All rights reserved.
+  <div class="border-t border-slate-200/70 py-4 text-center text-sm shop-muted">
+    &copy; {% now "Y" %} PowerPay Africa Ltd. All rights reserved.
   </div>
 </footer>

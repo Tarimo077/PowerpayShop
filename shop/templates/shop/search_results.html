@@ -1,26 +1,23 @@
 {% load humanize %}
 {% if products %}
-    <ul class="space-y-2">
-        {% for product in products %}
-        <li class="p-4 hover:bg-green-100 cursor-pointer flex items-center">
-            {% if product.image %}
-            <img src="{{ product.image.url }}" class="w-10 h-10 object-cover rounded-md mr-4">
-            {% endif %}
-
-            <a href="{% url 'product_detail' product.pk %}" class="flex-1">
-                <p class="font-semibold text-sm">{{ product.name }}</p>
-                <p class="text-xs text-gray-500">{{ product.vendor.shop_name }}</p>
-            </a>
-
-            <span class="text-green-600 font-bold text-sm">
-                Ksh {{ product.price|intcomma }}
-            </span>
-        </li>
-        
-        {% endfor %}
-    </ul>
+  <ul class="divide-y divide-slate-100">
+    {% for product in products %}
+      <li>
+        <a href="{% url 'product_detail' product.pk %}" class="p-3 hover:bg-green-50 flex items-center gap-3 transition">
+          {% if product.image %}
+            <img src="{{ product.image.url }}" class="w-12 h-12 object-contain rounded-2xl bg-slate-50 border border-slate-100" alt="{{ product.name }}">
+          {% else %}
+            <span class="w-12 h-12 rounded-2xl bg-green-50 grid place-items-center text-green-700"><i class="fa-solid fa-box"></i></span>
+          {% endif %}
+          <span class="flex-1 min-w-0">
+            <span class="block font-black text-sm truncate">{{ product.name }}</span>
+            <span class="block text-xs shop-muted truncate">{{ product.vendor.shop_name|default:product.vendor.user }}</span>
+          </span>
+          <span class="text-green-700 font-black text-sm whitespace-nowrap">Ksh {{ product.price|intcomma }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
 {% else %}
-    {% if query %}
-        <p class="p-3 text-gray-500 text-sm">No products found.</p>
-    {% endif %}
+  {% if query %}<p class="p-4 shop-muted text-sm">No products found. The void remains well-stocked, though.</p>{% endif %}
 {% endif %}

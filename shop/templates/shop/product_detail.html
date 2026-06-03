@@ -1,238 +1,155 @@
 {% extends "base.html" %}
 {% load humanize %}
 {% load custom_filters %}
+{% block title %}{{ product.name }} | PowerPay Shop{% endblock %}
 {% block content %}
-
-<div class="grid min-h-screen" style="grid-template-rows: auto 1fr auto;">
-
+<div class="min-h-screen grid" style="grid-template-rows: auto 1fr auto;">
   {% include 'shop/navbar.html' %}
 
-  <div class="container mx-auto p-6 max-w-6xl mb-6 mt-6">
+  <main class="shop-shell shop-section">
+    <a href="{% url 'index' %}" class="inline-flex items-center gap-2 text-sm font-black text-green-700 hover:text-orange-600 mb-5"><i class="fa-solid fa-arrow-left"></i> Back to shop</a>
 
-      <!-- Main Layout -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-          <!-- PRODUCT CARD (Left: spans 2 columns) -->
-          <div class="md:col-span-2 bg-white shadow-lg rounded-xl p-6 flex flex-col h-full">
-
-              <!-- Product Images -->
-              <div class="flex flex-col items-center mb-4">
-                  <img id="mainProductImage" src="{{ product.image.url }}"
-                       class="w-full max-h-96 object-contain rounded-lg mb-4">
-
-                  {% if product.gallery.all %}
-                  <div class="flex gap-2 overflow-x-auto scroll-smooth">
-                      {% if product.image %}
-                      <img src="{{ product.image.url }}"
-                           class="h-20 w-20 object-cover rounded-lg cursor-pointer border-2 border-green-500"
-                           onclick="document.getElementById('mainProductImage').src=this.src">
-                      {% endif %}
-
-                      {% for photo in product.gallery.all %}
-                      <img src="{{ photo.image.url }}"
-                           class="h-20 w-20 object-cover rounded-lg cursor-pointer border-2 border-gray-200 hover:border-green-500 transition"
-                           onclick="document.getElementById('mainProductImage').src=this.src">
-                      {% endfor %}
-                  </div>
-                  {% endif %}
-
-                  <!-- Stock -->
-                  <div class="w-full mt-3 mb-2">
-                      <div class="flex justify-between mb-1">
-                          <span class="text-green-600 font-medium">Items Remaining</span>
-                          <span class="text-green-600 font-medium">{{ product.stock }} / {{ product.max_stock }}</span>
-                      </div>
-                      <div class="w-full bg-gray-300 rounded-full h-2">
-                          <div class="bg-green-600 h-2 rounded-full" style="width: {{ product.stock_percentage }}%"></div>
-                      </div>
-                  </div>
-              </div>
-
-              <!-- Product Details -->
-              <div class="flex-1 flex flex-col justify-between">
-                  <div>
-                      <h1 class="text-4xl font-bold text-gray-800 mb-3">{{ product.name }}</h1>
-
-                      <div class="flex items-center gap-1 mb-3 text-yellow-500">
-                          {% for i in "12345" %}
-                              {% if forloop.counter <= product.average_rating %}
-                                  <i class="fa-solid fa-star"></i>
-                              {% else %}
-                                  <i class="fa-regular fa-star"></i>
-                              {% endif %}
-                          {% endfor %}
-                          <p class="text-sm ml-2">
-                             {{ product.rating_count }} {% if product.rating_count == 1 %} rating {% else %} ratings {% endif %}
-                          </p>
-                      </div>
-
-                      <p class="text-3xl font-semibold text-green-600 mb-6">
-                          Ksh. {{ product.price|intcomma }}
-                      </p>
-                  </div>
-
-                  <!-- Buttons -->
-                  <div class="flex flex-col md:flex-row gap-3 items-stretch text-sm">
-                      {% if user.is_authenticated %}
-                          <form method="POST" action="{% url 'add_to_cart' product.id %}" class="flex-1">
-                              {% csrf_token %}
-                              <button class="w-full bg-yellow-500 text-white rounded-lg py-3 hover:bg-yellow-600 flex items-center justify-center">
-                                  <i class="fa-solid fa-cart-plus mr-2"></i> Add to Cart
-                              </button>
-                          </form>
-
-                          <form method="POST" action="{% url 'buy_now' product.id %}" class="flex-1">
-                              {% csrf_token %}
-                              <button class="w-full bg-green-600 text-white rounded-lg py-3 hover:bg-green-700 flex items-center justify-center">
-                                  <i class="fa-solid fa-bolt mr-2"></i> Buy Now
-                              </button>
-                          </form>
-
-                          <form method="POST" action="{% url 'toggle_wishlist' product.id %}" class="flex-1">
-                              {% csrf_token %}
-                              <button class="w-full border border-orange-500 text-orange-500 rounded-lg py-3 hover:bg-orange-50 flex items-center justify-center">
-                                  {% if in_wishlist %}
-                                      <i class="fa-solid fa-heart mr-2"></i> Remove Favourite
-                                  {% else %}
-                                      <i class="fa-regular fa-heart mr-2"></i> Add to Favourite
-                                  {% endif %}
-                              </button>
-                          </form>
-                      {% else %}
-                          <a href="{% url 'login' %}"
-                             class="w-full py-3 bg-yellow-400 text-white rounded-lg text-center hover:bg-yellow-500">
-                              Login to Interact
-                          </a>
-                      {% endif %}
-                  </div>
-
-              </div>
-          </div>
-
-          <!-- RIGHT COLUMN (Delivery + Vendor stacked) -->
-          <div class="flex flex-col gap-6">
-
-              <!-- DELIVERY CARD (Half height) -->
-              <div class="bg-orange-50 shadow-md rounded-xl p-6 border border-orange-200 h-1/3 space-y-12">
-                  <h3 class="text-lg font-semibold text-orange-700 mb-3">Delivery Information</h3>
-                  <p class="text-gray-700 text-sm mb-2"><i class="fa-solid fa-truck mr-2 text-orange-600"></i>Fast delivery available</p>
-                  <p class="text-gray-700 text-sm"><i class="fa-solid fa-clock mr-2 text-orange-600"></i>Delivery within 72 hours</p>
-              </div>
-
-              <!-- VENDOR CARD (Half height, smaller) -->
-              <div class="bg-green-50 shadow-md rounded-xl p-6 border border-green-200 h-2/3 space-y-12">
-                  <h3 class="text-lg font-semibold text-green-700 mb-3">Vendor Information</h3>
-                  
-                  <div class="flex items-center gap-4 mb-4">
-                      {% if product.vendor.logo %}
-                          <img src="{{ product.vendor.logo.url }}" class="w-24 h-24 object-contain rounded-full border border-green-300">
-                      {% else %}
-                          <div class="w-24 h-24 text-3xl bg-green-200 rounded-full flex items-center justify-center text-green-600 font-bold">
-                              {{ product.vendor.shop_name|slice:":1"|upper }}
-                          </div>
-                      {% endif %}
-                      <div>
-                          <p class="font-semibold text-green-700 text-base">{{ product.vendor.shop_name }}</p>
-                          
-                      </div>
-                  </div>
-
-                  <p class="text-gray-700 text-sm"><i class="fa-solid fa-envelope text-green-600 mr-2"></i>{{ product.vendor.user.email|default:"N/A" }}</p>
-                  <p class="text-gray-700 text-sm"><i class="fa-solid fa-phone text-green-600 mr-2"></i>{{ product.vendor.user.phone|default:"N/A" }}</p>
-                  <p class="text-gray-700 text-sm"><i class="fa-solid fa-location-dot text-green-600 mr-2"></i>{{ product.vendor.address|default:"N/A" }}</p>
-              </div>
-
-          </div>
-
-      </div>
-
-      <div class="bg-white shadow-lg rounded-2xl p-6 mt-8">
-        <h3 class="text-xl font-semibold text-green-700">Product Description</h3>
-        <div class="divider divider-success mt-0"></div>
-        <p class="text-gray-700">
-            {{ product.description }}
-        </p>
-      </div>
-
-
-      <!-- SIMILAR PRODUCTS SECTION -->
-        <div class="mt-8 bg-blue-50 shadow-lg rounded-2xl p-6">
-          <h2 class="text-xl font-semibold text-blue-600">More Products From {{ product.vendor.shop_name }}</h2>
-          <div class="divider divider-info mt-0"></div>
-
-          {% include "shop/product_grid.html" with products=similar_products %}
-        </div>
-
-       <div class="bg-orange-50 shadow-lg rounded-xl p-6 mt-4">
-            <h3 class="text-xl font-semibold text-orange-400">Customer Reviews</h3>
-            <div class="divider divider-warning mt-0"></div>
-            <!-- Overall Rating -->
-            <div class="flex items-center mb-4">
-                <div class="text-2xl font-bold mr-2
-                {% if product.average_rating <= 2 %} text-red-500
-                {% elif product.average_rating > 2 and product.average_rating <= 4 %} text-yellow-500
-                {% else %} text-green-500 
+    <section class="grid xl:grid-cols-[1.5fr_.7fr] gap-6 mb-8">
+      <div class="shop-card p-4 sm:p-6">
+        <div class="grid lg:grid-cols-[1fr_1fr] gap-6">
+          <div>
+            <div class="shop-detail-carousel shop-carousel" data-product-carousel data-interval="7000">
+              {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="shop-carousel-slide is-active" id="mainProductImage" loading="eager" decoding="async">
+              {% endif %}
+              {% for photo in product.gallery.all %}
+                <img src="{{ photo.image.url }}" alt="{{ photo.alt_text|default:product.name }}" class="shop-carousel-slide {% if not product.image and forloop.first %}is-active{% endif %}" loading="lazy" decoding="async">
+              {% empty %}
+                {% if not product.image %}
+                  <div class="shop-carousel-slide is-active shop-image-placeholder"><i class="fa-solid fa-image text-6xl mb-3"></i><p>No product image</p></div>
                 {% endif %}
-                ">{% if rating_count == 0 %}__ {% else %}{{ product.average_rating|floatformat:1 }}{% endif %}/5</div>
-                <div class="flex text-yellow-500">
-                {% for i in "12345" %}
-                    {% if forloop.counter <= product.average_rating %}
-                        <i class="fa-solid fa-star"></i>
-                    {% else %}
-                        <i class="fa-regular fa-star"></i>
-                    {% endif %}
-                {% endfor %}
-                </div>
-                <span class="ml-2 text-gray-500">( {{ rating_count }} reviews)</span>
+              {% endfor %}
+              {% if product.gallery.all %}
+                <button type="button" class="shop-carousel-arrow shop-carousel-prev" data-carousel-prev aria-label="Previous image"><i class="fa-solid fa-chevron-left"></i></button>
+                <button type="button" class="shop-carousel-arrow shop-carousel-next" data-carousel-next aria-label="Next image"><i class="fa-solid fa-chevron-right"></i></button>
+                <div class="shop-carousel-dots" data-carousel-dots aria-hidden="true"></div>
+              {% endif %}
             </div>
 
-            <!-- Star Summary -->
-            <div class="mb-6">
-            {% for star in star_range_reverse %}
-                <div class="flex items-center text-sm mb-1">
-                <span class="w-12">{{ star }} star</span>
-                <div class="flex-1 h-3 bg-gray-200 rounded-full mx-2">
-                    <div class="h-3 bg-yellow-500 rounded-full" style="width: {{ star_percentages|get_item:star }}%;"></div>
-                </div>
-                <span class="w-8 text-right">{{ star_summary|get_item:star }}</span>
-                </div>
-            {% endfor %}
+            <div class="shop-thumbnail-row" data-carousel-thumbs>
+              {% if product.image %}
+                <button type="button" class="shop-thumb is-active" data-carousel-thumb="0" aria-label="Show main image"><img src="{{ product.image.url }}" alt="{{ product.name }}"></button>
+              {% endif %}
+              {% for photo in product.gallery.all %}
+                <button type="button" class="shop-thumb {% if not product.image and forloop.first %}is-active{% endif %}" data-carousel-thumb="{% if product.image %}{{ forloop.counter }}{% else %}{{ forloop.counter0 }}{% endif %}" aria-label="Show image {{ forloop.counter }}"><img src="{{ photo.image.url }}" alt="{{ photo.alt_text|default:product.name }}"></button>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="flex flex-col">
+            <div class="flex flex-wrap gap-2 mb-3">
+              <span class="shop-eyebrow"><i class="fa-solid fa-leaf"></i> Clean energy appliance</span>
+              <span class="shop-mini-badge shop-mini-badge-green"><i class="fa-solid fa-circle-check"></i> Verified vendor</span>
+              {% if product.stock <= 5 %}<span class="shop-mini-badge shop-mini-badge-orange"><i class="fa-solid fa-fire"></i> Low stock</span>{% endif %}
+            </div>
+            <h1 class="text-3xl sm:text-5xl font-black leading-tight tracking-tight text-slate-950">{{ product.name }}</h1>
+            <div class="flex items-center gap-2 mt-4 shop-rating">
+              {% for i in "12345" %}{% if forloop.counter <= product.average_rating %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star"></i>{% endif %}{% endfor %}
+              <span class="text-sm shop-muted ml-1">{{ product.rating_count }} {% if product.rating_count == 1 %}rating{% else %}ratings{% endif %}</span>
+            </div>
+            <p class="shop-price text-4xl mt-5">Ksh. {{ product.price|intcomma }}</p>
+            <p class="shop-muted mt-4 leading-relaxed">{{ product.description|default:"No description provided."|truncatewords:34 }}</p>
+
+            <div class="shop-promise-grid mt-6">
+              <div><i class="fa-solid fa-mobile-screen-button"></i><strong>M-Pesa</strong><span>Fast checkout</span></div>
+              <div><i class="fa-solid fa-hand-holding-dollar"></i><strong>Loan</strong><span>Financing option</span></div>
+              <div><i class="fa-solid fa-truck-fast"></i><strong>72h</strong><span>Delivery target</span></div>
             </div>
 
-
-            <!-- Individual Reviews -->
-            <div>
-                {% for review in ratings %}
-                <div class="border-b border-gray-200 py-3">
-                    <div class="flex items-center mb-1">
-                    <div class="flex text-sm">
-                        {% for i in star_range %}
-                        {% if i <= review.rating %}
-                            <span class="text-yellow-500"><i class="fa-solid fa-star"></i></span>
-                        {% else %}
-                            <span class="text-gray-300"><i class="fa-regular fa-star"></i></span>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-                    <span class="ml-2 text-gray-500 text-sm">{{ review.user.username }}</span>
-                    </div>
-                    {% if review.review %}
-                    <p class="text-gray-700 ml-4">{{ review.review }}</p>
-                    <p class="text-gray-700 text-end text-xs">{{ review.created_at|naturalday }}</p>
-                    {% endif %}
-                </div>
-                {% empty %}
-                <p class="text-gray-500">No reviews yet.</p>
-                {% endfor %}
+            <div class="mt-6">
+              <div class="flex justify-between text-sm font-bold shop-muted mb-2"><span>Stock remaining</span><span>{{ product.stock }} / {{ product.max_stock }}</span></div>
+              <div class="shop-stock-track"><div class="shop-stock-fill" style="width: {{ product.stock_percentage }}%"></div></div>
             </div>
+
+            <div class="grid sm:grid-cols-3 gap-3 mt-8">
+              {% if user.is_authenticated %}
+                <form method="POST" action="{% url 'add_to_cart' product.id %}">{% csrf_token %}<button class="shop-btn shop-btn-accent w-full"><i class="fa-solid fa-cart-plus"></i> Cart</button></form>
+                <a href="{% url 'buy_now' product.id %}" class="shop-btn shop-btn-primary w-full"><i class="fa-solid fa-bolt"></i> Buy</a>
+                <form method="POST" action="{% url 'toggle_wishlist' product.id %}">{% csrf_token %}<button class="shop-btn shop-btn-soft w-full">{% if in_wishlist %}<i class="fa-solid fa-heart text-red-500"></i> Saved{% else %}<i class="fa-regular fa-heart"></i> Save{% endif %}</button></form>
+              {% else %}
+                <a href="{% url 'login' %}" class="shop-btn shop-btn-primary sm:col-span-3"><i class="fa-solid fa-right-to-bracket"></i> Login to shop</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="grid gap-6 content-start">
+        <div class="shop-card p-6">
+          <h3 class="text-xl font-black text-slate-900 mb-4">Delivery & checkout</h3>
+          <div class="space-y-4">
+            <p class="flex gap-3"><span class="shop-icon-btn shrink-0"><i class="fa-solid fa-truck"></i></span><span><strong class="block">Fast delivery</strong><span class="shop-muted text-sm">Delivery target within 72 hours.</span></span></p>
+            <p class="flex gap-3"><span class="shop-icon-btn shrink-0"><i class="fa-solid fa-mobile-screen"></i></span><span><strong class="block">M-Pesa payments</strong><span class="shop-muted text-sm">STK push support at checkout.</span></span></p>
+            <p class="flex gap-3"><span class="shop-icon-btn shrink-0"><i class="fa-solid fa-rotate-left"></i></span><span><strong class="block">Easy follow-up</strong><span class="shop-muted text-sm">Order status and alerts stay in your account.</span></span></p>
+          </div>
         </div>
 
+        <div class="shop-card p-6">
+          <h3 class="text-xl font-black text-slate-900 mb-4">Vendor</h3>
+          <div class="flex items-center gap-4 mb-4">
+            {% if product.vendor.logo %}<img src="{{ product.vendor.logo.url }}" class="w-20 h-20 object-contain rounded-3xl border bg-white" alt="{{ product.vendor.shop_name }}">{% else %}<div class="w-20 h-20 rounded-3xl bg-green-50 grid place-items-center text-green-700 font-black text-3xl">{{ product.vendor.shop_name|slice:":1"|upper }}</div>{% endif %}
+            <div><p class="font-black text-lg">{{ product.vendor.shop_name|default:product.vendor.user }}</p><p class="shop-muted text-sm">Approved seller</p></div>
+          </div>
+          <div class="space-y-2 text-sm shop-muted">
+            <p><i class="fa-solid fa-envelope text-green-700 mr-2"></i>{{ product.vendor.user.email|default:"N/A" }}</p>
+            <p><i class="fa-solid fa-phone text-green-700 mr-2"></i>{{ product.vendor.user.phone|default:"N/A" }}</p>
+            <p><i class="fa-solid fa-location-dot text-green-700 mr-2"></i>{{ product.vendor.address|default:"N/A" }}</p>
+          </div>
+        </div>
+      </aside>
+    </section>
 
+    <section class="shop-card p-6 mb-8">
+      <h2 class="text-2xl font-black text-slate-900 mb-3">Description</h2>
+      <p class="shop-muted leading-relaxed">{{ product.description|default:"No description provided." }}</p>
+    </section>
 
-  </div>
+    {% if similar_products %}
+      <section class="mb-8">
+        <div class="flex items-end justify-between mb-4 gap-4">
+          <div><span class="shop-eyebrow"><i class="fa-solid fa-store"></i> Same vendor</span><h2 class="text-3xl font-black mt-2">More from {{ product.vendor.shop_name }}</h2></div>
+        </div>
+        {% include "shop/product_grid.html" with products=similar_products columns=4 %}
+      </section>
+    {% endif %}
+
+    <section class="shop-card p-6">
+      <div class="grid lg:grid-cols-[.45fr_1fr] gap-8">
+        <div>
+          <span class="shop-eyebrow"><i class="fa-solid fa-star"></i> Reviews</span>
+          <div class="mt-4 flex items-end gap-2">
+            <span class="text-5xl font-black {% if product.average_rating <= 2 %}text-red-500{% elif product.average_rating > 2 and product.average_rating <= 4 %}text-amber-500{% else %}text-green-600{% endif %}">{% if rating_count == 0 %}0{% else %}{{ product.average_rating|floatformat:1 }}{% endif %}</span>
+            <span class="shop-muted font-bold mb-2">/ 5 from {{ rating_count }} reviews</span>
+          </div>
+          <div class="mt-5 space-y-2">
+            {% for star in star_range_reverse %}
+              <div class="flex items-center text-sm gap-2"><span class="w-12 font-bold">{{ star }} star</span><div class="shop-stock-track flex-1"><div class="shop-stock-fill" style="width: {{ star_percentages|get_item:star }}%;"></div></div><span class="w-8 text-right shop-muted">{{ star_summary|get_item:star }}</span></div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          {% for review in ratings %}
+            <article class="rounded-3xl bg-white/70 border border-slate-100 p-5">
+              <div class="flex items-center justify-between gap-3 mb-2">
+                <div><p class="font-black">{{ review.user.username }}</p><div class="shop-rating text-sm">{% for i in star_range %}{% if i <= review.rating %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star"></i>{% endif %}{% endfor %}</div></div>
+                <p class="shop-muted text-xs">{{ review.created_at|naturalday }}</p>
+              </div>
+              <p class="shop-muted">{{ review.review|default:"No written review." }}</p>
+            </article>
+          {% empty %}
+            <div class="shop-empty rounded-3xl bg-white/70"><p>No reviews yet. A peaceful but suspicious silence.</p></div>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+  </main>
 
   {% include 'footer.html' %}
-
 </div>
-
 {% endblock %}

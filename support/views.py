@@ -1,140 +1,85 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Ticket, TicketMessage
-from .forms import TicketForm
 from django.core.paginator import Paginator
-from notifications.utils import notify
-from accounts.models import User
+from django.shortcuts import get_object_or_404, redirect, render
 
-# Admin views
+from accounts.models import User
+from notifications.utils import notify
+from .forms import TicketForm
+from .models import Ticket, TicketMessage
+
+
 def is_admin(user):
-    return user.is_staff
+    return user.is_authenticated and user.is_staff
+
+
+def _safe_per_page(request, allowed=(5, 10, 20), default=5):
+    value = request.GET.get("per_page", str(default))
+    return int(value) if value in {str(v) for v in allowed} else default
+
 
 @login_required
 def create_ticket(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = TicketForm(request.POST)
         if form.is_valid():
             ticket = form.save(commit=False)
             ticket.user = request.user
             ticket.save()
-            return redirect('support_ticket_list')
+            return redirect("support_ticket_list")
     else:
         form = TicketForm()
-    return render(request, 'support/create_ticket.html', {'form': form})
+    return render(request, "support/create_ticket.html", {"form": form})
+
 
 @login_required
 def ticket_list(request):
-    per_page = int(request.GET.get("per_page", 5))  # default 6 per page
-    page_number = request.GET.get("page", 1)
-
-    tickets_qs = Ticket.objects.filter(user=request.user).order_by('-created_at')
-
-    paginator = Paginator(tickets_qs, per_page)
-    tickets = paginator.get_page(page_number)
-
-    return render(request, "support/ticket_list.html", {
-        "tickets": tickets,
-        "per_page": per_page,
-    })
+    per_page = _safe_per_page(request)
+    tickets_qs = Ticket.objects.filter(user=request.user).order_by("-created_at")
+    tickets = Paginator(tickets_qs, per_page).get_page(request.GET.get("page", 1))
+    return render(request, "support/ticket_list.html", {"tickets": tickets, "per_page": per_page})
 
 
 @login_required
 def ticket_detail(request, ticket_id):
-    ticket = get_object_or_404(Ticket, id=ticket_id, user=request.user)
+    ticket = get_object_or_404(Ticket.objects.prefetch_related("messages__sender"), id=ticket_id, user=request.user)
 
-    if request.method == 'POST' and ticket.status != 'closed':
-        reply = request.POST.get("reply")
-
-        if reply and reply.strip():
-            TicketMessage.objects.create(
-                ticket=ticket,
-                sender=request.user,
-                message=reply
-            )
-
-            # Send notification to all admins (or specific staff)
-            admins = User.objects.filter(is_staff=True)
+    if request.method == "POST" and ticket.status != "closed":
+        reply = request.POST.get("reply", "").strip()
+        if reply:
+            TicketMessage.objects.create(ticket=ticket, sender=request.user, message=reply)
+            admins = User.objects.filter(is_staff=True).only("id")
             for admin in admins:
-                notify(
-                    user=admin,
-                    title=f"New Message | Ticket #{ticket.id}",
-                    message=f"{request.user.username} responded to a support ticket.",
-                    type="warning"
-                )
+                notify(admin, f"New Message | Ticket #{ticket.id}", f"{request.user.username} responded to a support ticket.", "warning")
+        return redirect("ticket_detail", ticket_id=ticket_id)
 
-        return redirect('ticket_detail', ticket_id=ticket_id)
-
-    return render(request, "support/ticket_detail.html", {
-        "ticket": ticket
-    })
+    return render(request, "support/ticket_detail.html", {"ticket": ticket})
 
 
 @user_passes_test(is_admin)
 def admin_ticket_list(request):
-    tickets = Ticket.objects.all().order_by("-created_at")
-
-    paginator = Paginator(tickets, 10)
-    page = request.GET.get("page")
-    tickets_page = paginator.get_page(page)
-
-    return render(request, "support/admin_ticket_list.html", {"tickets_page": tickets_page})
-
-
-@user_passes_test(is_admin)
-def admin_ticket_list(request):
-    per_page = int(request.GET.get("per_page", 10))
-    page = request.GET.get("page", 1)
-
-    tickets_qs = Ticket.objects.all().order_by('-created_at')
-    paginator = Paginator(tickets_qs, per_page)
-    tickets = paginator.get_page(page)
-
-    return render(request, "support/admin_ticket_list.html", {
-        "tickets": tickets,
-        "per_page": per_page,
-    })
+    per_page = _safe_per_page(request, default=10)
+    tickets_qs = Ticket.objects.select_related("user").order_by("-created_at")
+    tickets = Paginator(tickets_qs, per_page).get_page(request.GET.get("page", 1))
+    return render(request, "support/admin_ticket_list.html", {"tickets": tickets, "per_page": per_page})
 
 
 @user_passes_test(is_admin)
 def admin_ticket_detail(request, ticket_id):
-    ticket = get_object_or_404(Ticket, id=ticket_id)
-    
+    ticket = get_object_or_404(Ticket.objects.select_related("user").prefetch_related("messages__sender"), id=ticket_id)
+
     if request.method == "POST":
-        reply = request.POST.get("reply")
+        reply = request.POST.get("reply", "").strip()
         status = request.POST.get("status")
 
-        # Handle status update
         if status and status != ticket.status:
             ticket.status = status
-            ticket.save()
+            ticket.save(update_fields=["status"])
+            notify(ticket.user, f"Ticket #{ticket.id} Status Updated", f"Your support ticket status has changed to: {ticket.get_status_display()}", "info")
 
-            notify(
-                user=ticket.user,
-                title=f"Ticket #{ticket.id} Status Updated",
-                message=f"Your support ticket status has changed to: {ticket.get_status_display()}",
-                type="info"
-            )
-
-        # Handle admin reply
-        if reply and reply.strip():
-            TicketMessage.objects.create(
-                ticket=ticket,
-                sender=request.user,
-                message=reply
-            )
-
-            notify(
-                user=ticket.user,
-                title=f"New Message | Ticket #{ticket.id}",
-                message=f"The support team has responded to your ticket.",
-                type="success"
-            )
+        if reply:
+            TicketMessage.objects.create(ticket=ticket, sender=request.user, message=reply)
+            notify(ticket.user, f"New Message | Ticket #{ticket.id}", "The support team has responded to your ticket.", "success")
 
         return redirect("admin_ticket_detail", ticket_id=ticket_id)
 
-    messages_page = ticket.messages.all()
-    return render(request, "support/admin_ticket_detail.html", {
-        "ticket": ticket,
-        "messages_page": messages_page
-    })
+    return render(request, "support/admin_ticket_detail.html", {"ticket": ticket, "messages_page": ticket.messages.all()})

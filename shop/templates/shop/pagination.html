@@ -1,72 +1,52 @@
-    <form method="get" class="mt-4 mb-4 flex justify-end">
-        <label class="mr-2 mt-2 font-semibold">Items per page:</label>
-        <select name="per_page" onchange="this.form.submit()" class="border-green-600 rounded-lg">
-            <option value="6" {% if per_page == 6 %}selected{% endif %}>6</option>
-            <option value="9" {% if per_page == 9 %}selected{% endif %}>9</option>
-            <option value="12" {% if per_page == 12 %}selected{% endif %}>12</option>
-        </select>
-    </form>
-    {% if products.has_other_pages %}
-    <div class="flex justify-center mt-6 mb-6">
-
-        <div class="flex items-center gap-2">
-
-            {# Previous Button #}
-            {% if products.has_previous %}
-                <a 
-                  hx-get="?page={{ products.previous_page_number }}&per_page={{ per_page }}{% if search %}&search={{ search }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
-                  hx-target="#productsWrapper"
-                  hx-swap="innerHTML"
-                  class="px-4 py-2 rounded-full cursor-pointer bg-white shadow hover:bg-green-600 hover:text-white transition">
-                    <i class="fa-solid fa-backward m-1"></i> Prev
-                </a>
-            {% else %}
-                <button class="px-4 py-2 rounded-full bg-gray-200 text-gray-400 cursor-not-allowed shadow">
-                    <i class="fa-solid fa-backward m-1"></i> Prev
-                </button>
-            {% endif %}
-
-            {# Page Numbers #}
-            <div class="flex gap-2">
-                {% for num in products.paginator.page_range %}
-                    {% if num == products.number %}
-                        <span class="px-4 py-2 rounded-full bg-green-600 text-white shadow font-semibold">
-                            {{ num }}
-                        </span>
-                    {% else %}
-                        <a 
-                          hx-get="?page={{ num }}&per_page={{ per_page }}{% if search %}&search={{ search }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
-                          hx-target="#productsWrapper"
-                          hx-swap="innerHTML"
-                          class="px-4 py-2 rounded-full bg-white shadow hover:bg-orange-500 hover:text-white transition cursor-pointer">
-                            {{ num }}
-                        </a>
-                    {% endif %}
-                {% endfor %}
-            </div>
-
-            {# Next Button #}
-            {% if products.has_next %}
-                <a 
-                  hx-get="?page={{ products.next_page_number }}&per_page={{ per_page }}{% if search %}&search={{ search }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
-                  hx-target="#productsWrapper"
-                  hx-swap="innerHTML"
-                  class="px-4 py-2 rounded-full bg-white shadow hover:bg-green-600 hover:text-white transition cursor-pointer">
-                    Next <i class="fa-solid fa-forward m-1"></i>
-                </a>
-            {% else %}
-                <button class="px-4 py-2 rounded-full bg-gray-200 text-gray-400 cursor-not-allowed shadow">
-                    Next <i class="fa-solid fa-forward m-1"></i>
-                </button>
-            {% endif %}
-
-        </div>
-
-    </div>
-    <!-- PAGE LABEL -->
-    <p class="text-gray-600 font-medium mb-2 text-center">
-        Page <span class="text-green-600 font-semibold">{{ products.number }}</span>
-        of <span class="text-green-600 font-semibold">{{ products.paginator.num_pages }}</span>
+{% if products.paginator.count %}
+  <div class="shop-pagination-bar">
+    <p class="shop-muted text-sm font-bold">
+      Showing page <span class="text-green-700">{{ products.number }}</span> of <span class="text-green-700">{{ products.paginator.num_pages }}</span>
+      · <span class="text-slate-900">{{ products.paginator.count }}</span> products
     </p>
+    <form method="get" hx-get="{% url 'index' %}" hx-target="#productsWrapper" hx-swap="innerHTML" hx-push-url="true" class="flex items-center gap-2">
+      <input type="hidden" name="search" value="{{ search }}">
+      <input type="hidden" name="vendor" value="{{ vendor }}">
+      <input type="hidden" name="min_price" value="{{ min_price }}">
+      <input type="hidden" name="max_price" value="{{ max_price }}">
+      <input type="hidden" name="sort" value="{{ sort }}">
+      <input type="hidden" name="columns" value="{{ columns }}">
+      <label for="perPageBottom" class="text-sm font-black shop-muted">Items</label>
+      <select id="perPageBottom" name="per_page" onchange="this.form.requestSubmit()" class="shop-select shop-compact-select">
+        <option value="6" {% if per_page == 6 %}selected{% endif %}>6</option>
+        <option value="9" {% if per_page == 9 %}selected{% endif %}>9</option>
+        <option value="12" {% if per_page == 12 %}selected{% endif %}>12</option>
+        <option value="15" {% if per_page == 15 %}selected{% endif %}>15</option>
+      </select>
+    </form>
+  </div>
+{% endif %}
 
+{% if products.has_other_pages %}
+  <nav class="shop-pagination" aria-label="Product pagination">
+    {% if products.has_previous %}
+      <a hx-get="?page={{ products.previous_page_number }}&per_page={{ per_page }}&columns={{ columns }}&sort={{ sort }}{% if search %}&search={{ search }}{% endif %}{% if vendor %}&vendor={{ vendor }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
+         hx-target="#productsWrapper" hx-swap="innerHTML" hx-push-url="true" class="shop-page-btn"><i class="fa-solid fa-chevron-left"></i> Prev</a>
+    {% else %}
+      <span class="shop-page-btn is-disabled"><i class="fa-solid fa-chevron-left"></i> Prev</span>
     {% endif %}
+
+    <div class="shop-page-numbers">
+      {% for num in products.paginator.page_range %}
+        {% if num == products.number %}
+          <span class="shop-page-number is-active">{{ num }}</span>
+        {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+          <a hx-get="?page={{ num }}&per_page={{ per_page }}&columns={{ columns }}&sort={{ sort }}{% if search %}&search={{ search }}{% endif %}{% if vendor %}&vendor={{ vendor }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
+             hx-target="#productsWrapper" hx-swap="innerHTML" hx-push-url="true" class="shop-page-number">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if products.has_next %}
+      <a hx-get="?page={{ products.next_page_number }}&per_page={{ per_page }}&columns={{ columns }}&sort={{ sort }}{% if search %}&search={{ search }}{% endif %}{% if vendor %}&vendor={{ vendor }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}"
+         hx-target="#productsWrapper" hx-swap="innerHTML" hx-push-url="true" class="shop-page-btn">Next <i class="fa-solid fa-chevron-right"></i></a>
+    {% else %}
+      <span class="shop-page-btn is-disabled">Next <i class="fa-solid fa-chevron-right"></i></span>
+    {% endif %}
+  </nav>
+{% endif %}

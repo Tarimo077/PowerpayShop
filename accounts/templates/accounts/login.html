@@ -1,64 +1,35 @@
 {% extends "base.html" %}
-{% load static %}
+{% block title %}Login | PowerPay Shop{% endblock %}
 {% block content %}
-<div class="relative flex justify-center items-center min-h-screen overflow-hidden bg-gradient-to-r from-green-100 via-orange-100 to-green-50">
-
-  <!-- Animated Floating Shapes -->
-  <div class="absolute w-64 h-64 bg-green-300 rounded-full opacity-40 animate-bounce -top-32 -left-32"></div>
-  <div class="absolute w-72 h-72 bg-orange-300 rounded-full opacity-30 animate-bounce -bottom-36 -right-36"></div>
-  <div class="absolute w-48 h-48 bg-green-400 rounded-full opacity-20 animate-bounce top-1/4 right-1/4"></div>
-
-  <!-- Login Card -->
-  <div class="card w-96 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 transform transition duration-500 z-10">
-
-    <!-- Logo / Image -->
-    <div class="flex justify-center mb-4">
-      <img src="{% static 'images/pplogo.png' %}" alt="PowerPayShop Logo" class="w-2/3 h-2/3 object-contain">
-    </div>
-
-    <!-- Tagline -->
-    <p class="text-center text-lg font-bold text-green-700 dark:text-green-400 mb-6">
-      Appliances for the next billion
-    </p>
-
-    <!-- Login Form -->
-    <form method="POST" class="space-y-5">
-      {% csrf_token %}
-
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text font-semibold text-gray-700 dark:text-gray-200">Username</span>
-        </label>
-        <input type="text" name="username" placeholder="Enter username" 
-               class="input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition" required>
+<div class="min-h-screen grid" style="grid-template-rows: 1fr auto;">
+  <main class="shop-shell shop-section grid lg:grid-cols-[1fr_480px] gap-8 items-center">
+    <section class="shop-hero min-h-[520px] flex items-center">
+      <div class="space-y-5">
+        <span class="shop-eyebrow bg-white/15 text-white"><i class="fa-solid fa-bolt"></i> Welcome back</span>
+        <h1 class="font-black">Sign in and resume your shopping campaign.</h1>
+        <p class="text-lg max-w-xl">Access your cart, favourites, vendor dashboard, and support tickets without re-enacting the invention of passwords.</p>
+        <a href="{% url 'index' %}" class="shop-btn bg-white text-green-800"><i class="fa-solid fa-store"></i> Browse first</a>
       </div>
+    </section>
 
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text font-semibold text-gray-700 dark:text-gray-200">Password</span>
-        </label>
-        <input type="password" name="password" placeholder="Enter password"
-               class="input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition" required>
+    <section class="shop-card p-6 sm:p-8 modern-form">
+      <div class="mb-6">
+        <span class="shop-eyebrow"><i class="fa-solid fa-right-to-bracket"></i> Login</span>
+        <h2 class="text-3xl font-black mt-3">Your account</h2>
+        <p class="shop-muted">Use your username and password.</p>
       </div>
-
-      <div class="flex justify-center">
-        <button type="submit" 
-                class="btn bg-gradient-to-r from-green-500 to-orange-400 text-white font-bold w-1/2 hover:from-green-500 hover:to-orange-500 transition rounded-lg shadow-lg">
-            <i class="fa-solid fa-right-to-bracket m-2"></i> Sign In
-        </button>
+      <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        <label class="block"><span class="font-bold text-sm">Username</span>{{ form.username }}</label>
+        <label class="block"><span class="font-bold text-sm">Password</span>{{ form.password }}</label>
+        <button type="submit" class="shop-btn shop-btn-primary w-full text-lg"><i class="fa-solid fa-unlock"></i> Login</button>
+      </form>
+      <div class="mt-6 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between text-sm">
+        <a href="{% url 'password_reset' %}" class="font-bold text-green-700 hover:text-orange-600">Forgot password?</a>
+        <p class="shop-muted">No account? <a href="{% url 'register' %}" class="font-black text-green-700 hover:text-orange-600">Create one</a></p>
       </div>
-
-    </form>
-
-    <p class="mt-4 text-center text-sm text-gray-600 dark:text-gray-300">
-      Forgot your password? 
-      <a href="{% url 'password_reset' %}" class="text-green-600 dark:text-green-400 hover:text-orange-500 font-semibold">Reset here</a>
-    </p>
-    <p class="mt-4 text-center text-sm text-gray-600 dark:text-gray-300">
-      No Account? 
-      <a href="{% url 'register' %}" class="text-green-600 dark:text-green-400 hover:text-orange-500 font-semibold">Register here</a>
-    </p>
-
-  </div>
+    </section>
+  </main>
+  {% include 'footer.html' %}
 </div>
 {% endblock %}

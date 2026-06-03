@@ -1,168 +1,112 @@
 <!DOCTYPE html>
 {% load static %}
-<html lang="en" >  <!-- enables DaisyUI themes -->
+<html lang="en" data-theme="light">
 <head>
-    <script src="https://kit.fontawesome.com/69d2af506e.js" crossorigin="anonymous"></script>
-    <link rel="icon" href="{% static 'images/pp_no_bgcropped.png' %}">
-    <meta charset="UTF-8">
-    <title>{% block title %}PowerPayShop{% endblock %}</title>
-
-    <!-- Tailwind + DaisyUI CSS -->
-    <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Saira:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f8f4f">
+  <title>{% block title %}PowerPayShop{% endblock %}</title>
+  <link rel="icon" href="{% static 'images/pp_no_bgcropped.png' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/69d2af506e.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
+  <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
+  <link rel="stylesheet" href="{% static 'css/modern-shop.css' %}">
+  {% block extra_head %}{% endblock %}
 </head>
+<body class="shop-body min-h-screen grid grid-rows-[auto_1fr_auto]">
+  <main class="w-full">
+    {% block content %}{% endblock %}
+  </main>
 
-<body class="min-h-screen grid grid-rows-[auto_1fr_auto] bg-gradient-to-r from-green-100 via-orange-100 to-green-50">
- 
-    <main class="w-full">
-        {% block content %}
-        
-        {% endblock %}
-    </main>
-
-    <!-- DaisyUI Modal for messages -->
-<dialog id="messageModal" class="modal items-start pt-6">
-  <div id="modalBox"
-    class="modal-box max-w-md w-full rounded-2xl shadow-2xl p-6 relative animate-fadeIn transition-all">
-
-    <!-- Close Button -->
-    <button onclick="closeModal()"
-      class="btn btn-sm outline-none btn-ghost absolute right-3 top-3 text-white hover:text-gray-200">
-      ✕
-    </button>
-
-    <!-- Icon + Title Row -->
-    <div class="flex items-center gap-2 mb-3">
-      <div id="modalIconWrapper"
-        class="w-10 h-10 rounded-full flex items-center justify-center">
-        <i id="modalIcon" class="fa-solid fa-info text-xl text-white"></i>
+  <dialog id="messageModal" class="modal items-start pt-6">
+    <div id="modalBox" class="modal-box max-w-md w-full rounded-3xl shadow-2xl p-6 relative animate-fadeIn transition-all">
+      <button onclick="closeModal()" class="btn btn-sm btn-ghost absolute right-3 top-3 text-white hover:text-gray-200" aria-label="Close message">✕</button>
+      <div class="flex items-center gap-3 mb-3">
+        <div id="modalIconWrapper" class="w-11 h-11 rounded-full flex items-center justify-center bg-white/20">
+          <i id="modalIcon" class="fa-solid fa-info text-xl text-white"></i>
+        </div>
+        <h3 id="modalTitle" class="text-2xl text-white font-black">Message</h3>
       </div>
-
-      <h3 id="modalTitle" class="text-2xl text-white font-bold mb-3">
-        Message
-      </h3>
+      <p id="modalMessage" class="text-white text-base leading-relaxed">Message content</p>
     </div>
+  </dialog>
 
-    <!-- Message -->
-    <p id="modalMessage" class="text-white text-center mb-3 text-lg leading-relaxed">
-      Message content
-    </p>
+  <script>
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
 
-  </div>
-</dialog>
+    function closeModal() {
+      const modal = document.getElementById("messageModal");
+      if (!modal) return;
+      modal.classList.add("opacity-0", "-translate-y-10");
+      setTimeout(() => modal.close(), 260);
+    }
 
+    document.body.addEventListener("htmx:configRequest", (event) => {
+      const csrfInput = document.querySelector("[name=csrfmiddlewaretoken]");
+      const csrfToken = csrfInput ? csrfInput.value : getCookie("csrftoken");
+      if (csrfToken) event.detail.headers["X-CSRFToken"] = csrfToken;
+    });
 
-<script>
-  function closeModal() {
-    const modal = document.getElementById("messageModal");
-    modal.classList.add("opacity-0","-translate-y-10");
-    setTimeout(() => modal.close(), 500);
-  }
-
-  {% if messages %}
-    const modal = document.getElementById("messageModal");
-    const modalTitle = document.getElementById("modalTitle");
-    const modalMessage = document.getElementById("modalMessage");
-    const modalBox = modal.querySelector('.modal-box');
-    const iconWrapper = document.getElementById("modalIconWrapper");
-    const icon = document.getElementById("modalIcon");
-
-    {% for message in messages %}
-      modalTitle.textContent = "{{ message.tags|capfirst }}";
-      modalMessage.textContent = "{{ message|escapejs }}";
-
-      // Reset styles
-      modalBox.className = "modal-box max-w-md w-full rounded-2xl shadow-2xl p-4 relative animate-fadeIn transition-all";
-      iconWrapper.className = "w-10 h-10 rounded-full flex items-center justify-center";
-      icon.className = "fa-solid text-lg text-white";
-
-      {% if message.level_tag == 'error' %}
-        modalBox.classList.add('bg-red-500');
-        iconWrapper.classList.add('bg-red-700');
-        icon.classList.add('fa-circle-exclamation');
-      {% elif message.level_tag == 'success' %}
-        modalBox.classList.add('bg-green-500');
-        iconWrapper.classList.add('bg-green-700');
-        icon.classList.add('fa-square-check');
-      {% elif message.level_tag == 'info' %}
-        modalBox.classList.add('bg-blue-500');
-        iconWrapper.classList.add('bg-blue-700');
-        icon.classList.add('fa-info');
-      {% else %}
-        modalBox.classList.add('bg-yellow-500');
-        iconWrapper.classList.add('bg-yellow-700');
-        icon.classList.add('fa-exclamation');
-      {% endif %}
-
-      modal.showModal();
-      modal.classList.remove("opacity-0","-translate-y-10");
-
-      setTimeout(() => {
-        closeModal();
-      }, 3000);
-    {% endfor %}
-  {% endif %}
-</script>
-
-<script>
-document.body.addEventListener("htmx:configRequest", (event) => {
-    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
-    event.detail.headers["X-CSRFToken"] = csrfToken;
-});
-</script>
-<script>
-document.addEventListener('click', function(event){
-    const dropdown = document.getElementById('notifDropdown');
-    const btn = document.getElementById('notifDropdownBtn');
-
-    if (!btn || !dropdown) return; // <-- prevent errors if elements don't exist
-
-    if (btn.contains(event.target)) {
+    document.addEventListener('click', function(event){
+      const dropdown = document.getElementById('notifDropdown');
+      const btn = document.getElementById('notifDropdownBtn');
+      if (!btn || !dropdown) return;
+      if (btn.contains(event.target)) {
         dropdown.classList.toggle('hidden');
-    } else if (!dropdown.contains(event.target)) {
+      } else if (!dropdown.contains(event.target)) {
         dropdown.classList.add('hidden');
-    }
-});
-</script>
-<script>
-document.body.addEventListener('htmx:afterSwap', (event) => {
-    if (event.target.id === "search-results") {
-        document.getElementById("search-results").classList.remove("hidden");
-    }
-});
-</script>
-<style>
-  body {
-    font-family: "Saira";
-}
-@view-transition {
-    navigation: auto; /* smooth transitions on DOM updates */
-}
-</style>
-<style>
-#messageModal::backdrop {
-  background: rgba(0, 0, 0, 0.45);
-}
+      }
+    });
 
-.animate-fadeIn {
-  animation: dropIn 0.35s ease-out;
-}
+    document.body.addEventListener('htmx:afterSwap', (event) => {
+      if (event.target && event.target.id === "live-results") {
+        event.target.classList.remove("hidden");
+      }
+    });
 
-@keyframes dropIn {
-  from {
-    opacity: 0;
-    transform: translateY(-40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-</style>
-
-  
+    {% if messages %}
+      const modal = document.getElementById("messageModal");
+      const modalTitle = document.getElementById("modalTitle");
+      const modalMessage = document.getElementById("modalMessage");
+      const modalBox = modal.querySelector('.modal-box');
+      const iconWrapper = document.getElementById("modalIconWrapper");
+      const icon = document.getElementById("modalIcon");
+      {% for message in messages %}
+        modalTitle.textContent = "{{ message.tags|capfirst }}" || "Message";
+        modalMessage.textContent = "{{ message|escapejs }}";
+        modalBox.className = "modal-box max-w-md w-full rounded-3xl shadow-2xl p-6 relative animate-fadeIn transition-all";
+        iconWrapper.className = "w-11 h-11 rounded-full flex items-center justify-center bg-white/20";
+        icon.className = "fa-solid text-xl text-white";
+        {% if message.level_tag == 'error' %}
+          modalBox.classList.add('bg-red-600'); icon.classList.add('fa-circle-exclamation');
+        {% elif message.level_tag == 'success' %}
+          modalBox.classList.add('bg-green-600'); icon.classList.add('fa-square-check');
+        {% elif message.level_tag == 'info' %}
+          modalBox.classList.add('bg-blue-600'); icon.classList.add('fa-info');
+        {% else %}
+          modalBox.classList.add('bg-amber-500'); icon.classList.add('fa-triangle-exclamation');
+        {% endif %}
+        modal.showModal();
+        modal.classList.remove("opacity-0", "-translate-y-10");
+        setTimeout(closeModal, 3400);
+      {% endfor %}
+    {% endif %}
+  </script>
+  <script src="{% static 'js/shop-interactions.js' %}"></script>
+  <style>
+    body { font-family: "Saira", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    @view-transition { navigation: auto; }
+    #messageModal::backdrop { background: rgba(2, 6, 23, 0.45); backdrop-filter: blur(5px); }
+    .animate-fadeIn { animation: dropIn 0.28s ease-out; }
+    @keyframes dropIn { from { opacity: 0; transform: translateY(-28px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+  {% block extra_scripts %}{% endblock %}
 </body>
 </html>

@@ -2,92 +2,107 @@
 {% load static %}
 {% load humanize %}
 
+{% block title %}PowerPay Shop | Clean energy marketplace{% endblock %}
 {% block content %}
-
-
-<div class="grid min-h-screen"
-     style="grid-template-rows: auto 1fr auto;">  <!-- fallback if arbitrary grid rows are not enabled -->
-
-  <!-- Header -->
+<div class="min-h-screen grid" style="grid-template-rows: auto 1fr auto;">
   {% include 'shop/navbar.html' %}
 
-<!-- CUSTOMER VIEW ONLY -->
-<div class="container mx-auto mt-6">
-
-    <!-- FILTERS (outside HX swap) -->
-    <form id="filterForm"
-        method="GET"
-        hx-get="{% url 'index' %}"
-        hx-target="#productsWrapper"
-        hx-swap="innerHTML"
-        hx-trigger="submit,
-                    keyup delay:300ms from:#searchInput,
-                    change from:#vendorSelect,
-                    input delay:300ms from:#minPrice,
-                    input delay:300ms from:#maxPrice"
-        class="mb-4 flex flex-wrap items-center gap-3">
-
-        <input type="hidden" name="per_page" value="{{ per_page }}">
-
-
-        <!-- SEARCH -->
-        <input type="text" id="searchInput" name="search" placeholder="Search products..."
-            value="{{ request.GET.search|default:'' }}"
-            class="input input-bordered w-40 md:w-64 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
-
-        <!-- VENDOR -->
-        <select name="vendor" id="vendorSelect"
-                class="select select-bordered w-40 md:w-64 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
-            <option value="">All Vendors</option>
-            {% for v in vendors %}
-                <option value="{{ v.id }}" {% if request.GET.vendor == v.id|stringformat:"s" %}selected{% endif %}>
-                    {{ v.shop_name|default:v.user }}
-                </option>
-            {% endfor %}
-        </select>
-
-        <!-- MIN PRICE -->
-        <input type="number" id="minPrice" name="min_price" placeholder="Min Price"
-            value="{{ request.GET.min_price|default:'' }}"
-            class="input input-bordered w-32 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
-
-        <!-- MAX PRICE -->
-        <input type="number" id="maxPrice" name="max_price" placeholder="Max Price"
-            value="{{ request.GET.max_price|default:'' }}"
-            class="input input-bordered w-32 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
-
-        <!-- CLEAR FILTERS BUTTON -->
-        <button type="button"
-                class="btn bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition"
-                onclick="
-                    document.getElementById('searchInput').value = '';
-                    document.getElementById('vendorSelect').selectedIndex = 0;
-                    document.getElementById('minPrice').value = '';
-                    document.getElementById('maxPrice').value = '';
-
-                    // Reset per_page if present
-                    const pp = document.querySelector('input[name=per_page]');
-                    if (pp) pp.value = '{{ per_page }}';
-
-                    // Remove page field if HTMX added it
-                    const pg = document.querySelector('input[name=page]');
-                    if (pg) pg.remove();
-
-                    htmx.trigger('#filterForm', 'submit');
-                ">
-            <i class="fa-solid fa-filter-circle-xmark mr-1"></i> Clear
-        </button>
-
-
-    </form>
-
-    <div id="productsWrapper" class="mb-12">
-        {% include "shop/product_grid.html" %}
-        {% include "shop/pagination.html" %}
+  <section class="shop-shell shop-section">
+    <div class="shop-hero mb-6">
+      <div class="grid lg:grid-cols-[1.25fr_.75fr] gap-8 items-center">
+        <div class="space-y-5">
+          <span class="shop-eyebrow bg-white/15 text-white"><i class="fa-solid fa-bolt"></i> PowerPay Marketplace</span>
+          <h1 class="font-black">Shop smarter energy products without the boring checkout circus.</h1>
+          <p class="text-lg max-w-3xl">Browse clean cooking and home energy appliances from approved vendors, compare prices, save favourites, preview product galleries, and checkout with M-Pesa.</p>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <a href="#shop-products" class="shop-btn bg-white text-green-800"><i class="fa-solid fa-store"></i> Start shopping</a>
+            {% if not user.is_authenticated %}<a href="{% url 'register' %}" class="shop-btn bg-black/20 text-white border border-white/30"><i class="fa-solid fa-user-plus"></i> Create account</a>{% endif %}
+          </div>
+        </div>
+        <div class="shop-stat-grid">
+          <div class="shop-stat"><strong>{{ total_products|default:products.paginator.count|default:0 }}</strong><span>Products</span></div>
+          <div class="shop-stat"><strong>{{ vendors|length }}</strong><span>Vendors</span></div>
+          <div class="shop-stat"><strong>72h</strong><span>Delivery target</span></div>
+        </div>
+      </div>
     </div>
 
-    
-</div>
-{% include 'footer.html' %}
+    <div class="shop-feature-strip mb-6">
+      <div><i class="fa-solid fa-shield-halved"></i><span><strong>Verified sellers</strong><small>Approved vendors only</small></span></div>
+      <div><i class="fa-solid fa-mobile-screen-button"></i><span><strong>M-Pesa checkout</strong><small>STK push support</small></span></div>
+      <div><i class="fa-solid fa-heart"></i><span><strong>Wishlist ready</strong><small>Save products for later</small></span></div>
+      <div><i class="fa-solid fa-sliders"></i><span><strong>Smart browsing</strong><small>Sort, filter, and resize grid</small></span></div>
+    </div>
+
+    <div id="shop-products" class="shop-card p-4 sm:p-5 mb-6">
+      <form id="filterForm"
+            method="GET"
+            hx-get="{% url 'index' %}"
+            hx-target="#productsWrapper"
+            hx-swap="innerHTML"
+            hx-push-url="true"
+            hx-trigger="submit, keyup delay:300ms from:#searchInput, change from:#vendorSelect, input delay:300ms from:#minPrice, input delay:300ms from:#maxPrice, change from:#sortSelect, change from:#columnsSelect, change from:#perPageSelect"
+            class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.35fr_1fr_.8fr_.8fr] gap-3 items-center">
+          <input type="text" id="searchInput" name="search" placeholder="Search products..." value="{{ search|default:'' }}" class="shop-input">
+          <select name="vendor" id="vendorSelect" class="shop-select">
+            <option value="">All vendors</option>
+            {% for v in vendors %}
+              <option value="{{ v.id }}" {% if vendor == v.id|stringformat:"s" %}selected{% endif %}>{{ v.shop_name|default:v.user }}</option>
+            {% endfor %}
+          </select>
+          <input type="number" id="minPrice" name="min_price" placeholder="Min price" value="{{ min_price|default:'' }}" class="shop-input">
+          <input type="number" id="maxPrice" name="max_price" placeholder="Max price" value="{{ max_price|default:'' }}" class="shop-input">
+        </div>
+
+        <div class="shop-toolbar">
+          <div class="shop-result-summary">
+            <span class="shop-eyebrow"><i class="fa-solid fa-store"></i> {{ products.paginator.count }} found</span>
+            {% if active_filters_count %}<span class="shop-filter-pill">{{ active_filters_count }} active filter{{ active_filters_count|pluralize }}</span>{% endif %}
+          </div>
+
+          <div class="shop-toolbar-controls">
+            <label class="shop-control-group" for="sortSelect"><span>Sort</span>
+              <select name="sort" id="sortSelect" class="shop-select shop-compact-select">
+                <option value="latest" {% if sort == 'latest' %}selected{% endif %}>Newest</option>
+                <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: low to high</option>
+                <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: high to low</option>
+                <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Top rated</option>
+                <option value="stock" {% if sort == 'stock' %}selected{% endif %}>Most stock</option>
+              </select>
+            </label>
+
+            <label class="shop-control-group" for="perPageSelect"><span>Items</span>
+              <select name="per_page" id="perPageSelect" class="shop-select shop-compact-select">
+                <option value="6" {% if per_page == 6 %}selected{% endif %}>6</option>
+                <option value="9" {% if per_page == 9 %}selected{% endif %}>9</option>
+                <option value="12" {% if per_page == 12 %}selected{% endif %}>12</option>
+                <option value="15" {% if per_page == 15 %}selected{% endif %}>15</option>
+              </select>
+            </label>
+
+            <label class="shop-control-group" for="columnsSelect"><span>Row</span>
+              <select name="columns" id="columnsSelect" class="shop-select shop-compact-select">
+                <option value="3" {% if columns == 3 %}selected{% endif %}>3</option>
+                <option value="4" {% if columns == 4 %}selected{% endif %}>4</option>
+                <option value="5" {% if columns == 5 %}selected{% endif %}>5</option>
+              </select>
+            </label>
+
+            <button type="button" class="shop-btn shop-btn-accent"
+                    onclick="document.getElementById('searchInput').value='';document.getElementById('vendorSelect').selectedIndex=0;document.getElementById('minPrice').value='';document.getElementById('maxPrice').value='';document.getElementById('sortSelect').value='latest';const pg=document.querySelector('input[name=page]');if(pg)pg.remove();htmx.trigger('#filterForm','submit');">
+              <i class="fa-solid fa-filter-circle-xmark"></i> Clear
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div id="productsWrapper" class="mb-12">
+      {% include "shop/product_listing.html" %}
+    </div>
+  </section>
+
+  {% include 'footer.html' %}
 </div>
 {% endblock %}

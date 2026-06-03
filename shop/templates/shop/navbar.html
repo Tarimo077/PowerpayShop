@@ -1,106 +1,51 @@
 {% load static %}
+<nav class="shop-navbar">
+  <div class="shop-shell shop-nav-inner">
+    <a href="{% url 'index' %}" class="shop-logo flex items-center gap-3" aria-label="PowerPay Shop home">
+      <img src="{% static 'images/pplogo.png' %}" alt="PowerPay">
+    </a>
 
-<nav class="w-full bg-white border-b shadow-sm sticky top-0 z-50 py-3">
-    <div class="flex items-center justify-between px-4">
+    <form method="GET" action="{% url 'product_search' %}" class="shop-search">
+      <input
+        type="text"
+        name="q"
+        placeholder="Search products, vendors, stoves..."
+        value="{{ request.GET.q|default:'' }}"
+        autocomplete="off"
+        hx-get="{% url 'product_search' %}"
+        hx-trigger="keyup changed delay:280ms"
+        hx-target="#live-results"
+        hx-indicator="#search-spinner">
+      <span id="search-spinner" class="shop-search-icon hidden" hx-indicator><i class="fa fa-spinner fa-spin"></i></span>
+      <span class="shop-search-icon" aria-hidden="true"><i class="fa-solid fa-magnifying-glass"></i></span>
+      <div id="live-results" class="shop-live-results hidden"></div>
+    </form>
 
-        <!-- LOGO (far left) -->
-        <a href="/" class="flex items-center flex-shrink-0">
-            <img src="{% static 'images/pplogo.png' %}" class="h-12" alt="PowerPay">
+    <div class="shop-nav-actions">
+      {% if user.is_authenticated %}
+        <a href="{% url 'wishlist_page' %}" class="shop-nav-link" title="Favourites">
+          <span class="relative"><i class="fa-solid fa-heart"></i>{% if wishlist_count > 0 %}<span class="shop-badge absolute -top-3 -right-3">{{ wishlist_count }}</span>{% endif %}</span>
+          <span>Favourites</span>
         </a>
-
-        <!-- SEARCH BAR (grows to fill space) -->
-        <form method="GET" action="{% url 'product_search' %}" 
-              class="relative flex-1 px-4">
-            <input 
-                type="text"
-                name="q"
-                placeholder="Search products or vendor..."
-                value="{{ request.GET.q|default:'' }}"
-                class="border-3 border-green-500 rounded-lg w-full px-4 py-2 text-sm focus:ring-2 focus:ring-green-500 outline-none"
-                hx-get="{% url 'product_search' %}"
-                hx-trigger="keyup changed delay:300ms"
-                hx-target="#live-results"
-                hx-indicator="#search-spinner">
-
-            <!-- Spinner -->
-            <div id="search-spinner" class="absolute right-4 top-2.5 text-gray-400 hidden" hx-indicator>
-                <i class="fa fa-spinner fa-spin"></i>
-            </div>
-
-            <!-- Live Search Result Dropdown -->
-            <div id="live-results" 
-                 class="absolute w-full bg-white border-none rounded-lg shadow mt-1 z-50">
-            </div>
-        </form>
-
-        <!-- RIGHT ICONS (far right) -->
-        <div class="flex items-center gap-6 flex-shrink-0">
-
-            {% if user.is_authenticated %}
-
-                <!-- Wishlist -->
-                <a href="{% url 'wishlist_page' %}" 
-                   class="flex flex-col items-center text-green-600 hover:text-orange-500">
-                    <span class="relative text-2xl indicator">
-                        <i class="fa-solid fa-heart"></i>
-                        {% if wishlist_count > 0 %}
-                        <span class="badge indicator-item bg-orange-500 text-white text-sm rounded-full">
-                            {{ wishlist_count }}
-                        </span>
-                        {% endif %}
-                    </span>
-                    <span class="text-xs font-medium">Favourites</span>
-                </a>
-
-                <!-- Cart -->
-                <a href="{% url 'view_cart' %}" 
-                   class="flex flex-col items-center text-green-600 hover:text-orange-500">
-                    <span class="relative text-2xl indicator">
-                        <i class="fa-solid fa-cart-shopping"></i>
-                        {% if cart_item_count > 0 %}
-                        <span class="badge indicator-item bg-orange-500 text-white text-sm rounded-full py-2">
-                            {{ cart_item_count }}
-                        </span>
-                        {% endif %}
-                    </span>
-                    <span class="text-xs font-medium">Cart</span>
-                </a>
-
-                <!-- Notifications -->
-                <button 
-                    id="notifDropdownBtn"
-                    class="flex flex-col items-center text-green-600 hover:text-orange-500"
-                    hx-get="{% url 'notifications:dropdown' %}"
-                    hx-trigger="click"
-                    hx-target="#notifDropdown"
-                    hx-swap="innerHTML">
-                    
-                    <span class="relative text-2xl indicator">
-                        <i class="fa-solid fa-bell"></i>
-                        {% if unread_notif_count > 0 %}
-                        <span class="badge indicator-item bg-orange-500 text-white text-sm rounded-full py-2">
-                            {{ unread_notif_count }}
-                        </span>
-                        {% endif %}
-                    </span>
-                    <span class="text-xs font-medium">Notifications</span>
-                </button>
-
-                <!-- Avatar (far right) -->
-                {% include 'shop/avatar.html' %}
-
-            {% else %}
-                <a href="{% url 'login' %}" class="text-green-600 font-semibold hover:text-orange-500">
-                    Login
-                </a>
-                <a href="{% url 'register' %}" class="text-green-600 font-semibold hover:text-orange-500">
-                    Sign Up
-                </a>
-            {% endif %}
-        </div>
-
-        <!-- Notification dropdown target -->
-        <div id="notifDropdown" class="absolute right-4 top-16 w-80 bg-white border rounded-lg shadow-lg z-50 hidden"></div>
-
+        <a href="{% url 'view_cart' %}" class="shop-nav-link" title="Cart">
+          <span class="relative"><i class="fa-solid fa-cart-shopping"></i>{% if cart_item_count > 0 %}<span class="shop-badge absolute -top-3 -right-3">{{ cart_item_count }}</span>{% endif %}</span>
+          <span>Cart</span>
+        </a>
+        <button id="notifDropdownBtn" type="button" class="shop-nav-link bg-transparent border-0 cursor-pointer" title="Notifications"
+                hx-get="{% url 'notifications:dropdown' %}"
+                hx-trigger="click"
+                hx-target="#notifDropdown"
+                hx-swap="innerHTML">
+          <span class="relative"><i class="fa-solid fa-bell"></i>{% if unread_notif_count > 0 %}<span class="shop-badge absolute -top-3 -right-3">{{ unread_notif_count }}</span>{% endif %}</span>
+          <span>Alerts</span>
+        </button>
+        {% include 'shop/avatar.html' %}
+      {% else %}
+        <a href="{% url 'login' %}" class="shop-btn shop-btn-soft">Login</a>
+        <a href="{% url 'register' %}" class="shop-btn shop-btn-primary hidden sm:inline-flex">Join</a>
+      {% endif %}
     </div>
+
+    <div id="notifDropdown" class="absolute right-4 top-20 w-80 max-w-[calc(100vw-2rem)] bg-white border border-slate-200 rounded-3xl shadow-2xl z-50 hidden overflow-hidden"></div>
+  </div>
 </nav>

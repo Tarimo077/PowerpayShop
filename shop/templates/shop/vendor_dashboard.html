@@ -1,263 +1,140 @@
-{% extends "base.html" %} 
+{% extends "base.html" %}
 {% load static %}
 {% load humanize %}
+{% block title %}Vendor Dashboard | PowerPay Shop{% endblock %}
 {% block content %}
-
-<div class="grid min-h-screen" style="grid-template-rows: auto 1fr auto;">
+<div class="min-h-screen grid" style="grid-template-rows: auto 1fr auto;">
   {% include 'shop/navbar.html' %}
 
-  <div class="container mx-auto mt-4 px-4 mb-8">
-    <h2 class="text-2xl font-bold text-green-600 mb-4">Vendor Dashboard</h2>
-
-    <div class="tabs tabs-boxed mb-6 relative border-b border-gray-300 flex gap-8">
-        <a class="tab tab-active relative py-4 cursor-pointer font-bold transition-colors duration-300" data-tab="products">Products</a>
-        <a class="tab relative py-4 cursor-pointer font-bold transition-colors duration-300 text-gray-500" data-tab="promotions">Promotions</a>
-
-        <span id="tabIndicator"
-              class="absolute bottom-0 h-1 bg-green-600 rounded-full transition-all duration-300"
-              style="width:0; left:0;"></span>
+  <main class="shop-shell shop-section">
+    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-6">
+      <div>
+        <span class="shop-eyebrow"><i class="fa-solid fa-store"></i> Vendor</span>
+        <h1 class="text-4xl sm:text-5xl font-black tracking-tight mt-3">Dashboard</h1>
+        <p class="shop-muted mt-2">Manage products and promotions without resorting to spreadsheet sorcery.</p>
+      </div>
+      <a href="{% url 'add_product' %}" class="shop-btn shop-btn-primary"><i class="fa-solid fa-cart-plus"></i> New product</a>
     </div>
 
-    <div class="mb-8">
-      
-      <div id="tab-products" class="tab-pane">
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div class="card bg-white shadow-xl rounded-xl p-6 text-center border border-gray-100">
-              <h3 class="text-xl font-semibold text-gray-700">Products</h3>
-              <p class="text-4xl font-bold text-green-600 mt-2">{{ product_count }}</p>
-          </div>
-          <div class="card bg-white shadow-xl rounded-xl p-6 text-center border border-gray-100">
-              <h3 class="text-xl font-semibold text-gray-700">Sales</h3>
-              <p class="text-4xl font-bold text-orange-500 mt-2">{{ total_sales }}</p>
-          </div>
-          <div class="card bg-white shadow-xl rounded-xl p-6 text-center border border-gray-100">
-              <h3 class="text-xl font-semibold text-gray-700">Total Revenue</h3>
-              <p class="text-4xl font-bold text-green-600 mt-2">Ksh. {{ total_revenue|intcomma }}</p>
-          </div>
-        </div>
+    <div class="grid md:grid-cols-3 gap-5 mb-7">
+      <div class="shop-card p-6"><p class="shop-muted font-bold">Products</p><p class="text-4xl font-black text-green-700 mt-1">{{ product_count }}</p></div>
+      <div class="shop-card p-6"><p class="shop-muted font-bold">Sales</p><p class="text-4xl font-black text-orange-500 mt-1">{{ total_sales }}</p></div>
+      <div class="shop-card p-6"><p class="shop-muted font-bold">Revenue</p><p class="text-4xl font-black text-green-700 mt-1">Ksh. {{ total_revenue|intcomma }}</p></div>
+    </div>
 
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-bold text-gray-700">Your Inventory</h3>
-          <a href="{% url 'add_product' %}" 
-             class="btn bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow hover:bg-green-700 transition flex items-center gap-2">
-            <i class="fa-solid fa-cart-plus"></i> New Product
-          </a>
-        </div>
+    <div class="shop-card p-3 sm:p-4 mb-6">
+      <div class="flex gap-2 flex-wrap">
+        <button class="tab tab-active shop-btn shop-btn-primary" data-tab="products"><i class="fa-solid fa-boxes-stacked"></i> Products</button>
+        <button class="tab shop-btn shop-btn-soft" data-tab="promotions"><i class="fa-solid fa-tags"></i> Promotions</button>
+      </div>
+    </div>
 
-        <div class="bg-white shadow-lg rounded-xl p-4 border border-gray-100">
-          <div class="overflow-x-auto">
-            <table class="min-w-full table-auto border-collapse">
-              <thead class="bg-green-600 text-white">
+    <section id="tab-products" class="tab-pane">
+      <div class="shop-card p-4 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+          <h2 class="text-2xl font-black">Inventory</h2>
+          <form method="get" class="flex gap-2 items-center">
+            <select name="per_page" onchange="this.form.submit()" class="shop-select min-w-32">
+              <option value="5" {% if per_page == 5 %}selected{% endif %}>5 per page</option>
+              <option value="10" {% if per_page == 10 %}selected{% endif %}>10 per page</option>
+            </select>
+          </form>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="shop-table">
+            <thead><tr><th>Product</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
+            <tbody>
+              {% for product in products %}
                 <tr>
-                  <th class="px-4 py-3 text-left rounded-tl-lg">Image</th>
-                  <th class="px-4 py-3 text-left">Name</th>
-                  <th class="px-4 py-3 text-left">Price</th>
-                  <th class="px-4 py-3 text-left">Stock</th>
-                  <th class="px-4 py-3 text-left rounded-tr-lg">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for product in products %}
-                <tr class="border-b hover:bg-gray-50 transition">
-                  <td class="px-4 py-3">
-                    {% if product.image %}
-                    <img src="{{ product.image.url }}" class="w-12 h-12 object-contain rounded border">
-                    {% endif %}
+                  <td>
+                    <div class="flex items-center gap-3">
+                      {% if product.image %}<img src="{{ product.image.url }}" class="w-14 h-14 object-contain rounded-2xl bg-slate-50 border border-slate-100 p-1" alt="{{ product.name }}">{% else %}<span class="w-14 h-14 rounded-2xl bg-green-50 grid place-items-center text-green-700"><i class="fa-solid fa-box"></i></span>{% endif %}
+                      <div><p class="font-black">{{ product.name }}</p><p class="shop-muted text-xs">{{ product.created_at|naturalday }}</p></div>
+                    </div>
                   </td>
-                  <td class="px-4 py-3 font-semibold text-gray-700">{{ product.name }}</td>
-                  <td class="px-4 py-3 text-green-600 font-bold">Ksh. {{ product.price|intcomma }}</td>
-                  <td class="px-4 py-3">
-                    <span class="{% if product.stock < 5 %}text-red-600{% else %}text-yellow-600{% endif %} font-semibold">
-                        {{ product.stock }}
-                    </span>
-                  </td>
-                  <td class="px-4 py-3">
+                  <td class="font-black text-green-700">Ksh. {{ product.price|intcomma }}</td>
+                  <td><span class="font-black {% if product.stock < 5 %}text-red-600{% else %}text-orange-500{% endif %}">{{ product.stock }}</span></td>
+                  <td>
                     <div class="flex gap-2">
-                        <a href="{% url 'edit_product' product.id %}" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition text-sm">
-                            <i class="fa-solid fa-pen"></i> Edit
-                        </a>
-                        <button onclick="openDeleteModal('{{ product.id }}')" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition text-sm">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                      <a href="{% url 'edit_product' product.id %}" class="shop-btn shop-btn-soft min-h-0 py-2 text-sm"><i class="fa-solid fa-pen"></i> Edit</a>
+                      <button type="button" onclick="openDeleteModal('{{ product.id }}', '{{ product.name|escapejs }}')" class="shop-btn shop-btn-danger min-h-0 py-2 text-sm"><i class="fa-solid fa-trash"></i></button>
                     </div>
                   </td>
                 </tr>
-                {% empty %}
-                <tr>
-                  <td colspan="5" class="px-4 py-8 text-center text-gray-500 italic">No products found.</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
+              {% empty %}
+                <tr><td colspan="4"><div class="shop-empty"><p>No products yet.</p></div></td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
+        {% include "shop/pagination.html" %}
       </div>
+    </section>
 
-      <div id="tab-promotions" class="tab-pane hidden">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-gray-700">Active Promo Codes</h3>
-            <a href="{% url 'create_promo' %}" 
-               class="btn bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow hover:bg-green-700 transition flex items-center gap-2">
-              <i class="fa-solid fa-tag"></i> New Promo Code
-            </a>
+    <section id="tab-promotions" class="tab-pane hidden">
+      <div class="shop-card p-4 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+          <h2 class="text-2xl font-black">Promo codes</h2>
+          <a href="{% url 'create_promo' %}" class="shop-btn shop-btn-accent"><i class="fa-solid fa-tag"></i> New promo</a>
         </div>
-
-        <div class="bg-white shadow-lg rounded-xl p-4 border border-gray-100">
-          <div class="overflow-x-auto">
-            <table class="min-w-full table-auto border-collapse">
-              <thead class="bg-green-600 text-white">
+        <div class="overflow-x-auto">
+          <table class="shop-table">
+            <thead><tr><th>Code</th><th>Discount</th><th>Status</th><th>Usage</th><th>Expires</th><th>Actions</th></tr></thead>
+            <tbody>
+              {% for promo in promo_codes %}
                 <tr>
-                  <th class="px-4 py-3 text-left rounded-tl-lg">Code</th>
-                  <th class="px-4 py-3 text-left">Discount</th>
-                  <th class="px-4 py-3 text-left">Status</th>
-                  <th class="px-4 py-3 text-left">Usage</th>
-                  <th class="px-4 py-3 text-left">Expiration</th>
-                  <th class="px-4 py-3 text-left rounded-tr-lg">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for promo in promo_codes %}
-                <tr class="border-b hover:bg-gray-50 transition">
-                  <td class="px-4 py-3 font-mono font-bold text-gray-700">{{ promo.code }}</td>
-                  <td class="px-4 py-3 text-green-600 font-bold">
-                    {% if promo.discount_type == 'percentage' %}{{ promo.discount_value|floatformat:0 }}%
-                    {% else %}Ksh. {{ promo.discount_value|intcomma }}{% endif %}
-                  </td>
-                  <td class="px-4 py-3">
-                    {% if promo.is_active and promo.is_valid %}
-                      <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">Active</span>
-                    {% else %}
-                      <span class="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">Inactive</span>
-                    {% endif %}
-                  </td>
-                  <td class="px-4 py-3 text-sm">{{ promo.used_count }} / {{ promo.usage_limit|default:"∞" }}</td>
-                  <td class="px-4 py-3 text-sm">{{ promo.valid_to|naturalday }}</td>
-                  <td class="px-4 py-3">
+                  <td class="font-mono font-black">{{ promo.code }}</td>
+                  <td class="font-black text-green-700">{% if promo.discount_type == 'percentage' %}{{ promo.discount_value|floatformat:0 }}%{% else %}Ksh. {{ promo.discount_value|intcomma }}{% endif %}</td>
+                  <td>{% if promo.is_active and promo.is_valid %}<span class="px-3 py-1 bg-green-50 text-green-700 rounded-full font-black text-xs">Active</span>{% else %}<span class="px-3 py-1 bg-red-50 text-red-700 rounded-full font-black text-xs">Inactive</span>{% endif %}</td>
+                  <td class="shop-muted font-bold">{{ promo.used_count }} / {{ promo.usage_limit|default:"∞" }}</td>
+                  <td class="shop-muted">{{ promo.valid_to|naturalday|default:"No expiry" }}</td>
+                  <td>
                     <div class="flex gap-2">
-                        <a href="{% url 'edit_promo' promo.id %}" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition text-sm">
-                            <i class="fa-solid fa-pen"></i> Edit
-                        </a>
-                        <form method="POST" action="{% url 'delete_promo' promo.id %}" onsubmit="return confirm('Delete this code?')">
-                            {% csrf_token %}
-                            <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition text-sm">
-                            <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </form>
+                      <a href="{% url 'edit_promo' promo.id %}" class="shop-btn shop-btn-soft min-h-0 py-2 text-sm"><i class="fa-solid fa-pen"></i> Edit</a>
+                      <form method="POST" action="{% url 'delete_promo' promo.id %}" onsubmit="return confirm('Delete this promo code?')">{% csrf_token %}<button type="submit" class="shop-btn shop-btn-danger min-h-0 py-2 text-sm"><i class="fa-solid fa-trash"></i></button></form>
                     </div>
                   </td>
                 </tr>
-                {% empty %}
-                <tr>
-                  <td colspan="5" class="px-4 py-8 text-center text-gray-500 italic">No promotions found.</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
+              {% empty %}
+                <tr><td colspan="6"><div class="shop-empty"><p>No promo codes yet.</p></div></td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
       </div>
-
-    </div>
-  </div>
+    </section>
+  </main>
 
   {% include 'footer.html' %}
 </div>
-<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
 
-</div>
+<dialog id="deleteModal" class="modal">
+  <div class="modal-box rounded-3xl">
+    <h3 class="text-2xl font-black text-red-600"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Delete product?</h3>
+    <p class="shop-muted mt-3">This will remove <strong id="deleteProductName"></strong> from your shop.</p>
+    <div class="modal-action">
+      <form id="deleteForm" method="POST">{% csrf_token %}<button class="shop-btn shop-btn-danger"><i class="fa-solid fa-trash"></i> Delete</button></form>
+      <form method="dialog"><button class="shop-btn shop-btn-soft">Cancel</button></form>
+    </div>
+  </div>
+</dialog>
+
 <script>
-    const tabs = document.querySelectorAll('.tab');
-    const indicator = document.getElementById('tabIndicator');
-    const panes = document.querySelectorAll('.tab-pane');
-
-    /**
-     * Updates the green underline position and width
-     */
-    function updateIndicator(activeTab) {
-        if (!activeTab || !indicator) return;
-        const rect = activeTab.getBoundingClientRect();
-        const parentRect = activeTab.parentElement.getBoundingClientRect();
-        indicator.style.width = rect.width + 'px';
-        indicator.style.left = (rect.left - parentRect.left) + 'px';
-    }
-
-    /**
-     * Handles switching between tab contents
-     */
-    function switchTab(tabName) {
-        const targetTab = document.querySelector(`[data-tab="${tabName}"]`);
-        if (!targetTab) return;
-
-        // 1. Update Tab Button Styles
-        tabs.forEach(t => {
-            t.classList.remove('tab-active', 'text-green-600');
-            t.classList.add('text-gray-500');
-        });
-        targetTab.classList.add('tab-active', 'text-green-600');
-        targetTab.classList.remove('text-gray-500');
-
-        // 2. Update Content Visibility
-        panes.forEach(p => p.classList.add('hidden'));
-        const activePane = document.getElementById('tab-' + tabName);
-        if (activePane) activePane.classList.remove('hidden');
-
-        // 3. Move the Underline
-        updateIndicator(targetTab);
-    }
-
-    // Event Listeners for Tab Clicks
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const tabName = tab.dataset.tab;
-            switchTab(tabName);
-            // Update URL hash (e.g., #promotions) without page reload
-            history.replaceState(null, null, '#' + tabName);
-        });
-    });
-
-    /**
-     * Logic to run when page loads
-     */
-    window.addEventListener('load', () => {
-        // Handle fragment redirect (e.g., dashboard/#promotions)
-        const hash = window.location.hash.replace('#', '');
-        if (hash === 'promotions' || hash === 'products') {
-            switchTab(hash);
-        } else {
-            // Default: Initialize indicator on the first active tab
-            const activeTab = document.querySelector('.tab-active');
-            if (activeTab) updateIndicator(activeTab);
-        }
-    });
-
-    // Keep indicator aligned if window is resized
-    window.addEventListener('resize', () => {
-        const activeTab = document.querySelector('.tab-active');
-        if (activeTab) updateIndicator(activeTab);
-    });
-
-    /**
-     * Delete Modal Logic
-     */
-    function openDeleteModal(productId) {
-        const modal = document.getElementById("deleteModal");
-        const form = document.getElementById("deleteForm");
-        // Ensure this URL matches your urls.py path
-        form.action = `/delete_product/${productId}/`; 
-        modal.classList.remove("hidden");
-    }
-
-    function closeDeleteModal() {
-        document.getElementById("deleteModal").classList.add("hidden");
-    }
-
-    // Close modal if user clicks outside of it
-    window.onclick = function(event) {
-        const modal = document.getElementById("deleteModal");
-        if (event.target == modal) {
-            closeDeleteModal();
-        }
-    }
+function switchTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t => { t.classList.remove('shop-btn-primary', 'tab-active'); t.classList.add('shop-btn-soft'); });
+  const targetTab = document.querySelector(`[data-tab="${tabName}"]`);
+  if (targetTab) { targetTab.classList.add('shop-btn-primary', 'tab-active'); targetTab.classList.remove('shop-btn-soft'); }
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+  const activePane = document.getElementById('tab-' + tabName);
+  if (activePane) activePane.classList.remove('hidden');
+}
+document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => { switchTab(tab.dataset.tab); history.replaceState(null, null, '#' + tab.dataset.tab); }));
+window.addEventListener('load', () => { const hash = window.location.hash.replace('#', ''); if (hash === 'promotions' || hash === 'products') switchTab(hash); });
+function openDeleteModal(productId, productName) {
+  const modal = document.getElementById('deleteModal');
+  document.getElementById('deleteForm').action = `/delete_product/${productId}/`;
+  document.getElementById('deleteProductName').innerText = productName || 'this product';
+  modal.showModal();
+}
 </script>
 {% endblock %}

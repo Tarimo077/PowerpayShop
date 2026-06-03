@@ -69,7 +69,7 @@ class MultipleFileField(forms.FileField):
         return result
 
 class GalleryForm(forms.Form):
-    images = MultipleFileField()
+    images = MultipleFileField(required=False)
 
 
 class CheckoutForm(forms.ModelForm):

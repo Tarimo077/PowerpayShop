@@ -1,434 +1,167 @@
 {% extends "base.html" %}
 {% load static %}
 {% load humanize %}
+{% block title %}Checkout | PowerPay Shop{% endblock %}
 {% block content %}
-
-
-<div class="grid min-h-screen"
-     style="grid-template-rows: auto 1fr auto;">  <!-- fallback if arbitrary grid rows are not enabled -->
-
-  <!-- Header -->
+<div class="min-h-screen grid" style="grid-template-rows: auto 1fr auto;">
   {% include 'shop/navbar.html' %}
 
-<div class="container mx-auto p-6 max-w-5xl mb-8">
-
-    <h1 class="text-3xl font-bold text-green-700 mb-6">Checkout</h1>
-
-    <div class="flex flex-col md:flex-row gap-6">
-
-        <!-- LEFT SIDE -->
-        <div class="w-full md:w-2/3">
-
-            <!-- TAB BUTTONS -->
-            <div class="flex gap-2 mb-4">
-                <button class="tab-btn bg-green-600 text-white px-4 py-2 rounded-lg" data-tab="tab1">Basic Info</button>
-                <button class="tab-btn bg-gray-200 px-4 py-2 rounded-lg" data-tab="tab2">Household</button>
-                <button class="tab-btn bg-gray-200 px-4 py-2 rounded-lg" data-tab="tab3">Cooking</button>
-                <button class="tab-btn bg-gray-200 px-4 py-2 rounded-lg" data-tab="tab4">Payment</button>
-            </div>
-
-            <form method="POST" id="checkoutForm">
-                {% csrf_token %}
-
-                <input type="hidden" name="promo_code" id="hidden-promo-code" value="">
-
-                <!-- TAB 1 -->
-                <div id="tab1" class="tab-content bg-white p-6 rounded-xl shadow-lg">
-                    <h2 class="text-xl font-semibold mb-4">Basic Information</h2>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <label>
-                            <span>First Name <span class="text-red-500">*</span></span>
-                            {{ form.first_name }}
-                        </label>
-                        <label>
-                            <span>Last Name <span class="text-red-500">*</span></span>
-                            {{ form.last_name }}
-                        </label>
-
-                        <label class="md:col-span-2">
-                            <span>Email <span class="text-red-500">*</span></span>
-                            {{ form.email }}
-                        </label>
-
-                        <label class="md:col-span-2">
-                            <span>Phone <span class="text-red-500">*</span></span>
-                            {{ form.phone }}
-                        </label>
-
-                        <label class="md:col-span-2">
-                            <span>Country <span class="text-red-500">*</span></span>
-                            {{ form.country }}
-                        </label>
-
-                        <label class="md:col-span-2">
-                            <span>County/State/Province <span class="text-red-500">*</span></span>
-                            {{ form.county }}
-                        </label>
-
-                        <label class="md:col-span-2">
-                            <span>City/Town <span class="text-red-500">*</span></span>
-                            {{ form.city }}
-                        </label>
-
-                        <label class="md:col-span-2">
-                            <span>Village</span>
-                            {{ form.village }}
-                        </label>
-
-                        <label class="md:col-span-2">
-                            <span>Apartment, suite, unit, etc.</span>
-                            {{ form.address_detail }}
-                        </label>
-
-                    </div>
-                </div>
-
-                <!-- TAB 2 -->
-                <div id="tab2" class="tab-content hidden bg-white p-6 rounded-xl shadow-lg mt-4">
-                    <h2 class="text-xl font-semibold mb-4">Household Information</h2>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                        <!-- Gender -->
-                        <label>
-                            <span class="font-medium">Gender</span>
-                            {{ form.gender }}
-                        </label>
-
-                        <!-- Age -->
-                        <label>
-                            <span class="font-medium">Age</span>
-                            {{ form.age }}
-                        </label>
-
-                        <!-- National ID -->
-                        <label class="md:col-span-2">
-                            <span class="font-medium">National ID</span>
-                            {{ form.national_id }}
-                        </label>
-
-                        <!-- Education -->
-                        <label>
-                            <span class="font-medium">Highest Level Of Education</span>
-                            {{ form.education }}
-                        </label>
-
-                        <!-- Marital Status -->
-                        <label>
-                            <span class="font-medium">Marital Status</span>
-                            {{ form.marital_status }}
-                        </label>
-
-                        <!-- Employment -->
-                        <label class="md:col-span-2">
-                            <span class="font-medium">Employment</span>
-                            {{ form.employment }}
-                        </label>
-
-                        <!-- Economic Activity -->
-                        <label class="md:col-span-2">
-                            <span class="font-medium">Economic Activity</span>
-                            {{ form.economic_activity }}
-                        </label>
-
-                        <!-- Monthly Income -->
-                        <label>
-                            <span class="font-medium">Monthly Income (Ksh)</span>
-                            {{ form.monthly_income }}
-                        </label>
-
-                        <!-- Buying Method -->
-                        <label>
-                            <span class="font-medium">Cash Or Loan<span class="text-red-500">*</span></span>
-                            {{ form.buying_method }}
-                        </label>
-
-                        <!-- Other Loans -->
-                        <label class="md:col-span-2">
-                            <span class="font-medium">Do You Have Any Other Loans?</span>
-                            {{ form.other_loans }}
-                        </label>
-
-                    </div>
-                </div>
-
-
-                <!-- TAB 3 -->
-                <div id="tab3" class="tab-content hidden bg-white p-6 rounded-xl shadow-lg mt-4">
-                    <h2 class="text-xl font-semibold mb-4">Cooking-Energy Information</h2>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                        <!-- Cooking Fuel -->
-                        <label class="md:col-span-2">
-                            <span class="font-medium">Cooking Fuel Currently In Use (if multiple fuels are used, please select accordingly)</span>
-                            {{ form.cooking_fuel }}
-                        </label>
-
-                        <!-- Stove Type -->
-                        <label class="md:col-span-2">
-                            <span class="font-medium">Cooking Stove Currently In Use (if multiple stoves are used, please select accordingly)</span>
-                            {{ form.stove_type }}
-                        </label>
-
-                        <!-- Are you the cook -->
-                        <label class="md:col-span-2">
-                            <span class="font-medium">Are you the one who is going to be cooking with the appliance?</span>
-                            {{ form.is_cook_user }}
-                        </label>
-
-                        <!-- Electricity Cost -->
-                        <label  class="md:col-span-2">
-                            <span class="font-medium">Monthly Electricity Cost For Previous Month</span>
-                            {{ form.monthly_electricity_cost }}
-                        </label>
-
-                        <!-- Grid Connection -->
-                        <label>
-                            <span class="font-medium">Do you have a grid connection?</span>
-                            {{ form.grid_connection }}
-                        </label>
-
-                        <!-- Utility Provider -->
-                        <label>
-                            <span class="font-medium">Utility Provider</span>
-                            {{ form.utility_provider }}
-                        </label>
-                    </div>
-                </div>
-
-
-
-                <!-- TAB 4 -->
-                <div id="tab4" class="tab-content hidden bg-white p-6 rounded-xl shadow-lg mt-4">
-                    <h2 class="text-xl font-semibold mb-4">Payment</h2>
-
-                    <label class="block">
-                        <span>Mpesa Number (start with 254) <span class="text-red-500">*</span></span>
-                        {{ payment_form.mpesa_phone }}
-                    </label>
-
-                    <button id="payBtn" disabled
-                        class="mt-4 w-full bg-gray-400 text-white py-3 rounded-lg">
-                        Fill all required fields to proceed
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- RIGHT SIDE SUMMARY -->
-        <div class="w-full md:w-1/2 mt-14">
-            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-50">
-                <h3 class="text-lg font-semibold mb-4 border-b pb-2">Order Summary</h3>
-
-                <div class="max-h-96 overflow-y-auto">
-                    {% for item in items %}
-                    <div class="py-3 flex items-center gap-3 border-b border-gray-50">
-                        {% if item.product.image %}
-                        <img src="{{ item.product.image.url }}" class="w-16 h-16 object-contain rounded">
-                        {% endif %}
-                        <div>
-                            <div class="font-semibold text-gray-800">{{ item.product.name }}</div>
-                            <div class="text-sm text-gray-500">Ksh. {{ item.product.price|intcomma }} × {{ item.quantity }}</div>
-                        </div>
-                        <div class="ml-auto font-bold text-gray-700">Ksh. {{ item.total_price|intcomma }}</div>
-                    </div>
-                    {% endfor %}
-                </div>
-
-                <div class="mt-6 mb-6 p-4 bg-green-50 rounded-xl border border-dashed border-green-300">
-                    <label class="block text-xs font-bold text-green-700 uppercase tracking-wide mb-2">Have a promo code?</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="promo-input" placeholder="ENTER CODE" 
-                            class="flex-1 px-3 py-2 text-sm border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none uppercase">
-                        <button type="button" onclick="applyPromo()" 
-                            class="bg-gray-800 text-white px-4 py-2 text-sm rounded-lg hover:bg-black transition font-bold">
-                            Apply
-                        </button>
-                    </div>
-                    <div id="promo-status-container" class="mt-2 hidden items-center justify-between">
-                        <p id="promo-message" class="text-xs font-medium"></p>
-                        <button type="button" onclick="removePromo()" class="text-[10px] text-red-600 underline font-bold hover:text-red-800 uppercase">
-                            Remove
-                        </button>
-                    </div>
-                </div>
-
-                <div class="mt-6 space-y-2">
-                    <div class="flex justify-between text-gray-600">
-                        <span>Subtotal:</span>
-                        <span id="summary-subtotal" class="font-bold">Ksh. {{ subtotal|intcomma }}</span>
-                    </div>
-
-                    <div id="discount-row" class="hidden justify-between text-orange-600 font-medium italic">
-                        <span>Promo Discount:</span>
-                        <span id="summary-discount">- Ksh. 0.00</span>
-                    </div>
-
-                    <div class="flex justify-between font-bold text-xl border-t pt-4 text-green-700">
-                        <span>Total to Pay:</span>
-                        <span id="summary-total">Ksh. {{ subtotal|intcomma }}</span>
-                    </div>
-                </div>
-
-                <div class="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400 uppercase tracking-wider">
-                    <i class="fa-solid fa-shield-halved"></i>
-                    Secure Checkout
-                </div>
-            </div>
-        </div>
+  <main class="shop-shell shop-section">
+    <div class="mb-7">
+      <span class="shop-eyebrow"><i class="fa-solid fa-lock"></i> Secure checkout</span>
+      <h1 class="text-4xl sm:text-5xl font-black tracking-tight mt-3">Finish your order</h1>
+      <p class="shop-muted mt-2">A few details, one M-Pesa prompt, and we can stop pretending checkout forms are entertainment.</p>
     </div>
+
+    <div class="grid lg:grid-cols-[1fr_410px] gap-6 items-start">
+      <section class="shop-card p-4 sm:p-6 modern-form">
+        <div class="flex flex-wrap gap-2 mb-5">
+          <button type="button" class="tab-btn shop-btn shop-btn-primary" data-tab="tab1">1. Basic</button>
+          <button type="button" class="tab-btn shop-btn shop-btn-soft" data-tab="tab2">2. Household</button>
+          <button type="button" class="tab-btn shop-btn shop-btn-soft" data-tab="tab3">3. Energy</button>
+          <button type="button" class="tab-btn shop-btn shop-btn-soft" data-tab="tab4">4. Payment</button>
+        </div>
+
+        <form method="POST" id="checkoutForm" class="space-y-5">
+          {% csrf_token %}
+          <input type="hidden" name="promo_code" id="hidden-promo-code" value="">
+
+          <div id="tab1" class="tab-content rounded-3xl bg-white/70 border border-slate-100 p-5">
+            <h2 class="text-2xl font-black mb-4">Basic information</h2>
+            <div class="grid sm:grid-cols-2 gap-4">
+              <label><span class="font-bold text-sm">First name *</span>{{ form.first_name }}{{ form.first_name.errors }}</label>
+              <label><span class="font-bold text-sm">Last name *</span>{{ form.last_name }}{{ form.last_name.errors }}</label>
+              <label class="sm:col-span-2"><span class="font-bold text-sm">Email *</span>{{ form.email }}{{ form.email.errors }}</label>
+              <label class="sm:col-span-2"><span class="font-bold text-sm">Phone *</span>{{ form.phone }}{{ form.phone.errors }}</label>
+              <label><span class="font-bold text-sm">Country *</span>{{ form.country }}{{ form.country.errors }}</label>
+              <label><span class="font-bold text-sm">County / State *</span>{{ form.county }}{{ form.county.errors }}</label>
+              <label><span class="font-bold text-sm">City / Town *</span>{{ form.city }}{{ form.city.errors }}</label>
+              <label><span class="font-bold text-sm">Village</span>{{ form.village }}{{ form.village.errors }}</label>
+              <label class="sm:col-span-2"><span class="font-bold text-sm">Address details</span>{{ form.address_detail }}{{ form.address_detail.errors }}</label>
+            </div>
+          </div>
+
+          <div id="tab2" class="tab-content hidden rounded-3xl bg-white/70 border border-slate-100 p-5">
+            <h2 class="text-2xl font-black mb-4">Household information</h2>
+            <div class="grid sm:grid-cols-2 gap-4">
+              <label><span class="font-bold text-sm">Gender</span>{{ form.gender }}{{ form.gender.errors }}</label>
+              <label><span class="font-bold text-sm">Age</span>{{ form.age }}{{ form.age.errors }}</label>
+              <label><span class="font-bold text-sm">National ID</span>{{ form.national_id }}{{ form.national_id.errors }}</label>
+              <label><span class="font-bold text-sm">Education</span>{{ form.education }}{{ form.education.errors }}</label>
+              <label><span class="font-bold text-sm">Marital status</span>{{ form.marital_status }}{{ form.marital_status.errors }}</label>
+              <label><span class="font-bold text-sm">Employment</span>{{ form.employment }}{{ form.employment.errors }}</label>
+              <label class="sm:col-span-2"><span class="font-bold text-sm">Economic activity</span>{{ form.economic_activity }}{{ form.economic_activity.errors }}</label>
+              <label><span class="font-bold text-sm">Monthly income</span>{{ form.monthly_income }}{{ form.monthly_income.errors }}</label>
+              <label><span class="font-bold text-sm">Buying method *</span>{{ form.buying_method }}{{ form.buying_method.errors }}</label>
+              <label class="sm:col-span-2"><span class="font-bold text-sm">Any other loans?</span>{{ form.other_loans }}{{ form.other_loans.errors }}</label>
+            </div>
+          </div>
+
+          <div id="tab3" class="tab-content hidden rounded-3xl bg-white/70 border border-slate-100 p-5">
+            <h2 class="text-2xl font-black mb-4">Cooking and energy</h2>
+            <div class="grid sm:grid-cols-2 gap-4">
+              <label class="sm:col-span-2"><span class="font-bold text-sm">Cooking fuel currently in use</span><div class="mt-2 rounded-3xl bg-slate-50 border border-slate-100 p-4">{{ form.cooking_fuel }}</div>{{ form.cooking_fuel.errors }}</label>
+              <label class="sm:col-span-2"><span class="font-bold text-sm">Cooking stove currently in use</span><div class="mt-2 rounded-3xl bg-slate-50 border border-slate-100 p-4">{{ form.stove_type }}</div>{{ form.stove_type.errors }}</label>
+              <label><span class="font-bold text-sm">Will you cook with this appliance?</span>{{ form.is_cook_user }}{{ form.is_cook_user.errors }}</label>
+              <label><span class="font-bold text-sm">Grid connection?</span>{{ form.grid_connection }}{{ form.grid_connection.errors }}</label>
+              <label><span class="font-bold text-sm">Utility provider</span>{{ form.utility_provider }}{{ form.utility_provider.errors }}</label>
+              <label><span class="font-bold text-sm">Monthly electricity cost</span>{{ form.monthly_electricity_cost }}{{ form.monthly_electricity_cost.errors }}</label>
+            </div>
+          </div>
+
+          <div id="tab4" class="tab-content hidden rounded-3xl bg-white/70 border border-slate-100 p-5">
+            <h2 class="text-2xl font-black mb-4">Payment</h2>
+            <label class="block"><span class="font-bold text-sm">M-Pesa number, start with 254 *</span>{{ payment_form.mpesa_phone }}{{ payment_form.mpesa_phone.errors }}</label>
+            <button id="payBtn" disabled class="shop-btn w-full mt-5 bg-slate-400 text-white cursor-not-allowed">Fill required fields to proceed</button>
+          </div>
+        </form>
+      </section>
+
+      <aside class="shop-card p-6 sticky top-28">
+        <h2 class="text-2xl font-black mb-4">Order summary</h2>
+        <div class="max-h-80 overflow-y-auto pr-1 space-y-3">
+          {% for item in items %}
+            <div class="flex items-center gap-3 rounded-3xl bg-white/75 border border-slate-100 p-3">
+              {% if item.product.image %}<img src="{{ item.product.image.url }}" class="w-16 h-16 object-contain rounded-2xl bg-slate-50 p-1" alt="{{ item.product.name }}">{% else %}<div class="w-16 h-16 rounded-2xl bg-green-50 grid place-items-center text-green-700"><i class="fa-solid fa-box"></i></div>{% endif %}
+              <div class="flex-1 min-w-0"><p class="font-black truncate">{{ item.product.name }}</p><p class="shop-muted text-xs">Ksh. {{ item.product.price|intcomma }} × {{ item.quantity }}</p></div>
+              <p class="font-black text-sm">Ksh. {{ item.total_price|intcomma }}</p>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="mt-6 p-4 bg-green-50/80 rounded-3xl border border-dashed border-green-300">
+          <label class="block text-xs font-black text-green-800 uppercase tracking-wider mb-2">Promo code</label>
+          <div class="flex gap-2">
+            <input type="text" id="promo-input" placeholder="ENTER CODE" class="shop-input uppercase flex-1">
+            <button type="button" onclick="applyPromo()" class="shop-btn shop-btn-primary">Apply</button>
+          </div>
+          <div id="promo-status-container" class="mt-2 hidden items-center justify-between gap-3">
+            <p id="promo-message" class="text-xs font-bold"></p>
+            <button type="button" onclick="removePromo()" class="text-xs text-red-600 underline font-black uppercase">Remove</button>
+          </div>
+        </div>
+
+        <div class="mt-6 space-y-3">
+          <div class="flex justify-between shop-muted"><span>Subtotal</span><span id="summary-subtotal" class="font-black text-slate-900">Ksh. {{ subtotal|intcomma }}</span></div>
+          <div id="discount-row" class="hidden justify-between text-orange-600 font-black"><span>Promo discount</span><span id="summary-discount">- Ksh. 0.00</span></div>
+          <div class="flex justify-between text-2xl font-black border-t border-dashed border-slate-300 pt-4 text-green-700"><span>Total</span><span id="summary-total">Ksh. {{ subtotal|intcomma }}</span></div>
+        </div>
+        <p class="mt-5 text-xs shop-muted text-center"><i class="fa-solid fa-shield-halved mr-1"></i> Secure checkout</p>
+      </aside>
+    </div>
+  </main>
+
+  {% include 'footer.html' %}
 </div>
-{% include 'footer.html' %}
-</div>
-<!-- Tabs + validation -->
 <script>
 document.querySelectorAll(".tab-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const tab = btn.dataset.tab;
-
-        // Reset all buttons
-        document.querySelectorAll(".tab-btn").forEach(b => 
-            b.classList.remove("bg-green-600","text-white"));
-        btn.classList.add("bg-green-600","text-white");
-
-        // Hide all tab contents
-        document.querySelectorAll(".tab-content").forEach(t => {
-            t.classList.add("hidden");
-            t.classList.remove("block"); // ensure proper display reset
-        });
-
-        // Show the selected tab
-        const activeTab = document.getElementById(tab);
-        activeTab.classList.remove("hidden");
-        activeTab.classList.add("block"); // explicitly set display
-    });
+  btn.addEventListener("click", () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll(".tab-btn").forEach(b => { b.classList.remove("shop-btn-primary"); b.classList.add("shop-btn-soft"); });
+    btn.classList.add("shop-btn-primary"); btn.classList.remove("shop-btn-soft");
+    document.querySelectorAll(".tab-content").forEach(t => t.classList.add("hidden"));
+    document.getElementById(tab).classList.remove("hidden");
+  });
 });
-
-document.addEventListener("DOMContentLoaded", () => {
-    const firstTab = document.getElementById("tab1");
-    firstTab.classList.remove("hidden");
-    firstTab.classList.add("block");
-});
-
-
-/* Disable Pay Button Until Required Filled */
-const requiredFields = [
-    "id_first_name", "id_last_name", "id_email", "id_phone",
-    "id_country", "id_county", "id_city", "id_buying_method",
-    "id_mpesa_phone"
-];
-
+const requiredFields = ["id_first_name", "id_last_name", "id_email", "id_phone", "id_country", "id_county", "id_city", "id_buying_method", "id_mpesa_phone"];
 function checkRequired() {
-    let allFilled = true;
-    requiredFields.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el || !el.value.trim()) allFilled = false;
-    });
-
-    const btn = document.getElementById("payBtn");
-
-    if (allFilled) {
-        btn.disabled = false;
-        btn.className = "mt-4 w-full bg-gradient-to-r from-green-600 to-orange-500 text-white py-3 rounded-lg";
-        btn.innerText = "Pay Now";
-    } else {
-        btn.disabled = true;
-        btn.className = "mt-4 w-full bg-gray-400 text-white py-3 rounded-lg";
-        btn.innerText = "Fill all required fields to proceed";
-    }
+  let allFilled = true;
+  requiredFields.forEach(id => { const el = document.getElementById(id); if (!el || !String(el.value || '').trim()) allFilled = false; });
+  const btn = document.getElementById("payBtn");
+  if (allFilled) { btn.disabled = false; btn.className = "shop-btn shop-btn-primary w-full mt-5"; btn.innerHTML = '<i class="fa-solid fa-mobile-screen"></i> Pay now'; }
+  else { btn.disabled = true; btn.className = "shop-btn w-full mt-5 bg-slate-400 text-white cursor-not-allowed"; btn.innerText = "Fill required fields to proceed"; }
 }
-
-requiredFields.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener("input", checkRequired);
-});
-
-function formatCurrency(num) {
-    return "Ksh. " + Number(num).toLocaleString("en-KE");
-}
-
+requiredFields.forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener("input", checkRequired); });
+document.addEventListener("DOMContentLoaded", checkRequired);
+function formatCurrency(num) { return "Ksh. " + Number(num).toLocaleString("en-KE"); }
 function applyPromo() {
-    const codeInput = document.getElementById('promo-input');
-    const code = codeInput.value.trim();
-    const msg = document.getElementById('promo-message');
-    const container = document.getElementById('promo-status-container');
-    const hiddenInput = document.getElementById('hidden-promo-code');
-
-    if (!code) {
-        alert("Please enter a code.");
-        return;
+  const codeInput = document.getElementById('promo-input');
+  const code = codeInput.value.trim();
+  const msg = document.getElementById('promo-message');
+  const container = document.getElementById('promo-status-container');
+  const hiddenInput = document.getElementById('hidden-promo-code');
+  if (!code) { msg.innerText = "Enter a code first."; container.classList.remove('hidden'); container.classList.add('flex'); msg.className = "text-xs font-bold text-red-600"; return; }
+  fetch("{% url 'apply_promo' %}", { method: "POST", headers: { "X-CSRFToken": "{{ csrf_token }}", "Content-Type": "application/x-www-form-urlencoded" }, body: `code=${encodeURIComponent(code)}` })
+  .then(res => res.json())
+  .then(data => {
+    container.classList.remove('hidden'); container.classList.add('flex'); msg.className = "text-xs font-bold";
+    if (data.success) {
+      msg.innerText = "Code applied."; msg.classList.add('text-green-700'); hiddenInput.value = code;
+      document.getElementById('discount-row').classList.remove('hidden'); document.getElementById('discount-row').classList.add('flex');
+      document.getElementById('summary-discount').innerText = "- " + formatCurrency(data.discount_amount);
+      document.getElementById('summary-total').innerText = formatCurrency(data.new_total);
+      codeInput.disabled = true; codeInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+    } else {
+      msg.innerText = data.message || "Invalid promo code"; msg.classList.add('text-red-600'); hiddenInput.value = "";
+      document.getElementById('discount-row').classList.add('hidden'); document.getElementById('summary-total').innerText = document.getElementById('summary-subtotal').innerText;
     }
-
-    fetch("{% url 'apply_promo' %}", {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": "{{ csrf_token }}",
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: `code=${encodeURIComponent(code)}`
-    })
-    .then(res => res.json())
-    .then(data => {
-        container.classList.remove('hidden');
-        container.classList.add('flex');
-        
-        // Reset message colors
-        msg.classList.remove('text-green-600', 'text-red-600');
-        
-        if (data.success) {
-            // 1. Success Flow
-            msg.innerText = "Code Applied Successfully!";
-            msg.classList.add('text-green-600');
-            hiddenInput.value = code; // Crucial for final checkout form submission
-            
-            // 2. Update the Pricing UI
-            document.getElementById('discount-row').classList.remove('hidden');
-            document.getElementById('discount-row').classList.add('flex');
-            
-            document.getElementById('summary-discount').innerText = "- " + formatCurrency(data.discount_amount);
-            document.getElementById('summary-total').innerText = formatCurrency(data.new_total);
-            
-            // Optional: Disable input so they can't change it without removing first
-            codeInput.disabled = true;
-            codeInput.classList.add('bg-gray-100', 'cursor-not-allowed');
-        } else {
-            // 3. Error Flow (DoesNotExist, Expired, or Not Applicable)
-            msg.innerText = data.message; // Shows "Invalid promo code" or "This code does not apply..."
-            msg.classList.add('text-red-600');
-            
-            // Clear the hidden input to ensure no ghost discounts
-            hiddenInput.value = "";
-            
-            // Hide the discount row if it was previously visible
-            document.getElementById('discount-row').classList.add('hidden');
-            
-            // Reset total to original subtotal
-            const subtotalText = document.getElementById('summary-subtotal').innerText;
-            document.getElementById('summary-total').innerText = subtotalText;
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert("Something went wrong. Please try again.");
-    });
+  })
+  .catch(() => { msg.innerText = "Promo check failed."; container.classList.remove('hidden'); container.classList.add('flex'); msg.className = "text-xs font-bold text-red-600"; });
 }
-
 function removePromo() {
-    const codeInput = document.getElementById('promo-input');
-    codeInput.value = "";
-    codeInput.disabled = false;
-    codeInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
-    
-    document.getElementById('hidden-promo-code').value = "";
-    document.getElementById('promo-status-container').classList.add('hidden');
-    document.getElementById('discount-row').classList.add('hidden');
-    
-    // Reset total to the original subtotal
-    const subtotalText = document.getElementById('summary-subtotal').innerText;
-    document.getElementById('summary-total').innerText = subtotalText;
+  const codeInput = document.getElementById('promo-input'); codeInput.value = ""; codeInput.disabled = false; codeInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+  document.getElementById('hidden-promo-code').value = ""; document.getElementById('promo-status-container').classList.add('hidden'); document.getElementById('discount-row').classList.add('hidden');
+  document.getElementById('summary-total').innerText = document.getElementById('summary-subtotal').innerText;
 }
 </script>
-
 {% endblock %}

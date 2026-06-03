@@ -1,93 +1,57 @@
 {% extends "base.html" %}
-{% load static %}
+{% block title %}{{ title }} | PowerPay Shop{% endblock %}
 {% block content %}
-
-<div class="grid min-h-screen"
-     style="grid-template-rows: auto 1fr auto;">  <!-- fallback if arbitrary grid rows are not enabled -->
-
-  <!-- Header -->
+<div class="min-h-screen grid" style="grid-template-rows: auto 1fr auto;">
   {% include 'shop/navbar.html' %}
-
-<div class="flex justify-center items-start min-h-screen bg-gradient-to-r from-green-100 via-orange-100 to-green-50 py-10 px-6">
-  <div class="card w-full max-w-3xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 space-y-6">
-
-    <div class="flex justify-center mb-2">
-      <img src="{% static 'images/pplogo.png' %}" alt="PowerPayShop Logo" class="w-1/3 h-1/3 object-contain">
+  <main class="shop-shell shop-section">
+    <div class="mb-6">
+      <span class="shop-eyebrow"><i class="fa-solid fa-box"></i> Inventory</span>
+      <h1 class="text-4xl sm:text-5xl font-black tracking-tight mt-3">{{ title }}</h1>
     </div>
-
-    <h2 class="text-2xl font-bold text-green-700 dark:text-green-400 text-center mb-4">{{ title }}</h2>
-
-    <form method="POST" enctype="multipart/form-data" class="space-y-5">
-      {% csrf_token %}
-
-      {% for field in form %}
-        <div class="form-control w-full">
-          {{ field.label_tag }}
-          {{ field }}
-          {% if field.help_text %}
-            <span class="text-sm text-gray-500 dark:text-gray-300">{{ field.help_text }}</span>
-          {% endif %}
-          {% for error in field.errors %}
-            <span class="text-sm text-red-600 dark:text-red-400">{{ error }}</span>
-          {% endfor %}
-        </div>
-      {% endfor %}
-
-      <div class="form-control w-full">
-        {{ gallery_form.images.label_tag }}
-        {{ gallery_form.images }}
-        {% for error in gallery_form.images.errors %}
-            <span class="text-sm text-red-600 dark:text-red-400">{{ error }}</span>
+    <section class="shop-card p-6 sm:p-8 modern-form max-w-4xl mx-auto">
+      <form method="POST" enctype="multipart/form-data" class="grid sm:grid-cols-2 gap-5">
+        {% csrf_token %}
+        {% for field in form %}
+          <label class="block {% if field.name == 'description' or field.name == 'image' %}sm:col-span-2{% endif %}">
+            <span class="font-bold text-sm">{{ field.label }}</span>
+            {{ field }}
+            {% for error in field.errors %}<span class="block text-xs text-red-600 font-bold mt-1">{{ error }}</span>{% endfor %}
+          </label>
         {% endfor %}
-      </div>
+        <label class="block sm:col-span-2">
+          <span class="font-bold text-sm">Gallery images</span>
+          {{ gallery_form.images }}
+          {% for error in gallery_form.images.errors %}<span class="block text-xs text-red-600 font-bold mt-1">{{ error }}</span>{% endfor %}
+        </label>
 
-      {% if form.instance.pk and form.instance.gallery.all %}
-      <div>
-        <h3 class="font-semibold mb-2">Existing Gallery</h3>
-        <div class="relative flex items-center">
-          <!-- Left Arrow -->
-          <button type="button"
-                  onclick="document.getElementById('galleryContainer').scrollBy({ left: -100, behavior: 'smooth' })"
-                  class="absolute left-0 z-10 bg-white border rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-gray-100">
-            <i class="fa-solid fa-chevron-left"></i>
-          </button>
-
-          <!-- Gallery Scroll -->
-          <div id="galleryContainer" class="flex gap-2 overflow-x-auto scroll-smooth px-10 py-2">
-            {% for img in form.instance.gallery.all %}
-            <div class="relative flex-shrink-0 gallery-item">
-              <img src="{{ img.image.url }}" alt="{{ img.alt_text }}" class="h-24 w-24 object-cover rounded-lg border border-gray-300">
-              <button 
-                type="button"
-                class="absolute top-0 right-0 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-700 transition"
-                hx-delete="{% url 'delete_gallery_image' img.id %}"
-                hx-target="closest .gallery-item"
-                hx-swap="outerHTML">
-                <i class="fa-solid fa-xmark text-xs"></i>
-              </button>
+        {% if product and product.gallery.all %}
+          <div class="sm:col-span-2">
+            <h2 class="font-black mb-3">Current gallery</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {% for img in product.gallery.all %}
+                <div id="gallery-{{ img.id }}" class="relative rounded-3xl overflow-hidden bg-slate-50 border border-slate-100 p-2">
+                  <img src="{{ img.image.url }}" class="w-full h-28 object-contain" alt="{{ img.alt_text|default:product.name }}">
+                  <button type="button"
+                          hx-delete="{% url 'delete_gallery_image' img.id %}"
+                          hx-target="#gallery-{{ img.id }}"
+                          hx-swap="outerHTML"
+                          class="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-600 text-white shadow"
+                          aria-label="Delete gallery image">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              {% endfor %}
             </div>
-            {% endfor %}
           </div>
+        {% endif %}
 
-          <!-- Right Arrow -->
-          <button type="button"
-                  onclick="document.getElementById('galleryContainer').scrollBy({ left: 100, behavior: 'smooth' })"
-                  class="absolute right-0 z-10 bg-white border rounded-full w-8 h-8 flex items-center justify-center shadow hover:bg-gray-100">
-            <i class="fa-solid fa-chevron-right"></i>
-          </button>
+        <div class="sm:col-span-2 flex flex-col sm:flex-row gap-3">
+          <button type="submit" class="shop-btn shop-btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save product</button>
+          <a href="{% url 'vendor_dashboard' %}" class="shop-btn shop-btn-soft">Cancel</a>
         </div>
-      </div>
-      {% endif %}
-
-      <div class="flex justify-center mt-4">
-        <button type="submit" class="btn bg-gradient-to-r from-green-500 to-orange-400 text-white font-bold w-1/2 shadow-lg hover:from-green-600 hover:to-orange-500 transition rounded-lg">
-          <i class="fa-solid fa-floppy-disk m-1"></i> Save
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-
-{% include 'footer.html' %}
+      </form>
+    </section>
+  </main>
+  {% include 'footer.html' %}
 </div>
 {% endblock %}

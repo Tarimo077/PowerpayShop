@@ -1,206 +1,118 @@
 {% extends "base.html" %}
+{% block title %}Your Cart | PowerPay Shop{% endblock %}
 {% block content %}
 {% load humanize %}
 {% load static %}
-
-<div class="grid min-h-screen"
-     style="grid-template-rows: auto 1fr auto;">  
-
+<div class="min-h-screen grid" style="grid-template-rows: auto 1fr auto;">
   {% include 'shop/navbar.html' %}
 
-  <div class="max-w-6xl mx-auto p-4 sm:p-6 mt-4 mb-4">
-
-    <h2 class="text-2xl sm:text-3xl font-bold text-green-700 mb-6 sm:mb-8">
-        Your Cart
-    </h2>
+  <main class="shop-shell shop-section">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+      <div>
+        <span class="shop-eyebrow"><i class="fa-solid fa-cart-shopping"></i> Cart</span>
+        <h1 class="text-4xl sm:text-5xl font-black tracking-tight mt-3">Your shopping cart</h1>
+      </div>
+      <a href="{% url 'index' %}" class="shop-btn shop-btn-soft"><i class="fa-solid fa-arrow-left"></i> Continue shopping</a>
+    </div>
 
     {% if cart.items.all %}
+      <div class="grid lg:grid-cols-[1fr_380px] gap-6 items-start">
+        <section class="shop-card p-4 sm:p-6 space-y-4">
+          {% for item in cart.items.all %}
+            <article id="row-{{ item.id }}" class="rounded-3xl bg-white/75 border border-slate-100 p-4 grid sm:grid-cols-[110px_1fr_auto] gap-4 items-center">
+              {% if item.product.image %}
+                <img src="{{ item.product.image.url }}" class="w-28 h-28 object-contain rounded-3xl bg-slate-50 border border-slate-100 p-2" alt="{{ item.product.name }}">
+              {% else %}
+                <div class="w-28 h-28 rounded-3xl bg-green-50 grid place-items-center text-green-700"><i class="fa-solid fa-box text-3xl"></i></div>
+              {% endif %}
 
-    <!-- ⭐ ALL-IN-ONE BIG CARD ⭐ -->
-    <div class="bg-white p-4 sm:p-8 rounded-2xl shadow-lg border border-green-100">
+              <div>
+                <h2 class="text-xl font-black text-slate-900">{{ item.product.name }}</h2>
+                <p class="shop-muted text-sm mt-1"><i class="fa-solid fa-shop mr-1 text-green-700"></i>{{ item.product.vendor.shop_name|default:item.product.vendor.user }}</p>
+                <p class="text-green-700 font-black mt-2">Unit: Ksh. {{ item.product.price|intcomma }}</p>
+                <p id="item-total-{{ item.id }}" class="shop-muted font-bold">Line total: Ksh. {{ item.total_price|intcomma }}</p>
+              </div>
 
-        <!-- PRODUCT CARDS INSIDE -->
-        <div class="grid gap-4">
-
-            {% for item in cart.items.all %}
-            <div id="row-{{ item.id }}" class="p-4">
-
-                <div class="flex gap-4">
-
-                    <!-- IMAGE -->
-                    {% if item.product.image %}
-                    <img src="{{ item.product.image.url }}" class="w-24 h-24 object-contain rounded-lg p-1 border border-green-500">
-                    {% else %}
-                    <div class="w-20 h-20 bg-gray-200 rounded flex items-center justify-center text-gray-500">
-                        No Image
-                    </div>
-                    {% endif %}
-
-                    <!-- MAIN DETAILS -->
-                    <div class="flex-1">
-
-                        <p class="font-bold text-gray-800 text-lg">{{ item.product.name }}</p>
-
-                        <p class="text-gray-600 text-sm">
-                            Vendor: {{ item.product.vendor.shop_name|default:item.product.vendor.user }}
-                        </p>
-
-                        <p class="mt-1 text-green-600 font-bold">
-                            Unit: Ksh. {{ item.product.price|intcomma }}
-                        </p>
-
-                        <p id="item-total-{{ item.id }}" class="text-green-700 font-bold mt-1">
-                            Total: Ksh. {{ item.total_price|intcomma }}
-                        </p>
-
-                    </div>
+              <div class="flex sm:flex-col items-center gap-3 justify-between">
+                <div class="flex items-center gap-2 rounded-full bg-slate-50 border border-slate-200 p-1">
+                  <button onclick="changeQty('{{ item.id }}', -1)" class="w-9 h-9 rounded-full bg-white shadow text-green-700 font-black" aria-label="Decrease quantity">-</button>
+                  <input id="qty-{{ item.id }}" type="number" min="1" value="{{ item.quantity }}" onchange="directQtyChange('{{ item.id }}')" class="w-14 text-center bg-transparent border-0 font-black outline-none">
+                  <button onclick="changeQty('{{ item.id }}', 1)" class="w-9 h-9 rounded-full bg-white shadow text-green-700 font-black" aria-label="Increase quantity">+</button>
                 </div>
+                <a href="{% url 'remove_from_cart' item.id %}" class="shop-btn shop-btn-danger text-sm min-h-0 py-3"><i class="fa-solid fa-trash"></i> Remove</a>
+              </div>
+            </article>
+          {% endfor %}
+        </section>
 
-                <!-- QTY + ACTIONS -->
-                <div class="flex justify-between items-center mt-4">
-
-                    <div class="flex items-center gap-2">
-
-                        <button onclick="changeQty('{{ item.id }}', -1)"
-                            class="px-3 bg-green-600 text-white rounded hover:bg-green-700">
-                            -
-                        </button>
-
-                        <input id="qty-{{ item.id }}" 
-                            type="number" min="1"
-                            value="{{ item.quantity }}"
-                            onchange="directQtyChange('{{ item.id }}')"
-                            class="w-14 text-center border rounded">
-
-                        <button onclick="changeQty('{{ item.id }}', 1)"
-                            class="px-3 bg-green-600 text-white rounded hover:bg-green-700">
-                            +
-                        </button>
-
-                    </div>
-
-                    <a href="{% url 'remove_from_cart' item.id %}"
-                    class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 text-sm">
-                        <i class="fa-solid fa-trash"></i> Remove
-                    </a>
-
-                </div>
-
-            </div>
-            {% endfor %}
-        </div>
-
-        <!-- TOTAL + CHECKOUT INSIDE SAME CARD -->
-        <div class="mt-10 border-t border-green-500 pt-6">
-    
-            <div class="space-y-2 mb-6 px-4">
-                <div class="flex justify-between text-gray-600">
-                    <span>Subtotal:</span>
-                    <span id="subtotal" class="font-bold text-gray-800">Ksh. {{ cart.total_price|intcomma }}</span>
-                </div>
-
-                <div id="discount-row" class="hidden justify-between text-orange-600 font-medium italic">
-                    <span>Discount:</span>
-                    <span id="discount-amount">- Ksh. 0.00</span>
-                </div>
-
-                <div class="flex justify-between text-2xl font-black text-green-700 border-t border-dashed pt-4">
-                    <span>Total:</span>
-                    <span id="cart-total">Ksh. {{ cart.total_price|intcomma }}</span>
-                </div>
-            </div>
-
-            <div class="mb-6 px-4">
-                <input type="hidden" id="promo-input" value="{{ request.session.applied_promo|default:'' }}">
-            </div>
-
-            <a href="{% url 'checkout' %}"
-            class="btn w-full bg-gradient-to-r from-green-600 to-orange-500 text-white rounded-xl p-4 text-lg font-bold text-center shadow-lg hover:opacity-90 transition">
-                Proceed to Checkout
-            </a>
-        </div>
-
-    </div>
-    <!-- END BIG CARD -->
-
+        <aside class="shop-card p-6 sticky top-28">
+          <h2 class="text-2xl font-black mb-5">Order summary</h2>
+          <div class="space-y-4">
+            <div class="flex justify-between shop-muted"><span>Subtotal</span><span id="subtotal" class="font-black text-slate-900">Ksh. {{ cart.total_price|intcomma }}</span></div>
+            <div id="discount-row" class="hidden justify-between text-orange-600 font-black"><span>Discount</span><span id="discount-amount">- Ksh. 0.00</span></div>
+            <div class="border-t border-dashed border-slate-300 pt-4 flex justify-between text-2xl font-black text-green-700"><span>Total</span><span id="cart-total">Ksh. {{ cart.total_price|intcomma }}</span></div>
+          </div>
+          <input type="hidden" id="promo-input" value="{{ request.session.applied_promo|default:'' }}">
+          <a href="{% url 'checkout' %}" class="shop-btn shop-btn-primary w-full mt-6 text-lg"><i class="fa-solid fa-lock"></i> Proceed to checkout</a>
+          <p class="shop-muted text-xs text-center mt-4">Secure checkout with M-Pesa STK push.</p>
+        </aside>
+      </div>
     {% else %}
-
-    <p class="text-gray-600 text-xl sm:text-2xl text-center mt-14">Your cart is empty.</p>
-
-    <div class="text-center mt-16 mb-20">
-        <a href="{% url 'index' %}"
-           class="btn bg-green-600 text-white rounded-full px-6 py-2">
-            Continue Shopping
-        </a>
-    </div>
-
+      <div class="shop-empty shop-card">
+        <i class="fa-solid fa-cart-shopping text-5xl text-green-600 mb-4"></i>
+        <h2 class="text-3xl font-black text-slate-900">Your cart is empty</h2>
+        <p class="mb-6">A tragedy, but a reversible one.</p>
+        <a href="{% url 'index' %}" class="shop-btn shop-btn-primary"><i class="fa-solid fa-store"></i> Browse products</a>
+      </div>
     {% endif %}
-
-  </div>
+  </main>
 
   {% include 'footer.html' %}
 </div>
 
 <script>
-// Existing helper for formatting
 function formatCurrency(num) {
-    return "Ksh. " + Number(num).toLocaleString("en-KE", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
+  return "Ksh. " + Number(num).toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-
-// Updated sendQtyUpdate to handle active promos
 function sendQtyUpdate(itemId, newQty) {
-    const csrfToken = "{{ csrf_token }}";
-    const currentPromo = document.getElementById('promo-input').value;
-
-    fetch(`/cart/update/${itemId}/`, {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": csrfToken,
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: `quantity=${newQty}&promo_code=${currentPromo}`
-    })
-    .then(res => res.json())
-    .then(data => {
-        document.getElementById(`item-total-${itemId}`).innerText = formatCurrency(data.item_total);
-        // Use the new UI helper
-        updatePriceUI(data.cart_total, data.discount_amount || 0, data.new_total || data.cart_total);
-    });
+  const csrfToken = "{{ csrf_token }}";
+  const currentPromo = document.getElementById('promo-input').value;
+  fetch(`/cart/update/${itemId}/`, {
+    method: "POST",
+    headers: { "X-CSRFToken": csrfToken, "Content-Type": "application/x-www-form-urlencoded" },
+    body: `quantity=${encodeURIComponent(newQty)}&promo_code=${encodeURIComponent(currentPromo)}`
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.error) return;
+    document.getElementById(`item-total-${itemId}`).innerText = "Line total: " + formatCurrency(data.item_total);
+    updatePriceUI(data.cart_total, data.discount_amount || 0, data.new_total || data.cart_total);
+  });
 }
-
-// New helper to keep UI in sync
 function updatePriceUI(subtotal, discount, total) {
-    document.getElementById("subtotal").innerText = formatCurrency(subtotal);
-    
-    if (discount > 0) {
-        document.getElementById('discount-row').classList.remove('hidden');
-        document.getElementById('discount-row').classList.add('flex');
-        document.getElementById('discount-amount').innerText = "- " + formatCurrency(discount);
-    } else {
-        document.getElementById('discount-row').classList.add('hidden');
-    }
-    
-    document.getElementById("cart-total").innerText = formatCurrency(total);
+  document.getElementById("subtotal").innerText = formatCurrency(subtotal);
+  if (discount > 0) {
+    document.getElementById('discount-row').classList.remove('hidden');
+    document.getElementById('discount-row').classList.add('flex');
+    document.getElementById('discount-amount').innerText = "- " + formatCurrency(discount);
+  } else {
+    document.getElementById('discount-row').classList.add('hidden');
+  }
+  document.getElementById("cart-total").innerText = formatCurrency(total);
 }
-
 function changeQty(itemId, delta) {
-    const input = document.getElementById(`qty-${itemId}`);
-    let newQty = parseInt(input.value) + delta;
-    if (newQty < 1) newQty = 1;
-    input.value = newQty;
-    sendQtyUpdate(itemId, newQty);
+  const input = document.getElementById(`qty-${itemId}`);
+  let newQty = parseInt(input.value || "1", 10) + delta;
+  if (newQty < 1) newQty = 1;
+  input.value = newQty;
+  sendQtyUpdate(itemId, newQty);
 }
-
 function directQtyChange(itemId) {
-    const input = document.getElementById(`qty-${itemId}`);
-    let newQty = parseInt(input.value);
-    if (newQty < 1) newQty = 1;
-    input.value = newQty;
-    sendQtyUpdate(itemId, newQty);
+  const input = document.getElementById(`qty-${itemId}`);
+  let newQty = parseInt(input.value || "1", 10);
+  if (newQty < 1) newQty = 1;
+  input.value = newQty;
+  sendQtyUpdate(itemId, newQty);
 }
 </script>
-
 {% endblock %}

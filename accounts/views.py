@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import login
 from .models import EmailOTP, User, Vendor
 from .forms import LoginForm, RegistrationForm, UserProfileForm, VendorProfileForm
-import random
+import secrets
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.mail import EmailMultiAlternatives
@@ -41,7 +41,7 @@ def login_view(request):
                 # 🔐 OTP REQUIRED
                 EmailOTP.objects.filter(user=user).delete()
 
-                otp = str(random.randint(100000, 999999))
+                otp = f"{secrets.randbelow(900000) + 100000}"
                 EmailOTP.objects.create(user=user, otp=otp)
 
                 send_otp_email(user, otp)
@@ -69,7 +69,7 @@ def resend_otp(request):
     EmailOTP.objects.filter(user=user).delete()
 
     # Generate new OTP
-    otp = str(random.randint(100000, 999999))
+    otp = f"{secrets.randbelow(900000) + 100000}"
     EmailOTP.objects.create(user=user, otp=otp)
 
     send_otp_email(user, otp)
@@ -193,87 +193,62 @@ def register_view(request):
 @login_required
 def profile_page(request):
     user = request.user
-    is_vendor = user.is_vendor_approved
+    is_vendor = user.is_vendor_approved and hasattr(user, "vendor")
+    vendor_instance = user.vendor if is_vendor else None
 
     if request.method == "POST":
-        # Determine which form was submitted
-        if 'vendor_form_submit' in request.POST:
-            user_form = UserProfileForm(instance=user)  # keep user form unchanged
-            vendor_form = VendorProfileForm(request.POST, request.FILES, instance=user.vendor)
+        if "vendor_form_submit" in request.POST and vendor_instance:
+            user_form = UserProfileForm(instance=user)
+            vendor_form = VendorProfileForm(request.POST, request.FILES, instance=vendor_instance)
             if vendor_form.is_valid():
                 vendor_form.save()
                 messages.success(request, "Vendor profile updated successfully.")
-                return redirect('profile')
-            else:
-                messages.error(request, "Please correct the errors in vendor form.")
-        else:  # default to user form
+                return redirect("profile")
+            messages.error(request, "Please correct the errors in vendor form.")
+        else:
             user_form = UserProfileForm(request.POST, instance=user)
-            vendor_form = VendorProfileForm(instance=user.vendor) if is_vendor else None
+            vendor_form = VendorProfileForm(instance=vendor_instance) if vendor_instance else None
             if user_form.is_valid():
                 user_form.save()
                 messages.success(request, "User profile updated successfully.")
-                return redirect('profile')
-            else:
-                messages.error(request, "Please correct the errors in user form.")
+                return redirect("profile")
+            messages.error(request, "Please correct the errors in user form.")
     else:
         user_form = UserProfileForm(instance=user)
-        vendor_form = VendorProfileForm(instance=user.vendor) if is_vendor else None
+        vendor_form = VendorProfileForm(instance=vendor_instance) if vendor_instance else None
 
-    context = {
-        "user_form": user_form,
-        "vendor_form": vendor_form,
-        "is_vendor": is_vendor
-    }
-    return render(request, "accounts/profile.html", context)
+    return render(request, "accounts/profile.html", {"user_form": user_form, "vendor_form": vendor_form, "is_vendor": is_vendor})
 
 @staff_member_required
 def vendor_admin_list(request):
-    search_query = request.GET.get('q', '')
-    per_page = int(request.GET.get('per_page', 6))
-    page_number = int(request.GET.get('page', 1))
+    search_query = request.GET.get("q", "").strip()
+    per_page_raw = request.GET.get("per_page", "6")
+    per_page = int(per_page_raw) if per_page_raw in {"6", "12", "24"} else 6
+    page_number = request.GET.get("page", 1)
 
-    # Base querysets
-    pending_qs = User.objects.filter(is_vendor=True, is_vendor_approved=False)
-    approved_qs = User.objects.filter(is_vendor=True, is_vendor_approved=True, vendor__is_suspended=False)
-    suspended_qs = User.objects.filter(is_vendor=True, is_vendor_approved=True, vendor__is_suspended=True)
+    pending_qs = User.objects.filter(is_vendor=True, is_vendor_approved=False).select_related("vendor")
+    approved_qs = User.objects.filter(is_vendor=True, is_vendor_approved=True, vendor__is_suspended=False).select_related("vendor")
+    suspended_qs = User.objects.filter(is_vendor=True, is_vendor_approved=True, vendor__is_suspended=True).select_related("vendor")
 
-    # Apply search filter
     if search_query:
-        pending_qs = pending_qs.filter(
-            Q(username__icontains=search_query) |
-            Q(email__icontains=search_query) |
-            Q(vendor__shop_name__icontains=search_query)
-        )
-        approved_qs = approved_qs.filter(
-            Q(username__icontains=search_query) |
-            Q(email__icontains=search_query) |
-            Q(vendor__shop_name__icontains=search_query)
-        )
-        suspended_qs = suspended_qs.filter(
-            Q(username__icontains=search_query) |
-            Q(email__icontains=search_query) |
-            Q(vendor__shop_name__icontains=search_query)
-        )
+        vendor_filter = Q(username__icontains=search_query) | Q(email__icontains=search_query) | Q(vendor__shop_name__icontains=search_query)
+        pending_qs = pending_qs.filter(vendor_filter)
+        approved_qs = approved_qs.filter(vendor_filter)
+        suspended_qs = suspended_qs.filter(vendor_filter)
 
-    # Pagination
     pending_page = Paginator(pending_qs, per_page).get_page(page_number)
     approved_page = Paginator(approved_qs, per_page).get_page(page_number)
     suspended_page = Paginator(suspended_qs, per_page).get_page(page_number)
+    all_vendors_page = Paginator(list(chain(pending_qs, approved_qs, suspended_qs)), per_page).get_page(page_number)
 
-    # All vendors for "All" tab
-    all_vendors_list = list(chain(pending_qs, approved_qs, suspended_qs))
-    all_vendors_page = Paginator(all_vendors_list, per_page).get_page(page_number)
-
-    context = {
-        'all_vendors': all_vendors_page,
-        'pending': pending_page,
-        'approved': approved_page,
-        'suspended': suspended_page,
-        'per_page': per_page,
-        'search_query': search_query
-    }
-
-    return render(request, "accounts/vendors_list.html", context)
+    return render(request, "accounts/vendors_list.html", {
+        "all_vendors": all_vendors_page,
+        "pending": pending_page,
+        "approved": approved_page,
+        "suspended": suspended_page,
+        "per_page": per_page,
+        "search_query": search_query,
+    })
 
 @staff_member_required
 def vendor_approve(request, user_id):
