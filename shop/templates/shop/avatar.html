@@ -1,58 +1,239 @@
 <div id="navbarAvatarDropdown" class="relative flex items-center">
-  <button id="mobileMenuBtn" type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/80 bg-white/90 text-emerald-800 shadow-[0_10px_22px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:text-orange-500 md:hidden" aria-label="Open menu">
-    <i class="fa-solid fa-bars"></i>
+  <!-- Mobile Menu Button -->
+  <button
+    id="mobileMenuBtn"
+    type="button"
+    class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/70 bg-white/90 text-emerald-800 shadow-[0_12px_28px_rgba(15,23,42,0.10)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:bg-emerald-50 hover:text-orange-500 md:hidden"
+    aria-label="Open menu"
+  >
+    <i class="fa-solid fa-bars text-lg"></i>
   </button>
 
-  <button id="navbarAvatarBtn" type="button" class="hidden md:flex items-center gap-2 rounded-full bg-white/80 border border-slate-200 p-2 shadow-sm hover:shadow-md transition" aria-label="Open account menu">
-    <span class="grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-green-700 to-orange-500 text-sm font text-white">
-      {{ request.user.username }}
+  <!-- Desktop Avatar Button -->
+  <button
+    id="navbarAvatarBtn"
+    type="button"
+    class="hidden md:flex items-center gap-3 rounded-full border border-white/70 bg-white/90 py-1.5 pl-1.5 pr-4 text-left shadow-[0_12px_30px_rgba(15,23,42,0.10)] backdrop-blur-xl transition hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(15,23,42,0.16)]"
+    aria-label="Open account menu"
+  >
+    <span class="relative grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-emerald-700 via-green-600 to-orange-500 text-sm font-black uppercase text-white shadow-[0_10px_24px_rgba(15,143,79,0.28)]">
+      {{ request.user.username|slice:":1"|upper }}
+      <span class="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-400"></span>
     </span>
-    
+
+    <span class="min-w-0">
+      <span class="block max-w-[120px] truncate text-sm font-black leading-tight text-slate-900">
+        {{ request.user.username }}
+      </span>
+      <span class="block text-xs font-bold leading-tight text-slate-400">
+        Account menu
+      </span>
+    </span>
+
+    <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
   </button>
 
-  <ul id="navbarAvatarMenu" class="menu menu-sm absolute right-0 top-16 p-2 w-64 gap-4 rounded-2xl shadow-2xl bg-white hidden z-50 border border-slate-100">
-    <li><a href="{% url 'profile' %}" class="rounded-2xl mt-2"><i class="fa-solid fa-user mr-2"></i> Profile</a></li>
+  <!-- Desktop Dropdown -->
+  <ul
+    id="navbarAvatarMenu"
+    class="absolute right-0 top-16 z-50 hidden w-72 overflow-hidden rounded-[1.5rem] border border-white/80 bg-white/95 p-2 shadow-[0_26px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl"
+  >
+    <li class="mb-2 rounded-[1.25rem] bg-gradient-to-br from-emerald-50 to-orange-50 p-4">
+      <div class="flex items-center gap-3">
+        <span class="relative grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-emerald-700 via-green-600 to-orange-500 text-sm font-black uppercase text-white shadow-md">
+          {{ request.user.username|slice:":1"|upper }}
+          <span class="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-400"></span>
+        </span>
+
+        <div class="min-w-0">
+          <p class="truncate text-sm font-black text-slate-950">
+            {{ request.user.username }}
+          </p>
+          <p class="text-xs font-bold text-slate-500">
+            Signed in
+          </p>
+        </div>
+      </div>
+    </li>
+
+    <li>
+      <a href="{% url 'profile' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-slate-100 text-emerald-700">
+          <i class="fa-solid fa-user"></i>
+        </span>
+        Profile
+      </a>
+    </li>
+
     {% if is_admin %}
-      <li><a href="{% url 'vendor_admin_list' %}" class="rounded-2xl"><i class="fa-solid fa-user-tie mr-2"></i> Admin Panel</a></li>
-      <li><a href="{% url 'admin_ticket_list' %}" class="rounded-2xl"><i class="fa-solid fa-ticket mr-2"></i> Admin Support</a></li>
+      <li>
+        <a href="{% url 'vendor_admin_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
+          <span class="grid h-9 w-9 place-items-center rounded-xl bg-slate-100 text-emerald-700">
+            <i class="fa-solid fa-user-tie"></i>
+          </span>
+          Admin Panel
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'admin_ticket_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
+          <span class="grid h-9 w-9 place-items-center rounded-xl bg-slate-100 text-emerald-700">
+            <i class="fa-solid fa-ticket"></i>
+          </span>
+          Admin Support
+        </a>
+      </li>
     {% else %}
-      <li><a href="{% url 'support_ticket_list' %}" class="rounded-2xl"><i class="fa-solid fa-ticket mr-2"></i> Support</a></li>
+      <li>
+        <a href="{% url 'support_ticket_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
+          <span class="grid h-9 w-9 place-items-center rounded-xl bg-slate-100 text-emerald-700">
+            <i class="fa-solid fa-ticket"></i>
+          </span>
+          Support
+        </a>
+      </li>
     {% endif %}
+
     {% if is_approved_vendor %}
-      <li><a href="{% url 'vendor_dashboard' %}" class="rounded-2xl"><i class="fa-solid fa-store mr-2"></i> Vendor Dashboard</a></li>
+      <li>
+        <a href="{% url 'vendor_dashboard' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
+          <span class="grid h-9 w-9 place-items-center rounded-xl bg-slate-100 text-emerald-700">
+            <i class="fa-solid fa-store"></i>
+          </span>
+          Vendor Dashboard
+        </a>
+      </li>
     {% endif %}
+
+    <li class="my-2 border-t border-slate-100"></li>
+
     <li>
       <form method="POST" action="{% url 'logout' %}" class="w-full">
         {% csrf_token %}
-        <button type="submit" class="rounded-2xl text-red-600 w-full hover:bg-red-50 mb-2"><i class="fa-solid fa-right-from-bracket mr-2"></i> Logout</button>
+        <button
+          type="submit"
+          class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-black text-red-600 transition hover:bg-red-50"
+        >
+          <span class="grid h-9 w-9 place-items-center rounded-xl bg-red-50 text-red-600">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </span>
+          Logout
+        </button>
       </form>
     </li>
   </ul>
 </div>
 
-<div id="mobileMenu" class="fixed top-0 right-0 h-full w-72 max-w-[86vw] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out md:hidden border-l border-slate-100">
-  <div class="flex justify-between items-center p-5 border-b">
-    <div>
-      <p class="font-black text-lg">Menu</p>
-      <p class="text-xs text-slate-500">{{ request.user.username }}</p>
+<!-- Mobile Backdrop -->
+<div
+  id="mobileMenuBackdrop"
+  class="fixed inset-0 z-40 hidden bg-slate-950/40 backdrop-blur-sm md:hidden"
+></div>
+
+<!-- Mobile Menu -->
+<div
+  id="mobileMenu"
+  class="fixed top-0 right-0 z-50 h-full w-80 max-w-[88vw] translate-x-full border-l border-white/80 bg-white/95 shadow-[0_28px_80px_rgba(15,23,42,0.28)] backdrop-blur-xl transition-transform duration-300 ease-in-out md:hidden"
+>
+  <div class="border-b border-slate-100 bg-gradient-to-br from-emerald-50 to-orange-50 p-5">
+    <div class="mb-5 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="relative grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-emerald-700 via-green-600 to-orange-500 text-sm font-black uppercase text-white shadow-md">
+          {{ request.user.username|slice:":1"|upper }}
+          <span class="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-400"></span>
+        </span>
+
+        <div class="min-w-0">
+          <p class="truncate text-lg font-black text-slate-950">
+            Menu
+          </p>
+          <p class="truncate text-xs font-bold text-slate-500">
+            {{ request.user.username }}
+          </p>
+        </div>
+      </div>
+
+      <button
+        id="closeMobileMenu"
+        type="button"
+        class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/80 bg-white/90 text-emerald-800 shadow-sm transition hover:-translate-y-0.5 hover:text-orange-500"
+        aria-label="Close menu"
+      >
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
     </div>
-    <button id="closeMobileMenu" type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/80 bg-white/90 text-emerald-800 shadow-[0_10px_22px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:text-orange-500" aria-label="Close menu"><i class="fa-solid fa-xmark"></i></button>
+
+    <div class="rounded-2xl border border-white/80 bg-white/70 px-4 py-3">
+      <p class="text-xs font-black uppercase tracking-wider text-emerald-700">
+        Signed in account
+      </p>
+      <p class="mt-1 truncate text-sm font-black text-slate-900">
+        {{ request.user.username }}
+      </p>
+    </div>
   </div>
-  <ul class="flex flex-col p-4 gap-2">
-    <li><a href="{% url 'profile' %}" class="flex items-center gap-2 rounded-2xl p-3 hover:bg-green-50"><i class="fa-solid fa-user"></i> Profile</a></li>
+
+  <ul class="flex flex-col gap-2 p-4">
+    <li>
+      <a href="{% url 'profile' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
+        <span class="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-emerald-700">
+          <i class="fa-solid fa-user"></i>
+        </span>
+        Profile
+      </a>
+    </li>
+
     {% if is_admin %}
-      <li><a href="{% url 'vendor_admin_list' %}" class="flex items-center gap-2 rounded-2xl p-3 hover:bg-green-50"><i class="fa-solid fa-user-tie"></i> Admin Panel</a></li>
-      <li><a href="{% url 'admin_ticket_list' %}" class="flex items-center gap-2 rounded-2xl p-3 hover:bg-green-50"><i class="fa-solid fa-ticket"></i> Admin Support</a></li>
+      <li>
+        <a href="{% url 'vendor_admin_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
+          <span class="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-emerald-700">
+            <i class="fa-solid fa-user-tie"></i>
+          </span>
+          Admin Panel
+        </a>
+      </li>
+
+      <li>
+        <a href="{% url 'admin_ticket_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
+          <span class="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-emerald-700">
+            <i class="fa-solid fa-ticket"></i>
+          </span>
+          Admin Support
+        </a>
+      </li>
     {% else %}
-      <li><a href="{% url 'support_ticket_list' %}" class="flex items-center gap-2 rounded-2xl p-3 hover:bg-green-50"><i class="fa-solid fa-ticket"></i> Support</a></li>
+      <li>
+        <a href="{% url 'support_ticket_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
+          <span class="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-emerald-700">
+            <i class="fa-solid fa-ticket"></i>
+          </span>
+          Support
+        </a>
+      </li>
     {% endif %}
+
     {% if is_approved_vendor %}
-      <li><a href="{% url 'vendor_dashboard' %}" class="flex items-center gap-2 rounded-2xl p-3 hover:bg-green-50"><i class="fa-solid fa-store"></i> Vendor Dashboard</a></li>
+      <li>
+        <a href="{% url 'vendor_dashboard' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
+          <span class="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-emerald-700">
+            <i class="fa-solid fa-store"></i>
+          </span>
+          Vendor Dashboard
+        </a>
+      </li>
     {% endif %}
+
+    <li class="my-2 border-t border-slate-100"></li>
+
     <li>
       <form method="POST" action="{% url 'logout' %}">
         {% csrf_token %}
-        <button type="submit" class="flex items-center gap-2 rounded-2xl p-3 text-red-600 hover:bg-red-50 w-full"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        <button type="submit" class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 font-black text-red-600 transition hover:bg-red-50">
+          <span class="grid h-10 w-10 place-items-center rounded-xl bg-red-50 text-red-600">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </span>
+          Logout
+        </button>
       </form>
     </li>
   </ul>
@@ -64,21 +245,61 @@ document.addEventListener("DOMContentLoaded", () => {
   const avatarMenu = document.getElementById("navbarAvatarMenu");
   const mobileBtn = document.getElementById("mobileMenuBtn");
   const mobileMenu = document.getElementById("mobileMenu");
+  const mobileBackdrop = document.getElementById("mobileMenuBackdrop");
   const closeMobileBtn = document.getElementById("closeMobileMenu");
 
+  function openMobileMenu() {
+    if (!mobileMenu) return;
+    mobileMenu.classList.remove("translate-x-full");
+    if (mobileBackdrop) mobileBackdrop.classList.remove("hidden");
+    document.body.classList.add("overflow-hidden");
+  }
+
+  function closeMobileMenu() {
+    if (!mobileMenu) return;
+    mobileMenu.classList.add("translate-x-full");
+    if (mobileBackdrop) mobileBackdrop.classList.add("hidden");
+    document.body.classList.remove("overflow-hidden");
+  }
+
   if (avatarBtn && avatarMenu) {
-    avatarBtn.addEventListener("click", (e) => { e.stopPropagation(); avatarMenu.classList.toggle("hidden"); });
+    avatarBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      avatarMenu.classList.toggle("hidden");
+    });
   }
+
   document.addEventListener("click", (e) => {
-    if (avatarMenu && avatarBtn && !avatarMenu.contains(e.target) && !avatarBtn.contains(e.target)) avatarMenu.classList.add("hidden");
+    if (
+      avatarMenu &&
+      avatarBtn &&
+      !avatarMenu.contains(e.target) &&
+      !avatarBtn.contains(e.target)
+    ) {
+      avatarMenu.classList.add("hidden");
+    }
   });
-  if (mobileBtn && mobileMenu) {
-    mobileBtn.addEventListener("click", (e) => { e.stopPropagation(); mobileMenu.classList.remove("translate-x-full"); });
+
+  if (mobileBtn) {
+    mobileBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openMobileMenu();
+    });
   }
-  if (closeMobileBtn && mobileMenu) closeMobileBtn.addEventListener("click", () => mobileMenu.classList.add("translate-x-full"));
-  document.addEventListener("click", (e) => {
-    const isMenuOpen = mobileMenu && !mobileMenu.classList.contains("translate-x-full");
-    if (isMenuOpen && !mobileMenu.contains(e.target) && mobileBtn && !mobileBtn.contains(e.target)) mobileMenu.classList.add("translate-x-full");
+
+  if (closeMobileBtn) {
+    closeMobileBtn.addEventListener("click", closeMobileMenu);
+  }
+
+  if (mobileBackdrop) {
+    mobileBackdrop.addEventListener("click", closeMobileMenu);
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      if (avatarMenu) avatarMenu.classList.add("hidden");
+      closeMobileMenu();
+    }
   });
 });
 </script>
