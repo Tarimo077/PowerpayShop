@@ -32,7 +32,7 @@ TAILWIND_APP_NAME = 'theme'
 
 AUTH_USER_MODEL = "accounts.User"
 
-NPM_BIN_PATH = os.environ.get('NPM_BIN_PATH', 'npm')
+#NPM_BIN_PATH = os.environ.get('NPM_BIN_PATH', 'npm')
 
 INTERNAL_IPS = [
     "127.0.0.1",
@@ -100,8 +100,12 @@ WSGI_APPLICATION = 'powerpayshop.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME_POWERPAY'),
+        'USER': os.environ.get('DB_USER_POWERPAY'),
+        'PASSWORD': os.environ.get('DB_PASSWORD_POWERPAY'),
+        'HOST': os.environ.get('DB_HOST_POWERPAY'),
+        'PORT': os.environ.get('DB_PORT_POWERPAY'),
     }
 }
 
@@ -154,11 +158,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER or 'noreply@powerpayafrica.com')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
 
-MPESA_ENDPOINT = os.environ.get('MPESA_ENDPOINT', 'https://appliapay.com/stkpush')
+MPESA_ENDPOINT = os.environ.get('MPESA_ENDPOINT')
