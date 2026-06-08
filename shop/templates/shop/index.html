@@ -7,34 +7,34 @@
 <div class="min-h-screen grid" style="grid-template-rows: auto 1fr auto;">
   {% include 'shop/navbar.html' %}
 
-  <section class="shop-shell shop-section">
-    <div class="shop-hero mb-6">
+  <section class="w-full mx-auto px-2 sm:px-3 lg:px-4 py-5 sm:py-8 lg:py-10">
+    <div class="relative overflow-hidden rounded-[34px] bg-gradient-to-br from-emerald-950 via-green-600 to-orange-500 p-6 text-white shadow-[0_24px_60px_rgba(6,78,59,0.24)] sm:p-10 lg:p-12 mb-6 mx-2">
       <div class="grid lg:grid-cols-[1.25fr_.75fr] gap-8 items-center">
         <div class="space-y-5">
-          <span class="shop-eyebrow bg-white/15 text-white"><i class="fa-solid fa-bolt"></i> PowerPay Marketplace</span>
-          <h1 class="font-black">Shop smarter energy products without the boring checkout circus.</h1>
+          <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-extrabold uppercase tracking-wider text-white"><i class="fa-solid fa-bolt"></i> PowerPay Marketplace</span>
+          <h1 class="text-4xl font-black leading-[.98] tracking-[-.06em] sm:text-6xl lg:text-7xl">Shop smarter energy products without the boring checkout circus.</h1>
           <p class="text-lg max-w-3xl">Browse clean cooking and home energy appliances from approved vendors, compare prices, save favourites, preview product galleries, and checkout with M-Pesa.</p>
           <div class="flex flex-col sm:flex-row gap-3">
-            <a href="#shop-products" class="shop-btn bg-white text-green-800"><i class="fa-solid fa-store"></i> Start shopping</a>
-            {% if not user.is_authenticated %}<a href="{% url 'register' %}" class="shop-btn bg-black/20 text-white border border-white/30"><i class="fa-solid fa-user-plus"></i> Create account</a>{% endif %}
+            <a href="#shop-products" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer text-green-700 bg-white"><i class="fa-solid fa-store"></i> Start shopping</a>
+            {% if not user.is_authenticated %}<a href="{% url 'register' %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer text-green-700 bg-white"><i class="fa-solid fa-user-plus"></i> Create account</a>{% endif %}
           </div>
         </div>
-        <div class="shop-stat-grid">
-          <div class="shop-stat"><strong>{{ total_products|default:products.paginator.count|default:0 }}</strong><span>Products</span></div>
-          <div class="shop-stat"><strong>{{ vendors|length }}</strong><span>Vendors</span></div>
-          <div class="shop-stat"><strong>72h</strong><span>Delivery target</span></div>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div class="rounded-[22px] border border-white/20 bg-white/15 p-4"><strong class="block text-2xl font-black sm:text-3xl">{{ total_products|default:products.paginator.count|default:0 }}</strong><span class="block text-sm font-bold text-white/80">Products</span></div>
+          <div class="rounded-[22px] border border-white/20 bg-white/15 p-4"><strong class="block text-2xl font-black sm:text-3xl">{{ vendors|length }}</strong><span class="block text-sm font-bold text-white/80">Vendors</span></div>
+          <div class="rounded-[22px] border border-white/20 bg-white/15 p-4"><strong class="block text-2xl font-black sm:text-3xl">72h</strong><span class="block text-sm font-bold text-white/80">Delivery target</span></div>
         </div>
       </div>
     </div>
 
-    <div class="shop-feature-strip mb-6">
-      <div><i class="fa-solid fa-shield-halved"></i><span><strong>Verified sellers</strong><small>Approved vendors only</small></span></div>
-      <div><i class="fa-solid fa-mobile-screen-button"></i><span><strong>M-Pesa checkout</strong><small>STK push support</small></span></div>
-      <div><i class="fa-solid fa-heart"></i><span><strong>Wishlist ready</strong><small>Save products for later</small></span></div>
-      <div><i class="fa-solid fa-sliders"></i><span><strong>Smart browsing</strong><small>Sort, filter, and resize grid</small></span></div>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4 mb-6 mx-2">
+      <div class="flex items-center gap-3 rounded-[24px] border border-white/80 bg-white/80 p-4 shadow-[0_14px_32px_rgba(15,23,42,0.07)]"><i class="fa-solid fa-shield-halved text-xl text-green-600"></i><span><strong class="block">Verified sellers</strong><small class="block font-bold text-slate-500">Approved vendors only</small></span></div>
+      <div class="flex items-center gap-3 rounded-[24px] border border-white/80 bg-white/80 p-4 shadow-[0_14px_32px_rgba(15,23,42,0.07)]"><i class="fa-solid fa-mobile-screen-button text-xl text-green-600"></i><span><strong class="block">M-Pesa checkout</strong><small class="block font-bold text-slate-500">STK push support</small></span></div>
+      <div class="flex items-center gap-3 rounded-[24px] border border-white/80 bg-white/80 p-4 shadow-[0_14px_32px_rgba(15,23,42,0.07)]"><i class="fa-solid fa-heart text-xl text-green-600"></i><span><strong class="block">Wishlist ready</strong><small class="block font-bold text-slate-500">Save products for later</small></span></div>
+      <div class="flex items-center gap-3 rounded-[24px] border border-white/80 bg-white/80 p-4 shadow-[0_14px_32px_rgba(15,23,42,0.07)]"><i class="fa-solid fa-sliders text-xl text-green-600"></i><span><strong class="block">Smart browsing</strong><small class="block font-bold text-slate-500">Sort, filter, and resize grid</small></span></div>
     </div>
 
-    <div id="shop-products" class="shop-card p-4 sm:p-5 mb-6">
+    <div id="shop-products" class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-5 mb-6 mx-2">
       <form id="filterForm"
             method="GET"
             hx-get="{% url 'index' %}"
@@ -44,26 +44,26 @@
             hx-trigger="submit, keyup delay:300ms from:#searchInput, change from:#vendorSelect, input delay:300ms from:#minPrice, input delay:300ms from:#maxPrice, change from:#sortSelect, change from:#columnsSelect, change from:#perPageSelect"
             class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1.35fr_1fr_.8fr_.8fr] gap-3 items-center">
-          <input type="text" id="searchInput" name="search" placeholder="Search products..." value="{{ search|default:'' }}" class="shop-input">
-          <select name="vendor" id="vendorSelect" class="shop-select">
+          <input type="text" id="searchInput" name="search" placeholder="Search products..." value="{{ search|default:'' }}" class="min-h-12 w-full rounded-[18px] border border-slate-200 bg-white/90 px-4 py-3 text-slate-900 shadow-inner outline-none transition focus:border-green-600 focus:ring-4 focus:ring-emerald-500/10">
+          <select name="vendor" id="vendorSelect" class="min-h-12 w-full rounded-[18px] border border-slate-200 bg-white/90 px-4 py-3 text-slate-900 shadow-inner outline-none transition focus:border-green-600 focus:ring-4 focus:ring-emerald-500/10">
             <option value="">All vendors</option>
             {% for v in vendors %}
               <option value="{{ v.id }}" {% if vendor == v.id|stringformat:"s" %}selected{% endif %}>{{ v.shop_name|default:v.user }}</option>
             {% endfor %}
           </select>
-          <input type="number" id="minPrice" name="min_price" placeholder="Min price" value="{{ min_price|default:'' }}" class="shop-input">
-          <input type="number" id="maxPrice" name="max_price" placeholder="Max price" value="{{ max_price|default:'' }}" class="shop-input">
+          <input type="number" id="minPrice" name="min_price" placeholder="Min price" value="{{ min_price|default:'' }}" class="min-h-12 w-full rounded-[18px] border border-slate-200 bg-white/90 px-4 py-3 text-slate-900 shadow-inner outline-none transition focus:border-green-600 focus:ring-4 focus:ring-emerald-500/10">
+          <input type="number" id="maxPrice" name="max_price" placeholder="Max price" value="{{ max_price|default:'' }}" class="min-h-12 w-full rounded-[18px] border border-slate-200 bg-white/90 px-4 py-3 text-slate-900 shadow-inner outline-none transition focus:border-green-600 focus:ring-4 focus:ring-emerald-500/10">
         </div>
 
-        <div class="shop-toolbar">
-          <div class="shop-result-summary">
-            <span class="shop-eyebrow"><i class="fa-solid fa-store"></i> {{ products.paginator.count }} found</span>
-            {% if active_filters_count %}<span class="shop-filter-pill">{{ active_filters_count }} active filter{{ active_filters_count|pluralize }}</span>{% endif %}
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-extrabold uppercase tracking-wider text-emerald-900"><i class="fa-solid fa-store"></i> {{ products.paginator.count }} found</span>
+            {% if active_filters_count %}<span class="rounded-full bg-orange-50 px-3 py-1.5 text-xs font-black text-orange-700">{{ active_filters_count }} active filter{{ active_filters_count|pluralize }}</span>{% endif %}
           </div>
 
-          <div class="shop-toolbar-controls">
-            <label class="shop-control-group" for="sortSelect"><span>Sort</span>
-              <select name="sort" id="sortSelect" class="shop-select shop-compact-select">
+          <div class="flex flex-wrap items-center gap-3">
+            <label class="inline-flex items-center gap-2 text-sm font-black text-slate-500" for="sortSelect"><span>Sort</span>
+              <select name="sort" id="sortSelect" class="min-h-12 w-full rounded-[18px] border border-slate-200 bg-white/90 px-4 py-3 text-slate-900 shadow-inner outline-none transition focus:border-green-600 focus:ring-4 focus:ring-emerald-500/10 min-h-10 w-auto min-w-20 rounded-full py-2 pl-3 pr-8">
                 <option value="latest" {% if sort == 'latest' %}selected{% endif %}>Newest</option>
                 <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: low to high</option>
                 <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: high to low</option>
@@ -72,8 +72,8 @@
               </select>
             </label>
 
-            <label class="shop-control-group" for="perPageSelect"><span>Items</span>
-              <select name="per_page" id="perPageSelect" class="shop-select shop-compact-select">
+            <label class="inline-flex items-center gap-2 text-sm font-black text-slate-500" for="perPageSelect"><span>Items</span>
+              <select name="per_page" id="perPageSelect" class="min-h-12 w-full rounded-[18px] border border-slate-200 bg-white/90 px-4 py-3 text-slate-900 shadow-inner outline-none transition focus:border-green-600 focus:ring-4 focus:ring-emerald-500/10 min-h-10 w-auto min-w-20 rounded-full py-2 pl-3 pr-8">
                 <option value="6" {% if per_page == 6 %}selected{% endif %}>6</option>
                 <option value="9" {% if per_page == 9 %}selected{% endif %}>9</option>
                 <option value="12" {% if per_page == 12 %}selected{% endif %}>12</option>
@@ -81,15 +81,15 @@
               </select>
             </label>
 
-            <label class="shop-control-group" for="columnsSelect"><span>Row</span>
-              <select name="columns" id="columnsSelect" class="shop-select shop-compact-select">
+            <label class="inline-flex items-center gap-2 text-sm font-black text-slate-500" for="columnsSelect"><span>Row</span>
+              <select name="columns" id="columnsSelect" class="min-h-12 w-full rounded-[18px] border border-slate-200 bg-white/90 px-4 py-3 text-slate-900 shadow-inner outline-none transition focus:border-green-600 focus:ring-4 focus:ring-emerald-500/10 min-h-10 w-auto min-w-20 rounded-full py-2 pl-3 pr-8">
                 <option value="3" {% if columns == 3 %}selected{% endif %}>3</option>
                 <option value="4" {% if columns == 4 %}selected{% endif %}>4</option>
                 <option value="5" {% if columns == 5 %}selected{% endif %}>5</option>
               </select>
             </label>
 
-            <button type="button" class="shop-btn shop-btn-accent"
+            <button type="button" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-[0_14px_30px_rgba(249,115,22,0.24)]"
                     onclick="document.getElementById('searchInput').value='';document.getElementById('vendorSelect').selectedIndex=0;document.getElementById('minPrice').value='';document.getElementById('maxPrice').value='';document.getElementById('sortSelect').value='latest';const pg=document.querySelector('input[name=page]');if(pg)pg.remove();htmx.trigger('#filterForm','submit');">
               <i class="fa-solid fa-filter-circle-xmark"></i> Clear
             </button>
@@ -98,7 +98,7 @@
       </form>
     </div>
 
-    <div id="productsWrapper" class="mb-12">
+    <div id="productsWrapper" class="mb-12 mx-2">
       {% include "shop/product_listing.html" %}
     </div>
   </section>

@@ -1,12 +1,30 @@
 (function () {
   const timers = new WeakMap();
+  const slideActive = ['opacity-100', 'scale-100', 'z-[2]'];
+  const slideInactive = ['opacity-0', 'scale-[.985]', 'z-0'];
+  const dotBase = ['h-2', 'rounded-full', 'transition-all', 'duration-200'];
+  const dotActive = ['w-6', 'bg-green-700'];
+  const dotInactive = ['w-2', 'bg-slate-900/25'];
+  const thumbActive = ['opacity-100', 'border-green-600', '-translate-y-0.5'];
+  const thumbInactive = ['opacity-70', 'border-slate-200'];
+
+  function swapClasses(el, removeClasses, addClasses) {
+    el.classList.remove(...removeClasses);
+    el.classList.add(...addClasses);
+  }
+
+  function setSlideActive(slide, active) {
+    swapClasses(slide, active ? slideInactive : slideActive, active ? slideActive : slideInactive);
+    slide.dataset.active = active ? 'true' : 'false';
+    slide.classList.toggle('is-active', active);
+  }
 
   function getSlides(carousel) {
-    return Array.from(carousel.querySelectorAll('[data-carousel-slide], .shop-carousel-slide'));
+    return Array.from(carousel.querySelectorAll('[data-carousel-slide]'));
   }
 
   function getActiveIndex(slides) {
-    const current = slides.findIndex((slide) => slide.classList.contains('is-active'));
+    const current = slides.findIndex((slide) => slide.dataset.active === 'true' || slide.classList.contains('is-active'));
     return current >= 0 ? current : 0;
   }
 
@@ -17,17 +35,21 @@
       dotsWrap.innerHTML = '';
       for (let i = 0; i < total; i += 1) {
         const dot = document.createElement('span');
-        dot.className = 'shop-carousel-dot';
+        dot.className = [...dotBase, ...dotInactive].join(' ');
         dotsWrap.appendChild(dot);
       }
     }
-    Array.from(dotsWrap.children).forEach((dot, i) => dot.classList.toggle('is-active', i === index));
+    Array.from(dotsWrap.children).forEach((dot, i) => {
+      swapClasses(dot, i === index ? dotInactive : dotActive, i === index ? dotActive : dotInactive);
+    });
   }
 
   function syncThumbs(root, index) {
-    const container = root.closest('.shop-card, .shop-product-card, main, section') || document;
+    const container = root.closest('main, section, article') || document;
     container.querySelectorAll('[data-carousel-thumb]').forEach((thumb) => {
-      thumb.classList.toggle('is-active', Number(thumb.dataset.carouselThumb) === index);
+      const active = Number(thumb.dataset.carouselThumb) === index;
+      swapClasses(thumb, active ? thumbInactive : thumbActive, active ? thumbActive : thumbInactive);
+      thumb.classList.toggle('is-active', active);
     });
   }
 
@@ -35,7 +57,7 @@
     const slides = getSlides(carousel);
     if (!slides.length) return;
     const next = (index + slides.length) % slides.length;
-    slides.forEach((slide, i) => slide.classList.toggle('is-active', i === next));
+    slides.forEach((slide, i) => setSlideActive(slide, i === next));
     carousel.dataset.activeIndex = String(next);
     syncDots(carousel, next, slides.length);
     syncThumbs(carousel, next);
@@ -52,7 +74,7 @@
         window.clearInterval(timer);
         return;
       }
-      showSlide(carousel, getActiveIndex(slides) + 1);
+      showSlide(carousel, getActiveIndex(getSlides(carousel)) + 1);
     }, interval);
     timers.set(carousel, timer);
   }
@@ -112,7 +134,7 @@
     if (saved && !url.searchParams.has('columns') && ['3', '4', '5'].includes(saved)) {
       select.value = saved;
       const hiddenGrid = document.getElementById('productsGrid');
-      if (hiddenGrid) hiddenGrid.style.setProperty('--shop-columns', saved);
+      if (hiddenGrid) hiddenGrid.style.setProperty('--grid-columns', saved);
     }
     select.addEventListener('change', () => window.localStorage.setItem('powerpay-grid-columns', select.value));
   }

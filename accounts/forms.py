@@ -4,8 +4,18 @@ from .models import User, Vendor
 
 
 class LoginForm(forms.Form):
-    username = forms.CharField()
-    password = forms.CharField(widget=forms.PasswordInput())
+    username = forms.CharField(
+        widget=forms.TextInput(attrs={
+            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white",
+            "placeholder": "Username"
+        })
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white",
+            "placeholder": "Password"
+        })
+    )
 
 
 class OTPForm(forms.Form):
@@ -72,7 +82,7 @@ class RegistrationForm(UserCreationForm):
     is_vendor = forms.BooleanField(
         required=False,
         label="Register as Vendor",
-        widget=forms.CheckboxInput(attrs={"class": "checkbox checkbox-success"})
+        widget=forms.CheckboxInput(attrs={"class": "checkbox checkbox-success checkbox-xl text-green-500 rounded-lg transition"})
     )
     # Vendor fields (initially empty)
     shop_name = forms.CharField(

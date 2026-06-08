@@ -1,35 +1,166 @@
 {% extends "base.html" %}
 {% block title %}Login | PowerPay Shop{% endblock %}
-{% block content %}
-<div class="min-h-screen grid" style="grid-template-rows: 1fr auto;">
-  <main class="shop-shell shop-section grid lg:grid-cols-[1fr_480px] gap-8 items-center">
-    <section class="shop-hero min-h-[520px] flex items-center">
-      <div class="space-y-5">
-        <span class="shop-eyebrow bg-white/15 text-white"><i class="fa-solid fa-bolt"></i> Welcome back</span>
-        <h1 class="font-black">Sign in and resume your shopping campaign.</h1>
-        <p class="text-lg max-w-xl">Access your cart, favourites, vendor dashboard, and support tickets without re-enacting the invention of passwords.</p>
-        <a href="{% url 'index' %}" class="shop-btn bg-white text-green-800"><i class="fa-solid fa-store"></i> Browse first</a>
-      </div>
-    </section>
 
-    <section class="shop-card p-6 sm:p-8 modern-form">
-      <div class="mb-6">
-        <span class="shop-eyebrow"><i class="fa-solid fa-right-to-bracket"></i> Login</span>
-        <h2 class="text-3xl font-black mt-3">Your account</h2>
-        <p class="shop-muted">Use your username and password.</p>
+{% block content %}
+<div class="min-h-screen grid grid-rows-[1fr_auto]">
+  <main class="w-full max-w-[1450px] mx-auto px-3 sm:px-5 lg:px-8 py-6 sm:py-8 lg:py-10">
+    <div class="grid lg:grid-cols-[1fr_auto_500px] gap-6 lg:gap-8 items-stretch">
+
+      <!-- Hero Section -->
+      <section class="relative overflow-hidden rounded-[2.25rem] bg-gradient-to-br from-emerald-950 via-green-700 to-orange-500 p-6 text-white shadow-[0_28px_80px_rgba(6,78,59,0.28)] sm:p-10 lg:p-12 min-h-[540px] flex items-center">
+        <div class="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl"></div>
+        <div class="absolute -bottom-28 -left-24 h-72 w-72 rounded-full bg-orange-300/20 blur-3xl"></div>
+
+        <div class="relative z-10 max-w-3xl">
+          <span class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/15 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white backdrop-blur">
+            <i class="fa-solid fa-bolt"></i>
+            Welcome back
+          </span>
+
+          <h1 class="mt-5 text-4xl font-black leading-[0.98] tracking-[-0.06em] sm:text-6xl lg:text-7xl">
+            Sign in and resume your shopping campaign.
+          </h1>
+
+          <p class="mt-5 max-w-xl text-base font-medium leading-7 text-white/85 sm:text-lg">
+            Access your cart, favourites, vendor dashboard, and support tickets from one secure account.
+          </p>
+
+          <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <a href="{% url 'index' %}" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-5 py-3 font-black text-green-700 shadow-lg transition hover:-translate-y-0.5 hover:bg-emerald-50">
+              <i class="fa-solid fa-store"></i>
+              Browse first
+            </a>
+
+            <a href="{% url 'register' %}" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-5 py-3 font-black text-white backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/20">
+              <i class="fa-solid fa-user-plus"></i>
+              Create account
+            </a>
+          </div>
+
+          <div class="mt-10 grid gap-3 sm:grid-cols-3">
+            <div class="rounded-[1.5rem] border border-white/20 bg-white/15 p-4 backdrop-blur">
+              <div class="mb-3 grid h-10 w-10 place-items-center rounded-2xl bg-white/20">
+                <i class="fa-solid fa-cart-shopping"></i>
+              </div>
+              <strong class="block text-xl font-black">Cart</strong>
+              <span class="block text-sm font-bold text-white/80">Pick up where you left off</span>
+            </div>
+
+            <div class="rounded-[1.5rem] border border-white/20 bg-white/15 p-4 backdrop-blur">
+              <div class="mb-3 grid h-10 w-10 place-items-center rounded-2xl bg-white/20">
+                <i class="fa-solid fa-heart"></i>
+              </div>
+              <strong class="block text-xl font-black">Favourites</strong>
+              <span class="block text-sm font-bold text-white/80">Saved items ready</span>
+            </div>
+
+            <div class="rounded-[1.5rem] border border-white/20 bg-white/15 p-4 backdrop-blur">
+              <div class="mb-3 grid h-10 w-10 place-items-center rounded-2xl bg-white/20">
+                <i class="fa-solid fa-headset"></i>
+              </div>
+              <strong class="block text-xl font-black">Support</strong>
+              <span class="block text-sm font-bold text-white/80">Track your requests</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Divider -->
+      <div class="hidden lg:flex items-center justify-center">
+        <div class="h-full min-h-[540px] w-px bg-gradient-to-b from-transparent via-slate-300 to-transparent"></div>
       </div>
-      <form method="POST" class="space-y-4">
-        {% csrf_token %}
-        <label class="block"><span class="font-bold text-sm">Username</span>{{ form.username }}</label>
-        <label class="block"><span class="font-bold text-sm">Password</span>{{ form.password }}</label>
-        <button type="submit" class="shop-btn shop-btn-primary w-full text-lg"><i class="fa-solid fa-unlock"></i> Login</button>
-      </form>
-      <div class="mt-6 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between text-sm">
-        <a href="{% url 'password_reset' %}" class="font-bold text-green-700 hover:text-orange-600">Forgot password?</a>
-        <p class="shop-muted">No account? <a href="{% url 'register' %}" class="font-black text-green-700 hover:text-orange-600">Create one</a></p>
+
+      <div class="flex items-center gap-4 lg:hidden">
+        <div class="h-px flex-1 bg-gradient-to-r from-transparent via-slate-300 to-slate-300"></div>
+        <span class="rounded-full bg-white px-3 py-1 text-xs font-black uppercase tracking-wider text-slate-400 shadow-sm">
+          Login
+        </span>
+        <div class="h-px flex-1 bg-gradient-to-l from-transparent via-slate-300 to-slate-300"></div>
       </div>
-    </section>
+
+      <!-- Login Form -->
+      <section class="flex items-center">
+        <div class="w-full rounded-[2.25rem] border border-white/80 bg-white/90 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.12)] backdrop-blur-xl sm:p-8">
+          <div class="mb-7 flex items-start justify-between gap-4">
+            <div>
+              <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-emerald-800">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                Login
+              </span>
+
+              <h2 class="mt-4 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+                Your account
+              </h2>
+
+              <p class="mt-2 text-sm font-medium text-slate-500">
+                Use your username and password to continue.
+              </p>
+            </div>
+
+            <div class="hidden h-12 w-12 shrink-0 place-items-center rounded-2xl bg-emerald-100 text-emerald-700 sm:grid">
+              <i class="fa-solid fa-shield-halved text-xl"></i>
+            </div>
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-600">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          <form method="POST" class="space-y-4">
+            {% csrf_token %}
+
+            <label class="block rounded-2xl border border-slate-100 bg-slate-50/70 p-4 transition focus-within:border-emerald-300 focus-within:bg-white focus-within:shadow-sm">
+              <span class="mb-2 block text-sm font-black text-slate-700">
+                Username
+              </span>
+              {{ form.username }}
+
+              {% for error in form.username.errors %}
+                <span class="mt-2 block rounded-xl bg-red-50 px-3 py-2 text-xs font-bold text-red-600">
+                  {{ error }}
+                </span>
+              {% endfor %}
+            </label>
+
+            <label class="block rounded-2xl border border-slate-100 bg-slate-50/70 p-4 transition focus-within:border-emerald-300 focus-within:bg-white focus-within:shadow-sm">
+              <span class="mb-2 block text-sm font-black text-slate-700">
+                Password
+              </span>
+              {{ form.password }}
+
+              {% for error in form.password.errors %}
+                <span class="mt-2 block rounded-xl bg-red-50 px-3 py-2 text-xs font-bold text-red-600">
+                  {{ error }}
+                </span>
+              {% endfor %}
+            </label>
+
+            <button type="submit" class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border-0 bg-gradient-to-br from-green-600 to-emerald-800 px-5 py-3 text-lg font-black leading-none text-white shadow-[0_16px_34px_rgba(15,143,79,0.25)] transition hover:-translate-y-0.5 hover:shadow-[0_20px_42px_rgba(15,143,79,0.3)]">
+              <i class="fa-solid fa-unlock"></i>
+              Login
+            </button>
+          </form>
+
+          <div class="mt-6 flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <a href="{% url 'password_reset' %}" class="font-black text-green-700 transition hover:text-orange-600">
+              Forgot password?
+            </a>
+
+            <p class="text-slate-500">
+              No account?
+              <a href="{% url 'register' %}" class="font-black text-green-700 transition hover:text-orange-600">
+                Create one
+              </a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </div>
   </main>
+
   {% include 'footer.html' %}
 </div>
 {% endblock %}

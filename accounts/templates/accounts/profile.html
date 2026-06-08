@@ -3,23 +3,23 @@
 {% block content %}
 <div class="min-h-screen grid" style="grid-template-rows: auto 1fr auto;">
   {% include 'shop/navbar.html' %}
-  <main class="shop-shell shop-section">
-    <div class="mb-6">
-      <span class="shop-eyebrow"><i class="fa-solid fa-user-gear"></i> Account</span>
+  <main class="w-full mx-auto px-2 sm:px-3 lg:px-4 py-5 sm:py-8 lg:py-10">
+    <div class="mb-6 mx-2">
+      <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-extrabold uppercase tracking-wider text-emerald-900"><i class="fa-solid fa-user-gear"></i> Account</span>
       <h1 class="text-4xl sm:text-5xl font-black tracking-tight mt-3">Profile settings</h1>
-      <p class="shop-muted mt-2">Tune your account without summoning a settings page from 2009.</p>
+      <p class="text-slate-500 mt-2">Tune your account without summoning a settings page from 2009.</p>
     </div>
 
-    <div class="grid lg:grid-cols-[.35fr_.65fr] gap-6 items-start">
-      <aside class="shop-card p-6 text-center sticky top-28">
+    <div class="grid lg:grid-cols-[.35fr_.65fr] gap-6 items-start mx-2">
+      <aside class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-6 text-center sticky top-28">
         <div class="w-28 h-28 mx-auto rounded-[2rem] bg-gradient-to-br from-green-700 to-orange-500 text-white grid place-items-center text-5xl font-black shadow-xl">{{ request.user.username|first|upper }}</div>
         <h2 class="text-2xl font-black mt-4">{{ request.user.username }}</h2>
-        <p class="shop-muted text-sm break-all">{{ request.user.email }}</p>
+        <p class="text-slate-500 text-sm break-all">{{ request.user.email }}</p>
         {% if is_vendor %}<span class="inline-flex mt-4 px-3 py-1 rounded-full bg-green-50 text-green-700 font-black text-xs">Approved vendor</span>{% endif %}
       </aside>
 
       <section class="space-y-6">
-        <div class="shop-card p-6 modern-form">
+        <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-6">
           <h2 class="text-2xl font-black mb-4">User profile</h2>
           <form method="POST" class="grid sm:grid-cols-2 gap-4">
             {% csrf_token %}
@@ -27,27 +27,27 @@
               <label class="block {% if field.name == 'require_otp' %}sm:col-span-2{% endif %}">
                 <span class="font-bold text-sm">{{ field.label }}</span>
                 {{ field }}
-                {% if field.help_text %}<span class="block text-xs shop-muted mt-1">{{ field.help_text }}</span>{% endif %}
+                {% if field.help_text %}<span class="block text-xs text-slate-500 mt-1">{{ field.help_text }}</span>{% endif %}
                 {% for error in field.errors %}<span class="block text-xs text-red-600 font-bold mt-1">{{ error }}</span>{% endfor %}
               </label>
             {% endfor %}
-            <button type="submit" class="shop-btn shop-btn-primary sm:col-span-2"><i class="fa-solid fa-floppy-disk"></i> Save profile</button>
+            <button type="submit" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)] sm:col-span-2"><i class="fa-solid fa-floppy-disk"></i> Save profile</button>
           </form>
         </div>
 
         {% if is_vendor and vendor_form %}
-          <div class="shop-card p-6 modern-form">
+          <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-6">
             <h2 class="text-2xl font-black mb-4">Vendor profile</h2>
             <form method="POST" enctype="multipart/form-data" class="grid sm:grid-cols-2 gap-4">
               {% csrf_token %}
               {% for field in vendor_form %}
-                <label class="block {% if field.name == 'description' or field.name == 'logo' %}sm:col-span-2{% endif %}">
+                <label class="block {% if field.name == 'description' or 'logo' %}sm:col-span-2{% endif %}">
                   <span class="font-bold text-sm">{{ field.label }}</span>
                   {{ field }}
                   {% for error in field.errors %}<span class="block text-xs text-red-600 font-bold mt-1">{{ error }}</span>{% endfor %}
                 </label>
               {% endfor %}
-              <button type="submit" name="vendor_form_submit" class="shop-btn shop-btn-accent sm:col-span-2"><i class="fa-solid fa-store"></i> Save vendor profile</button>
+              <button type="submit" name="vendor_form_submit" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-[0_14px_30px_rgba(249,115,22,0.24)] sm:col-span-2"><i class="fa-solid fa-store"></i> Save vendor profile</button>
             </form>
           </div>
         {% endif %}

@@ -6,42 +6,42 @@
 <div class="min-h-screen grid" style="grid-template-rows: auto 1fr auto;">
   {% include 'shop/navbar.html' %}
 
-  <main class="shop-shell shop-section">
+  <main class="w-full mx-auto px-2 sm:px-3 lg:px-4 py-5 sm:py-8 lg:py-10">
     <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-6">
       <div>
-        <span class="shop-eyebrow"><i class="fa-solid fa-store"></i> Vendor</span>
+        <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-extrabold uppercase tracking-wider text-emerald-900"><i class="fa-solid fa-store"></i> Vendor</span>
         <h1 class="text-4xl sm:text-5xl font-black tracking-tight mt-3">Dashboard</h1>
-        <p class="shop-muted mt-2">Manage products and promotions without resorting to spreadsheet sorcery.</p>
+        <p class="text-slate-500 mt-2">Manage products and promotions without resorting to spreadsheet sorcery.</p>
       </div>
-      <a href="{% url 'add_product' %}" class="shop-btn shop-btn-primary"><i class="fa-solid fa-cart-plus"></i> New product</a>
+      <a href="{% url 'add_product' %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)]"><i class="fa-solid fa-cart-plus"></i> New product</a>
     </div>
 
     <div class="grid md:grid-cols-3 gap-5 mb-7">
-      <div class="shop-card p-6"><p class="shop-muted font-bold">Products</p><p class="text-4xl font-black text-green-700 mt-1">{{ product_count }}</p></div>
-      <div class="shop-card p-6"><p class="shop-muted font-bold">Sales</p><p class="text-4xl font-black text-orange-500 mt-1">{{ total_sales }}</p></div>
-      <div class="shop-card p-6"><p class="shop-muted font-bold">Revenue</p><p class="text-4xl font-black text-green-700 mt-1">Ksh. {{ total_revenue|intcomma }}</p></div>
+      <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-6"><p class="text-slate-500 font-bold">Products</p><p class="text-4xl font-black text-green-700 mt-1">{{ product_count }}</p></div>
+      <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-6"><p class="text-slate-500 font-bold">Sales</p><p class="text-4xl font-black text-orange-500 mt-1">{{ total_sales }}</p></div>
+      <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-6"><p class="text-slate-500 font-bold">Revenue</p><p class="text-4xl font-black text-green-700 mt-1">Ksh. {{ total_revenue|intcomma }}</p></div>
     </div>
 
-    <div class="shop-card p-3 sm:p-4 mb-6">
+    <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-3 sm:p-4 mb-6">
       <div class="flex gap-2 flex-wrap">
-        <button class="tab tab-active shop-btn shop-btn-primary" data-tab="products"><i class="fa-solid fa-boxes-stacked"></i> Products</button>
-        <button class="tab shop-btn shop-btn-soft" data-tab="promotions"><i class="fa-solid fa-tags"></i> Promotions</button>
+        <button class="tab tab-active inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)]" data-tab="products"><i class="fa-solid fa-boxes-stacked"></i> Products</button>
+        <button class="tab inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-emerald-500/10 text-emerald-800 hover:bg-emerald-500/20" data-tab="promotions"><i class="fa-solid fa-tags"></i> Promotions</button>
       </div>
     </div>
 
     <section id="tab-products" class="tab-pane">
-      <div class="shop-card p-4 sm:p-6">
+      <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
           <h2 class="text-2xl font-black">Inventory</h2>
           <form method="get" class="flex gap-2 items-center">
-            <select name="per_page" onchange="this.form.submit()" class="shop-select min-w-32">
+            <select name="per_page" onchange="this.form.submit()" class="min-h-12 w-full rounded-[18px] border border-slate-200 bg-white/90 px-4 py-3 text-slate-900 shadow-inner outline-none transition focus:border-green-600 focus:ring-4 focus:ring-emerald-500/10 min-w-32">
               <option value="5" {% if per_page == 5 %}selected{% endif %}>5 per page</option>
               <option value="10" {% if per_page == 10 %}selected{% endif %}>10 per page</option>
             </select>
           </form>
         </div>
         <div class="overflow-x-auto">
-          <table class="shop-table">
+          <table class="w-full border-separate border-spacing-y-3 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:text-xs [&_th]:font-black [&_th]:uppercase [&_th]:tracking-wider [&_th]:text-slate-500 [&_td]:border-y [&_td]:border-slate-100 [&_td]:bg-white/80 [&_td]:px-4 [&_td]:py-4 [&_td:first-child]:rounded-l-2xl [&_td:last-child]:rounded-r-2xl">
             <thead><tr><th>Product</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
             <tbody>
               {% for product in products %}
@@ -49,20 +49,20 @@
                   <td>
                     <div class="flex items-center gap-3">
                       {% if product.image %}<img src="{{ product.image.url }}" class="w-14 h-14 object-contain rounded-2xl bg-slate-50 border border-slate-100 p-1" alt="{{ product.name }}">{% else %}<span class="w-14 h-14 rounded-2xl bg-green-50 grid place-items-center text-green-700"><i class="fa-solid fa-box"></i></span>{% endif %}
-                      <div><p class="font-black">{{ product.name }}</p><p class="shop-muted text-xs">{{ product.created_at|naturalday }}</p></div>
+                      <div><p class="font-black">{{ product.name }}</p><p class="text-slate-500 text-xs">{{ product.created_at|naturalday }}</p></div>
                     </div>
                   </td>
                   <td class="font-black text-green-700">Ksh. {{ product.price|intcomma }}</td>
                   <td><span class="font-black {% if product.stock < 5 %}text-red-600{% else %}text-orange-500{% endif %}">{{ product.stock }}</span></td>
                   <td>
                     <div class="flex gap-2">
-                      <a href="{% url 'edit_product' product.id %}" class="shop-btn shop-btn-soft min-h-0 py-2 text-sm"><i class="fa-solid fa-pen"></i> Edit</a>
-                      <button type="button" onclick="openDeleteModal('{{ product.id }}', '{{ product.name|escapejs }}')" class="shop-btn shop-btn-danger min-h-0 py-2 text-sm"><i class="fa-solid fa-trash"></i></button>
+                      <a href="{% url 'edit_product' product.id %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-emerald-500/10 text-emerald-800 hover:bg-emerald-500/20 min-h-0 py-2 text-sm"><i class="fa-solid fa-pen"></i> Edit</a>
+                      <button type="button" onclick="openDeleteModal('{{ product.id }}', '{{ product.name|escapejs }}')" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-red-500 to-red-700 text-white min-h-0 py-2 text-sm"><i class="fa-solid fa-trash"></i></button>
                     </div>
                   </td>
                 </tr>
               {% empty %}
-                <tr><td colspan="4"><div class="shop-empty"><p>No products yet.</p></div></td></tr>
+                <tr><td colspan="4"><div class="px-4 py-16 text-center text-slate-500"><p>No products yet.</p></div></td></tr>
               {% endfor %}
             </tbody>
           </table>
@@ -72,13 +72,13 @@
     </section>
 
     <section id="tab-promotions" class="tab-pane hidden">
-      <div class="shop-card p-4 sm:p-6">
+      <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
           <h2 class="text-2xl font-black">Promo codes</h2>
-          <a href="{% url 'create_promo' %}" class="shop-btn shop-btn-accent"><i class="fa-solid fa-tag"></i> New promo</a>
+          <a href="{% url 'create_promo' %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-[0_14px_30px_rgba(249,115,22,0.24)]"><i class="fa-solid fa-tag"></i> New promo</a>
         </div>
         <div class="overflow-x-auto">
-          <table class="shop-table">
+          <table class="w-full border-separate border-spacing-y-3 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:text-xs [&_th]:font-black [&_th]:uppercase [&_th]:tracking-wider [&_th]:text-slate-500 [&_td]:border-y [&_td]:border-slate-100 [&_td]:bg-white/80 [&_td]:px-4 [&_td]:py-4 [&_td:first-child]:rounded-l-2xl [&_td:last-child]:rounded-r-2xl">
             <thead><tr><th>Code</th><th>Discount</th><th>Status</th><th>Usage</th><th>Expires</th><th>Actions</th></tr></thead>
             <tbody>
               {% for promo in promo_codes %}
@@ -86,17 +86,17 @@
                   <td class="font-mono font-black">{{ promo.code }}</td>
                   <td class="font-black text-green-700">{% if promo.discount_type == 'percentage' %}{{ promo.discount_value|floatformat:0 }}%{% else %}Ksh. {{ promo.discount_value|intcomma }}{% endif %}</td>
                   <td>{% if promo.is_active and promo.is_valid %}<span class="px-3 py-1 bg-green-50 text-green-700 rounded-full font-black text-xs">Active</span>{% else %}<span class="px-3 py-1 bg-red-50 text-red-700 rounded-full font-black text-xs">Inactive</span>{% endif %}</td>
-                  <td class="shop-muted font-bold">{{ promo.used_count }} / {{ promo.usage_limit|default:"∞" }}</td>
-                  <td class="shop-muted">{{ promo.valid_to|naturalday|default:"No expiry" }}</td>
+                  <td class="text-slate-500 font-bold">{{ promo.used_count }} / {{ promo.usage_limit|default:"∞" }}</td>
+                  <td class="text-slate-500">{{ promo.valid_to|naturalday|default:"No expiry" }}</td>
                   <td>
                     <div class="flex gap-2">
-                      <a href="{% url 'edit_promo' promo.id %}" class="shop-btn shop-btn-soft min-h-0 py-2 text-sm"><i class="fa-solid fa-pen"></i> Edit</a>
-                      <form method="POST" action="{% url 'delete_promo' promo.id %}" onsubmit="return confirm('Delete this promo code?')">{% csrf_token %}<button type="submit" class="shop-btn shop-btn-danger min-h-0 py-2 text-sm"><i class="fa-solid fa-trash"></i></button></form>
+                      <a href="{% url 'edit_promo' promo.id %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-emerald-500/10 text-emerald-800 hover:bg-emerald-500/20 min-h-0 py-2 text-sm"><i class="fa-solid fa-pen"></i> Edit</a>
+                      <form method="POST" action="{% url 'delete_promo' promo.id %}" onsubmit="return confirm('Delete this promo code?')">{% csrf_token %}<button type="submit" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-red-500 to-red-700 text-white min-h-0 py-2 text-sm"><i class="fa-solid fa-trash"></i></button></form>
                     </div>
                   </td>
                 </tr>
               {% empty %}
-                <tr><td colspan="6"><div class="shop-empty"><p>No promo codes yet.</p></div></td></tr>
+                <tr><td colspan="6"><div class="px-4 py-16 text-center text-slate-500"><p>No promo codes yet.</p></div></td></tr>
               {% endfor %}
             </tbody>
           </table>
@@ -111,19 +111,25 @@
 <dialog id="deleteModal" class="modal">
   <div class="modal-box rounded-3xl">
     <h3 class="text-2xl font-black text-red-600"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Delete product?</h3>
-    <p class="shop-muted mt-3">This will remove <strong id="deleteProductName"></strong> from your shop.</p>
+    <p class="text-slate-500 mt-3">This will remove <strong id="deleteProductName"></strong> from your shop.</p>
     <div class="modal-action">
-      <form id="deleteForm" method="POST">{% csrf_token %}<button class="shop-btn shop-btn-danger"><i class="fa-solid fa-trash"></i> Delete</button></form>
-      <form method="dialog"><button class="shop-btn shop-btn-soft">Cancel</button></form>
+      <form id="deleteForm" method="POST">{% csrf_token %}<button class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-red-500 to-red-700 text-white"><i class="fa-solid fa-trash"></i> Delete</button></form>
+      <form method="dialog"><button class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-emerald-500/10 text-emerald-800 hover:bg-emerald-500/20">Cancel</button></form>
     </div>
   </div>
 </dialog>
 
 <script>
+const buttonBase = "inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer";
+const primaryButton = buttonBase + " bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)]";
+const softButton = buttonBase + " bg-emerald-500/10 text-emerald-800 hover:bg-emerald-500/20";
+function setTabButton(button, active) {
+  button.className = (active ? primaryButton : softButton) + " tab" + (active ? " tab-active" : "");
+}
 function switchTab(tabName) {
-  document.querySelectorAll('.tab').forEach(t => { t.classList.remove('shop-btn-primary', 'tab-active'); t.classList.add('shop-btn-soft'); });
+  document.querySelectorAll('.tab').forEach(t => setTabButton(t, false));
   const targetTab = document.querySelector(`[data-tab="${tabName}"]`);
-  if (targetTab) { targetTab.classList.add('shop-btn-primary', 'tab-active'); targetTab.classList.remove('shop-btn-soft'); }
+  if (targetTab) setTabButton(targetTab, true);
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
   const activePane = document.getElementById('tab-' + tabName);
   if (activePane) activePane.classList.remove('hidden');

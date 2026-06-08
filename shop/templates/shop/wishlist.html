@@ -4,19 +4,19 @@
 {% block content %}
 <div class="min-h-screen grid" style="grid-template-rows: auto 1fr auto;">
   {% include 'shop/navbar.html' %}
-  <main class="shop-shell shop-section">
+  <main class="w-full mx-auto px-2 sm:px-3 lg:px-4 py-5 sm:py-8 lg:py-10">
     <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
       <div>
-        <span class="shop-eyebrow"><i class="fa-solid fa-heart text-red-500"></i> Saved products</span>
+        <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-extrabold uppercase tracking-wider text-emerald-900"><i class="fa-solid fa-heart text-red-500"></i> Saved products</span>
         <h1 class="text-4xl sm:text-5xl font-black tracking-tight mt-3">My favourites</h1>
       </div>
-      <a href="{% url 'index' %}" class="shop-btn shop-btn-soft"><i class="fa-solid fa-store"></i> Browse more</a>
+      <a href="{% url 'index' %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-emerald-500/10 text-emerald-800 hover:bg-emerald-500/20"><i class="fa-solid fa-store"></i> Browse more</a>
     </div>
 
     {% if products %}
       {% include 'shop/product_grid.html' with products=products wishlist_items=wishlist_items %}
     {% else %}
-      <div class="shop-empty shop-card">
+      <div class="px-4 py-16 text-center text-slate-500 bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl">
         <i class="fa-regular fa-heart text-5xl text-red-500 mb-4"></i>
         <h2 class="text-3xl font-black text-slate-900">No favourites yet</h2>
         <p>Products cannot admire themselves. Apparently that’s your job.</p>

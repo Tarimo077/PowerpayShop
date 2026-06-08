@@ -1,48 +1,49 @@
 {% load static %}
-<nav class="shop-navbar">
-  <div class="shop-shell shop-nav-inner">
-    <a href="{% url 'index' %}" class="shop-logo flex items-center gap-3" aria-label="PowerPay Shop home">
-      <img src="{% static 'images/pplogo.png' %}" alt="PowerPay">
+<nav class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-[0_12px_35px_rgba(15,23,42,0.07)] backdrop-blur-xl">
+  <div class="w-full mx-auto px-2 sm:px-3 lg:px-4 relative grid min-h-[76px] grid-cols-[auto_minmax(260px,1fr)_auto] items-center gap-4 px-3 sm:px-4 lg:px-6 max-[900px]:grid-cols-[1fr_auto]">
+    <a href="{% url 'index' %}" class="order-1 flex items-center gap-3 shrink-0" aria-label="PowerPay Shop home">
+      <img src="{% static 'images/pplogo.png' %}" alt="PowerPay" class="h-12 w-auto object-contain">
     </a>
 
-    <form method="GET" action="{% url 'product_search' %}" class="shop-search">
+    <form method="GET" action="{% url 'product_search' %}" class="relative order-2 max-[900px]:order-3 max-[900px]:col-span-2">
       <input
         type="text"
         name="q"
         placeholder="Search products, vendors, stoves..."
         value="{{ request.GET.q|default:'' }}"
         autocomplete="off"
+        class="min-h-12 w-full rounded-[18px] border border-slate-200 bg-white/90 py-3 pl-4 pr-12 text-slate-900 shadow-inner outline-none transition focus:border-green-600 focus:ring-4 focus:ring-emerald-500/10"
         hx-get="{% url 'product_search' %}"
         hx-trigger="keyup changed delay:280ms"
         hx-target="#live-results"
         hx-indicator="#search-spinner">
-      <span id="search-spinner" class="shop-search-icon hidden" hx-indicator><i class="fa fa-spinner fa-spin"></i></span>
-      <span class="shop-search-icon" aria-hidden="true"><i class="fa-solid fa-magnifying-glass"></i></span>
-      <div id="live-results" class="shop-live-results hidden"></div>
+      <span id="search-spinner" class="absolute right-4 top-1/2 -translate-y-1/2 text-green-600 hidden" hx-indicator><i class="fa fa-spinner fa-spin"></i></span>
+      <span class="absolute right-4 top-1/2 -translate-y-1/2 text-green-600" aria-hidden="true"><i class="fa-solid fa-magnifying-glass"></i></span>
+      <div id="live-results" class="absolute inset-x-0 top-[calc(100%+0.55rem)] z-[70] overflow-hidden rounded-[22px] bg-white/95 shadow-[0_18px_45px_rgba(15,23,42,0.16)] hidden"></div>
     </form>
 
-    <div class="shop-nav-actions">
+    <div class="order-3 flex items-center justify-end gap-2 whitespace-nowrap sm:gap-3 md:gap-4 max-[900px]:order-2">
       {% if user.is_authenticated %}
-        <a href="{% url 'wishlist_page' %}" class="shop-nav-link" title="Favourites">
-          <span class="relative"><i class="fa-solid fa-heart"></i>{% if wishlist_count > 0 %}<span class="shop-badge absolute -top-3 -right-3">{{ wishlist_count }}</span>{% endif %}</span>
-          <span>Favourites</span>
+        <a href="{% url 'wishlist_page' %}" class="inline-flex min-w-[74px] flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-extrabold text-emerald-800 transition hover:bg-emerald-50 hover:text-orange-500 max-[640px]:min-w-11 max-[640px]:px-2" title="Favourites">
+          <span class="relative"><i class="fa-solid fa-heart text-lg sm:text-xl"></i>{% if wishlist_count > 0 %}<span class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1.5 text-[0.72rem] font-black text-white absolute -top-3 -right-3">{{ wishlist_count }}</span>{% endif %}</span>
+          <span class="max-[640px]:hidden">Favourites</span>
         </a>
-        <a href="{% url 'view_cart' %}" class="shop-nav-link" title="Cart">
-          <span class="relative"><i class="fa-solid fa-cart-shopping"></i>{% if cart_item_count > 0 %}<span class="shop-badge absolute -top-3 -right-3">{{ cart_item_count }}</span>{% endif %}</span>
-          <span>Cart</span>
+        <a href="{% url 'view_cart' %}" class="inline-flex min-w-[74px] flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-extrabold text-emerald-800 transition hover:bg-emerald-50 hover:text-orange-500 max-[640px]:min-w-11 max-[640px]:px-2" title="Cart">
+          <span class="relative"><i class="fa-solid fa-cart-shopping text-lg sm:text-xl"></i>{% if cart_item_count > 0 %}<span class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1.5 text-[0.72rem] font-black text-white absolute -top-3 -right-3">{{ cart_item_count }}</span>{% endif %}</span>
+          <span class="max-[640px]:hidden">Cart</span>
         </a>
-        <button id="notifDropdownBtn" type="button" class="shop-nav-link bg-transparent border-0 cursor-pointer" title="Notifications"
+        <button id="notifDropdownBtn" type="button" class="inline-flex min-w-[74px] flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-extrabold text-emerald-800 transition hover:bg-emerald-50 hover:text-orange-500 max-[640px]:min-w-11 max-[640px]:px-2 bg-transparent border-0 cursor-pointer" title="Notifications"
                 hx-get="{% url 'notifications:dropdown' %}"
                 hx-trigger="click"
                 hx-target="#notifDropdown"
                 hx-swap="innerHTML">
-          <span class="relative"><i class="fa-solid fa-bell"></i>{% if unread_notif_count > 0 %}<span class="shop-badge absolute -top-3 -right-3">{{ unread_notif_count }}</span>{% endif %}</span>
-          <span>Alerts</span>
+          <span class="relative"><i class="fa-solid fa-bell text-lg sm:text-xl"></i>{% if unread_notif_count > 0 %}<span class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1.5 text-[0.72rem] font-black text-white absolute -top-3 -right-3">{{ unread_notif_count }}</span>{% endif %}</span>
+          <span class="max-[640px]:hidden">Alerts</span>
         </button>
         {% include 'shop/avatar.html' %}
       {% else %}
-        <a href="{% url 'login' %}" class="shop-btn shop-btn-soft">Login</a>
-        <a href="{% url 'register' %}" class="shop-btn shop-btn-primary hidden sm:inline-flex">Join</a>
+        <a href="{% url 'login' %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-emerald-500/10 text-emerald-800 hover:bg-emerald-500/20">Login</a>
+        <a href="{% url 'register' %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)] hidden sm:inline-flex">Join</a>
       {% endif %}
     </div>
 

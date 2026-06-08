@@ -1,56 +1,56 @@
 {% load humanize %}
-<div id="productsGrid" class="shop-product-grid" style="--shop-columns: {{ columns|default:4 }};">
+<div id="productsGrid" class="grid gap-4 [grid-template-columns:repeat(var(--grid-columns,4),minmax(0,1fr))] max-[1080px]:grid-cols-3 max-[760px]:grid-cols-2 max-[560px]:grid-cols-1" style="--grid-columns: {{ columns|default:4 }};">
   {% for product in products %}
-    <article class="shop-product-card group">
-      <div class="shop-product-badges">
-        <span class="shop-mini-badge shop-mini-badge-green"><i class="fa-solid fa-circle-check"></i> Verified</span>
+    <article class="relative flex min-h-full flex-col overflow-hidden rounded-[28px] border border-white/80 bg-white/90 shadow-[0_18px_40px_rgba(15,23,42,0.09)] transition hover:-translate-y-1.5 hover:border-green-600/20 hover:shadow-[0_24px_55px_rgba(15,23,42,0.14)] group">
+      <div class="absolute left-4 top-4 z-20 flex max-w-[calc(100%-5rem)] flex-wrap gap-1.5">
+        <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.7rem] font-black shadow-[0_10px_20px_rgba(15,23,42,0.09)] bg-emerald-50/95 text-emerald-800"><i class="fa-solid fa-circle-check"></i> Verified</span>
         {% if product.stock <= 5 %}
-          <span class="shop-mini-badge shop-mini-badge-orange"><i class="fa-solid fa-fire"></i> Low stock</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.7rem] font-black shadow-[0_10px_20px_rgba(15,23,42,0.09)] bg-orange-50/95 text-orange-700"><i class="fa-solid fa-fire"></i> Low stock</span>
         {% endif %}
       </div>
 
       {% if is_authenticated %}
         <form method="POST" action="{% url 'toggle_wishlist' product.id %}" class="absolute top-4 right-4 z-30">
           {% csrf_token %}
-          <button type="submit" onclick="event.stopPropagation()" class="shop-icon-btn bg-white/95" aria-label="Toggle favourite">
+          <button type="submit" onclick="event.stopPropagation()" class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/80 bg-white/90 text-emerald-800 shadow-[0_10px_22px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:text-orange-500 bg-white/95" aria-label="Toggle favourite">
             {% if product.id in wishlist_items %}<i class="fa-solid fa-heart text-red-500"></i>{% else %}<i class="fa-regular fa-heart"></i>{% endif %}
           </button>
         </form>
       {% endif %}
 
-      <div class="shop-product-media shop-carousel" data-product-carousel data-interval="7000">
-        <a href="{% url 'product_detail' product.id %}" class="shop-carousel-link" aria-label="View {{ product.name }}">
+      <div class="relative m-3 aspect-[4/3] overflow-hidden rounded-[23px] border border-slate-900/5 bg-gradient-to-br from-white/90 to-emerald-50/90" data-product-carousel data-interval="7000">
+        <a href="{% url 'product_detail' product.id %}" class="absolute inset-0 block" aria-label="View {{ product.name }}">
           {% if product.image %}
-            <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" decoding="async" class="shop-carousel-slide is-active">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" decoding="async" data-carousel-slide class="absolute inset-0 h-full max-h-full w-full max-w-full object-contain p-3 opacity-0 scale-[.985] transition duration-500 saturate-[1.03] contrast-[1.02] is-active">
           {% endif %}
           {% for photo in product.gallery.all %}
-            <img src="{{ photo.image.url }}" alt="{{ photo.alt_text|default:product.name }}" loading="lazy" decoding="async" class="shop-carousel-slide {% if not product.image and forloop.first %}is-active{% endif %}">
+            <img src="{{ photo.image.url }}" alt="{{ photo.alt_text|default:product.name }}" loading="lazy" decoding="async" data-carousel-slide class="absolute inset-0 h-full max-h-full w-full max-w-full object-contain p-3 opacity-0 scale-[.985] transition duration-500 saturate-[1.03] contrast-[1.02] {% if not product.image and forloop.first %}is-active{% endif %}">
           {% empty %}
             {% if not product.image %}
-              <div class="shop-carousel-slide is-active shop-image-placeholder"><i class="fa-solid fa-image text-4xl mb-2"></i><p>No image</p></div>
+              <div data-carousel-slide class="absolute inset-0 h-full max-h-full w-full max-w-full object-contain p-3 opacity-0 scale-[.985] transition duration-500 saturate-[1.03] contrast-[1.02] is-active grid place-items-center content-center bg-white/60 text-slate-500"><i class="fa-solid fa-image text-4xl mb-2"></i><p>No image</p></div>
             {% endif %}
           {% endfor %}
         </a>
         {% if product.gallery.all %}
-          <button type="button" class="shop-carousel-arrow shop-carousel-prev" data-carousel-prev aria-label="Previous image"><i class="fa-solid fa-chevron-left"></i></button>
-          <button type="button" class="shop-carousel-arrow shop-carousel-next" data-carousel-next aria-label="Next image"><i class="fa-solid fa-chevron-right"></i></button>
-          <div class="shop-carousel-dots" data-carousel-dots aria-hidden="true"></div>
+          <button type="button" class="absolute top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border-0 bg-white/90 text-emerald-800 opacity-0 shadow-lg transition hover:text-orange-500 group-hover:opacity-100 focus:opacity-100 max-[560px]:opacity-100 left-3" data-carousel-prev aria-label="Previous image"><i class="fa-solid fa-chevron-left"></i></button>
+          <button type="button" class="absolute top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border-0 bg-white/90 text-emerald-800 opacity-0 shadow-lg transition hover:text-orange-500 group-hover:opacity-100 focus:opacity-100 max-[560px]:opacity-100 right-3" data-carousel-next aria-label="Next image"><i class="fa-solid fa-chevron-right"></i></button>
+          <div class="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5" data-carousel-dots aria-hidden="true"></div>
         {% endif %}
       </div>
 
       <a href="{% url 'product_detail' product.id %}" class="text-inherit flex flex-col flex-1">
-        <div class="shop-product-body">
+        <div class="flex flex-1 flex-col px-4 pb-4 pt-1">
           <div class="flex items-start justify-between gap-3 mb-2">
             <h2 class="text-xl font-black text-slate-900 leading-tight group-hover:text-green-700 transition">{{ product.name }}</h2>
           </div>
-          <p class="shop-muted text-sm shop-line-clamp-2 min-h-[2.5rem]">{{ product.description|default:"No description provided." }}</p>
+          <p class="text-slate-500 text-sm line-clamp-2 min-h-[2.5rem]">{{ product.description|default:"No description provided." }}</p>
 
           <div class="mt-4 flex items-center justify-between gap-3">
-            <p class="shop-price">Ksh. {{ product.price|intcomma }}</p>
+            <p class="text-xl font-black text-emerald-800">Ksh. {{ product.price|intcomma }}</p>
             <span class="text-xs font-black text-orange-600 bg-orange-50 px-3 py-1 rounded-full">{{ product.stock }} left</span>
           </div>
 
-          <div class="mt-3 flex items-center gap-1 shop-rating">
+          <div class="mt-3 flex items-center gap-1 text-amber-500">
             {% for i in "12345" %}
               {% if forloop.counter <= product.average_rating %}<i class="fa-solid fa-star"></i>{% else %}<i class="fa-regular fa-star"></i>{% endif %}
             {% endfor %}
@@ -65,14 +65,14 @@
           </div>
 
           <div class="mt-4">
-            <div class="flex justify-between text-xs font-bold shop-muted mb-1"><span>Stock</span><span>{{ product.stock }} / {{ product.max_stock }}</span></div>
-            <div class="shop-stock-track"><div class="shop-stock-fill" style="width: {{ product.stock_percentage }}%"></div></div>
+            <div class="flex justify-between text-xs font-bold text-slate-500 mb-1"><span>Stock</span><span>{{ product.stock }} / {{ product.max_stock }}</span></div>
+            <div class="h-2.5 overflow-hidden rounded-full bg-slate-200"><div class="h-full rounded-full bg-gradient-to-r from-green-600 to-orange-500" style="width: {{ product.stock_percentage }}%"></div></div>
           </div>
 
-          <div class="shop-card-features">
-            <span><i class="fa-solid fa-mobile-screen-button"></i> M-Pesa</span>
-            <span><i class="fa-solid fa-truck-fast"></i> 72h delivery</span>
-            <span><i class="fa-solid fa-hand-holding-dollar"></i> Loan option</span>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <span class="inline-flex items-center gap-1 rounded-full bg-green-700/10 px-2.5 py-1 text-[0.68rem] font-black text-emerald-800"><i class="fa-solid fa-mobile-screen-button"></i> M-Pesa</span>
+            <span class="inline-flex items-center gap-1 rounded-full bg-green-700/10 px-2.5 py-1 text-[0.68rem] font-black text-emerald-800"><i class="fa-solid fa-truck-fast"></i> 72h delivery</span>
+            <span class="inline-flex items-center gap-1 rounded-full bg-green-700/10 px-2.5 py-1 text-[0.68rem] font-black text-emerald-800"><i class="fa-solid fa-hand-holding-dollar"></i> Loan option</span>
           </div>
         </div>
       </a>
@@ -83,17 +83,17 @@
         {% if is_authenticated %}
           <form method="POST" action="{% url 'add_to_cart' product.id %}">
             {% csrf_token %}
-            <button type="submit" class="shop-btn shop-btn-accent w-full text-sm"><i class="fa-solid fa-cart-plus"></i> Cart</button>
+            <button type="submit" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-[0_14px_30px_rgba(249,115,22,0.24)] w-full text-sm"><i class="fa-solid fa-cart-plus"></i> Cart</button>
           </form>
-          <a href="{% url 'buy_now' product.id %}" class="shop-btn shop-btn-primary w-full text-sm"><i class="fa-solid fa-bolt"></i> Buy</a>
+          <a href="{% url 'buy_now' product.id %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)] w-full text-sm"><i class="fa-solid fa-bolt"></i> Buy</a>
         {% else %}
-          <a href="{% url 'login' %}" class="shop-btn shop-btn-accent w-full text-sm"><i class="fa-solid fa-cart-plus"></i> Cart</a>
-          <a href="{% url 'login' %}" class="shop-btn shop-btn-primary w-full text-sm"><i class="fa-solid fa-bolt"></i> Buy</a>
+          <a href="{% url 'login' %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-[0_14px_30px_rgba(249,115,22,0.24)] w-full text-sm"><i class="fa-solid fa-cart-plus"></i> Cart</a>
+          <a href="{% url 'login' %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)] w-full text-sm"><i class="fa-solid fa-bolt"></i> Buy</a>
         {% endif %}
       </div>
     </article>
   {% empty %}
-    <div class="shop-empty shop-card col-span-full">
+    <div class="px-4 py-16 text-center text-slate-500 bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl col-span-full">
       <i class="fa-solid fa-magnifying-glass text-4xl text-green-600 mb-3"></i>
       <h3 class="text-2xl font-black text-slate-800">No products found</h3>
       <p>Try clearing filters or searching for something less mythical.</p>

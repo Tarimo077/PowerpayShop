@@ -11,7 +11,7 @@
           {% endif %}
           <span class="flex-1 min-w-0">
             <span class="block font-black text-sm truncate">{{ product.name }}</span>
-            <span class="block text-xs shop-muted truncate">{{ product.vendor.shop_name|default:product.vendor.user }}</span>
+            <span class="block text-xs text-slate-500 truncate">{{ product.vendor.shop_name|default:product.vendor.user }}</span>
           </span>
           <span class="text-green-700 font-black text-sm whitespace-nowrap">Ksh {{ product.price|intcomma }}</span>
         </a>
@@ -19,5 +19,5 @@
     {% endfor %}
   </ul>
 {% else %}
-  {% if query %}<p class="p-4 shop-muted text-sm">No products found. The void remains well-stocked, though.</p>{% endif %}
+  {% if query %}<p class="p-4 text-slate-500 text-sm">No products found. The void remains well-stocked, though.</p>{% endif %}
 {% endif %}

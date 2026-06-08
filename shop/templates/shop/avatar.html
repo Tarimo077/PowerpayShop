@@ -1,17 +1,17 @@
 <div id="navbarAvatarDropdown" class="relative flex items-center">
-  <button id="mobileMenuBtn" type="button" class="shop-icon-btn md:hidden" aria-label="Open menu">
+  <button id="mobileMenuBtn" type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/80 bg-white/90 text-emerald-800 shadow-[0_10px_22px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:text-orange-500 md:hidden" aria-label="Open menu">
     <i class="fa-solid fa-bars"></i>
   </button>
 
-  <button id="navbarAvatarBtn" type="button" class="hidden md:flex items-center gap-2 rounded-full bg-white/80 border border-slate-200 pl-2 pr-3 py-2 shadow-sm hover:shadow-md transition" aria-label="Open account menu">
-    <span class="w-9 h-9 rounded-full bg-gradient-to-br from-green-700 to-orange-500 text-white grid place-items-center font-black">
-      {{ request.user.username|first|upper }}
+  <button id="navbarAvatarBtn" type="button" class="hidden md:flex items-center gap-2 rounded-full bg-white/80 border border-slate-200 p-2 shadow-sm hover:shadow-md transition" aria-label="Open account menu">
+    <span class="grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-green-700 to-orange-500 text-sm font text-white">
+      {{ request.user.username }}
     </span>
-    <span class="font-bold text-sm text-slate-700 max-w-28 truncate">{{ request.user.username }}</span>
+    
   </button>
 
-  <ul id="navbarAvatarMenu" class="menu menu-sm absolute right-0 top-12 mt-2 p-2 w-60 rounded-3xl shadow-2xl bg-white hidden z-50 border border-slate-100">
-    <li><a href="{% url 'profile' %}" class="rounded-2xl"><i class="fa-solid fa-user mr-2"></i> Profile</a></li>
+  <ul id="navbarAvatarMenu" class="menu menu-sm absolute right-0 top-16 p-2 w-64 gap-4 rounded-2xl shadow-2xl bg-white hidden z-50 border border-slate-100">
+    <li><a href="{% url 'profile' %}" class="rounded-2xl mt-2"><i class="fa-solid fa-user mr-2"></i> Profile</a></li>
     {% if is_admin %}
       <li><a href="{% url 'vendor_admin_list' %}" class="rounded-2xl"><i class="fa-solid fa-user-tie mr-2"></i> Admin Panel</a></li>
       <li><a href="{% url 'admin_ticket_list' %}" class="rounded-2xl"><i class="fa-solid fa-ticket mr-2"></i> Admin Support</a></li>
@@ -24,7 +24,7 @@
     <li>
       <form method="POST" action="{% url 'logout' %}" class="w-full">
         {% csrf_token %}
-        <button type="submit" class="rounded-2xl text-red-600 w-full text-left px-3 py-2 hover:bg-red-50"><i class="fa-solid fa-right-from-bracket mr-2"></i> Logout</button>
+        <button type="submit" class="rounded-2xl text-red-600 w-full hover:bg-red-50 mb-2"><i class="fa-solid fa-right-from-bracket mr-2"></i> Logout</button>
       </form>
     </li>
   </ul>
@@ -34,9 +34,9 @@
   <div class="flex justify-between items-center p-5 border-b">
     <div>
       <p class="font-black text-lg">Menu</p>
-      <p class="text-xs shop-muted">{{ request.user.username }}</p>
+      <p class="text-xs text-slate-500">{{ request.user.username }}</p>
     </div>
-    <button id="closeMobileMenu" type="button" class="shop-icon-btn" aria-label="Close menu"><i class="fa-solid fa-xmark"></i></button>
+    <button id="closeMobileMenu" type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/80 bg-white/90 text-emerald-800 shadow-[0_10px_22px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:text-orange-500" aria-label="Close menu"><i class="fa-solid fa-xmark"></i></button>
   </div>
   <ul class="flex flex-col p-4 gap-2">
     <li><a href="{% url 'profile' %}" class="flex items-center gap-2 rounded-2xl p-3 hover:bg-green-50"><i class="fa-solid fa-user"></i> Profile</a></li>

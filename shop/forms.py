@@ -33,7 +33,6 @@ class PromoCodeForm(forms.ModelForm):
         model = PromoCode
         fields = ["code", "discount_type", "discount_value", "products", "valid_from", "valid_to", "usage_limit", "is_active"]
         
-        # Adding 'class' attributes to widgets for alignment and styling
         widgets = {
             "code": forms.TextInput(attrs={'class': 'w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500'}),
             "discount_type": forms.Select(attrs={'class': 'w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500'}),
@@ -72,58 +71,159 @@ class GalleryForm(forms.Form):
     images = MultipleFileField(required=False)
 
 
+CHECKOUT_FIELD_NAMES = [
+    "first_name", "last_name", "email", "phone",
+    "country", "county", "city", "village", "address_detail",
+    "gender", "age", "national_id", "education", "marital_status",
+    "employment", "economic_activity", "monthly_income", "buying_method",
+    "other_loans", "cooking_fuel", "stove_type", "is_cook_user",
+    "grid_connection", "utility_provider", "monthly_electricity_cost",
+    "appliance_financed", "repayment_period", "financier", "home_or_business",
+]
+
+CHECKOUT_INPUT_CLASSES = (
+    "block min-h-12 w-full rounded-[18px] border border-slate-300 "
+    "bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm outline-none "
+    "transition placeholder:text-slate-400 focus:border-emerald-600 "
+    "focus:ring-4 focus:ring-emerald-500/15"
+)
+
+CHECKOUT_SELECT_CLASSES = (
+    "block min-h-12 w-full rounded-[18px] border border-slate-300 "
+    "bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm outline-none "
+    "transition cursor-pointer focus:border-emerald-600 "
+    "focus:ring-4 focus:ring-emerald-500/15"
+)
+
+CHECKOUT_CHECKBOX_CLASSES = (
+    "h-5 w-5 shrink-0 rounded-md border-slate-300 text-emerald-600 "
+    "cursor-pointer focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+)
+
+
 class CheckoutForm(forms.ModelForm):
     class Meta:
         model = CheckoutOrder
-        fields = "__all__"
-        #exclude = ("user",)
+        fields = CHECKOUT_FIELD_NAMES
+
         widgets = {
-            "first_name": forms.TextInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "last_name": forms.TextInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "email": forms.EmailInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "phone": forms.TextInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
+            "first_name": forms.TextInput(attrs={
+                "class": CHECKOUT_INPUT_CLASSES,
+                "placeholder": "First name"
+            }),
+            "last_name": forms.TextInput(attrs={
+                "class": CHECKOUT_INPUT_CLASSES,
+                "placeholder": "Last name"
+            }),
+            "email": forms.EmailInput(attrs={
+                "class": CHECKOUT_INPUT_CLASSES,
+                "placeholder": "email@example.com"
+            }),
+            "phone": forms.TextInput(attrs={
+                "class": CHECKOUT_INPUT_CLASSES,
+                "placeholder": "07XX XXX XXX"
+            }),
 
-            "country": forms.TextInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "county": forms.TextInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "city": forms.TextInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "village": forms.TextInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "address_detail": forms.TextInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
+            "country": forms.TextInput(attrs={
+                "class": CHECKOUT_INPUT_CLASSES,
+                "placeholder": "Country"
+            }),
+            "county": forms.TextInput(attrs={
+                "class": CHECKOUT_INPUT_CLASSES,
+                "placeholder": "County / State"
+            }),
+            "city": forms.TextInput(attrs={
+                "class": CHECKOUT_INPUT_CLASSES,
+                "placeholder": "City / Town"
+            }),
+            "village": forms.TextInput(attrs={
+                "class": CHECKOUT_INPUT_CLASSES,
+                "placeholder": "Village"
+            }),
+            "address_detail": forms.TextInput(attrs={
+                "class": CHECKOUT_INPUT_CLASSES,
+                "placeholder": "Street, estate, house number, landmark..."
+            }),
 
-            # Household Info
-            "gender": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
-            "age": forms.NumberInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "national_id": forms.NumberInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "education": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
-            "marital_status": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
-            "employment": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
-            "economic_activity": forms.TextInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "monthly_income": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
+            "gender": forms.Select(attrs={
+                "class": CHECKOUT_SELECT_CLASSES
+            }),
+            "age": forms.NumberInput(attrs={
+                "class": CHECKOUT_INPUT_CLASSES,
+                "placeholder": "Age"
+            }),
+            "national_id": forms.NumberInput(attrs={
+                "class": CHECKOUT_INPUT_CLASSES,
+                "placeholder": "National ID"
+            }),
+            "education": forms.Select(attrs={
+                "class": CHECKOUT_SELECT_CLASSES
+            }),
+            "marital_status": forms.Select(attrs={
+                "class": CHECKOUT_SELECT_CLASSES
+            }),
+            "employment": forms.Select(attrs={
+                "class": CHECKOUT_SELECT_CLASSES
+            }),
+            "economic_activity": forms.TextInput(attrs={
+                "class": CHECKOUT_INPUT_CLASSES,
+                "placeholder": "Economic activity"
+            }),
+            "monthly_income": forms.Select(attrs={
+                "class": CHECKOUT_SELECT_CLASSES
+            }),
 
-            "buying_method": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
-            "other_loans": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
+            "buying_method": forms.Select(attrs={
+                "class": CHECKOUT_SELECT_CLASSES
+            }),
+            "other_loans": forms.Select(attrs={
+                "class": CHECKOUT_SELECT_CLASSES
+            }),
 
-            # Cooking / Energy
-            "cooking_fuel": forms.CheckboxSelectMultiple(attrs={"class": "space-y-2 rounded-full cursor-pointer"}),
-            "stove_type": forms.CheckboxSelectMultiple(attrs={"class": "space-y-2 rounded-full cursor-pointer"}),
-            "is_cook_user": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
-            "grid_connection": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
-            "utility_provider": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
-            "monthly_electricity_cost": forms.NumberInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
+            "cooking_fuel": forms.CheckboxSelectMultiple(attrs={
+                "class": CHECKOUT_CHECKBOX_CLASSES
+            }),
+            "stove_type": forms.CheckboxSelectMultiple(attrs={
+                "class": CHECKOUT_CHECKBOX_CLASSES
+            }),
 
-            # Loan-related fields
-            "appliance_financed": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
-            "repayment_period": forms.NumberInput(attrs={"class": "input input-bordered rounded-lg w-full"}),
-            "financier": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
+            "is_cook_user": forms.Select(attrs={
+                "class": CHECKOUT_SELECT_CLASSES
+            }),
+            "grid_connection": forms.Select(attrs={
+                "class": CHECKOUT_SELECT_CLASSES
+            }),
+            "utility_provider": forms.Select(attrs={
+                "class": CHECKOUT_SELECT_CLASSES
+            }),
+            "monthly_electricity_cost": forms.NumberInput(attrs={
+                "class": CHECKOUT_INPUT_CLASSES,
+                "placeholder": "Monthly electricity cost"
+            }),
 
-            # Home/Business usage
-            "home_or_business": forms.Select(attrs={"class": "input input-bordered rounded-lg w-full cursor-pointer"}),
+            "appliance_financed": forms.Select(attrs={
+                "class": CHECKOUT_SELECT_CLASSES
+            }),
+            "repayment_period": forms.NumberInput(attrs={
+                "class": CHECKOUT_INPUT_CLASSES,
+                "placeholder": "Repayment period in months"
+            }),
+            "financier": forms.Select(attrs={
+                "class": CHECKOUT_SELECT_CLASSES
+            }),
+
+            "home_or_business": forms.Select(attrs={
+                "class": CHECKOUT_SELECT_CLASSES
+            }),
         }
-
 
 class PaymentForm(forms.Form):
     mpesa_phone = forms.CharField(
         label="Phone (Mpesa, start with 254...)",
-        widget=forms.NumberInput(attrs={"class":"input input-bordered w-full","placeholder":"254XXXXXXXXX"})
+        widget=forms.NumberInput(attrs={
+            "class": "min-h-12 w-full rounded-[18px] border border-slate-200 bg-white/90 px-4 py-3 text-slate-900 shadow-inner outline-none transition focus:border-green-600 focus:ring-4 focus:ring-emerald-500/10",
+            "placeholder": "254XXXXXXXXX"
+        })
     )
 
 class RatingForm(forms.ModelForm):

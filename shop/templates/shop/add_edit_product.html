@@ -3,16 +3,16 @@
 {% block content %}
 <div class="min-h-screen grid" style="grid-template-rows: auto 1fr auto;">
   {% include 'shop/navbar.html' %}
-  <main class="shop-shell shop-section">
+  <main class="w-full mx-auto px-2 sm:px-3 lg:px-4 py-5 sm:py-8 lg:py-10">
     <div class="mb-6">
-      <span class="shop-eyebrow"><i class="fa-solid fa-box"></i> Inventory</span>
+      <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-extrabold uppercase tracking-wider text-emerald-900"><i class="fa-solid fa-box"></i> Inventory</span>
       <h1 class="text-4xl sm:text-5xl font-black tracking-tight mt-3">{{ title }}</h1>
     </div>
-    <section class="shop-card p-6 sm:p-8 modern-form max-w-4xl mx-auto">
+    <section class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-6 sm:p-8 max-w-4xl mx-auto">
       <form method="POST" enctype="multipart/form-data" class="grid sm:grid-cols-2 gap-5">
         {% csrf_token %}
         {% for field in form %}
-          <label class="block {% if field.name == 'description' or field.name == 'image' %}sm:col-span-2{% endif %}">
+          <label class="block {% if field.name == 'description' or 'image' %}sm:col-span-2{% endif %}">
             <span class="font-bold text-sm">{{ field.label }}</span>
             {{ field }}
             {% for error in field.errors %}<span class="block text-xs text-red-600 font-bold mt-1">{{ error }}</span>{% endfor %}
@@ -46,8 +46,8 @@
         {% endif %}
 
         <div class="sm:col-span-2 flex flex-col sm:flex-row gap-3">
-          <button type="submit" class="shop-btn shop-btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save product</button>
-          <a href="{% url 'vendor_dashboard' %}" class="shop-btn shop-btn-soft">Cancel</a>
+          <button type="submit" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)]"><i class="fa-solid fa-floppy-disk"></i> Save product</button>
+          <a href="{% url 'vendor_dashboard' %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-emerald-500/10 text-emerald-800 hover:bg-emerald-500/20">Cancel</a>
         </div>
       </form>
     </section>

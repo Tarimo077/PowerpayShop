@@ -3,98 +3,383 @@
 {% load humanize %}
 {% block title %}Checkout | PowerPay Shop{% endblock %}
 {% block content %}
-<div class="min-h-screen grid" style="grid-template-rows: auto 1fr auto;">
+
+<div class="min-h-screen grid grid-rows-[auto_1fr_auto]">
   {% include 'shop/navbar.html' %}
 
-  <main class="shop-shell shop-section">
-    <div class="mb-7">
-      <span class="shop-eyebrow"><i class="fa-solid fa-lock"></i> Secure checkout</span>
-      <h1 class="text-4xl sm:text-5xl font-black tracking-tight mt-3">Finish your order</h1>
-      <p class="shop-muted mt-2">A few details, one M-Pesa prompt, and we can stop pretending checkout forms are entertainment.</p>
+  <main class="w-full max-w-[1500px] mx-auto px-3 sm:px-5 lg:px-8 py-6 sm:py-8 lg:py-10">
+    <div class="mb-8">
+      <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-emerald-800">
+        <i class="fa-solid fa-lock"></i>
+        Secure checkout
+      </span>
+
+      <h1 class="mt-4 text-4xl sm:text-5xl font-black tracking-tight text-slate-950">
+        Finish your order
+      </h1>
+
+      <p class="mt-2 max-w-2xl text-slate-500">
+        A few details, one M-Pesa prompt, and your order is ready to go.
+      </p>
     </div>
 
     <div class="grid lg:grid-cols-[1fr_410px] gap-6 items-start">
-      <section class="shop-card p-4 sm:p-6 modern-form">
-        <div class="flex flex-wrap gap-2 mb-5">
-          <button type="button" class="tab-btn shop-btn shop-btn-primary" data-tab="tab1">1. Basic</button>
-          <button type="button" class="tab-btn shop-btn shop-btn-soft" data-tab="tab2">2. Household</button>
-          <button type="button" class="tab-btn shop-btn shop-btn-soft" data-tab="tab3">3. Energy</button>
-          <button type="button" class="tab-btn shop-btn shop-btn-soft" data-tab="tab4">4. Payment</button>
+      <section class="overflow-hidden rounded-[2rem] border border-white/80 bg-white/90 shadow-[0_24px_70px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+
+        <div class="border-b border-slate-100 bg-gradient-to-br from-white via-emerald-50/70 to-orange-50/70 p-5 sm:p-6">
+          <div class="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <p class="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">
+                Checkout progress
+              </p>
+              <h2 id="stepTitle" class="mt-1 text-2xl font-black text-slate-950">
+                Basic information
+              </h2>
+            </div>
+
+            <div class="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm">
+              <i id="stepIcon" class="fa-solid fa-user text-xl"></i>
+            </div>
+          </div>
+
+          <div class="relative">
+            <div class="absolute left-0 right-0 top-5 hidden h-1 rounded-full bg-slate-200 sm:block"></div>
+            <div id="stepProgress" class="absolute left-0 top-5 hidden h-1 w-0 rounded-full bg-gradient-to-r from-emerald-600 to-green-700 transition-all duration-300 sm:block"></div>
+
+            <div class="relative grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <button type="button" class="tab-btn rounded-3xl border border-emerald-200 bg-white p-3 text-left shadow-md transition hover:-translate-y-0.5" data-tab="tab1" data-step="0">
+                <div class="flex items-center gap-3">
+                  <span class="step-circle grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-green-600 to-emerald-800 text-sm font-black text-white shadow-[0_10px_24px_rgba(15,143,79,0.25)]">1</span>
+                  <span>
+                    <span class="step-label block text-xs font-black uppercase tracking-wider text-emerald-700">Step 1</span>
+                    <span class="step-name block text-sm font-black text-slate-950">Basic</span>
+                  </span>
+                </div>
+              </button>
+
+              <button type="button" class="tab-btn rounded-3xl border border-slate-200 bg-white/70 p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-tab="tab2" data-step="1">
+                <div class="flex items-center gap-3">
+                  <span class="step-circle grid h-10 w-10 place-items-center rounded-2xl bg-slate-100 text-sm font-black text-slate-500">2</span>
+                  <span>
+                    <span class="step-label block text-xs font-black uppercase tracking-wider text-slate-400">Step 2</span>
+                    <span class="step-name block text-sm font-black text-slate-700">Household</span>
+                  </span>
+                </div>
+              </button>
+
+              <button type="button" class="tab-btn rounded-3xl border border-slate-200 bg-white/70 p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-tab="tab3" data-step="2">
+                <div class="flex items-center gap-3">
+                  <span class="step-circle grid h-10 w-10 place-items-center rounded-2xl bg-slate-100 text-sm font-black text-slate-500">3</span>
+                  <span>
+                    <span class="step-label block text-xs font-black uppercase tracking-wider text-slate-400">Step 3</span>
+                    <span class="step-name block text-sm font-black text-slate-700">Energy</span>
+                  </span>
+                </div>
+              </button>
+
+              <button type="button" class="tab-btn rounded-3xl border border-slate-200 bg-white/70 p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-tab="tab4" data-step="3">
+                <div class="flex items-center gap-3">
+                  <span class="step-circle grid h-10 w-10 place-items-center rounded-2xl bg-slate-100 text-sm font-black text-slate-500">4</span>
+                  <span>
+                    <span class="step-label block text-xs font-black uppercase tracking-wider text-slate-400">Step 4</span>
+                    <span class="step-name block text-sm font-black text-slate-700">Payment</span>
+                  </span>
+                </div>
+              </button>
+            </div>
+          </div>
         </div>
 
-        <form method="POST" id="checkoutForm" class="space-y-5">
+        <form method="POST" id="checkoutForm" class="space-y-5 p-4 sm:p-6">
           {% csrf_token %}
           <input type="hidden" name="promo_code" id="hidden-promo-code" value="">
 
-          <div id="tab1" class="tab-content rounded-3xl bg-white/70 border border-slate-100 p-5">
-            <h2 class="text-2xl font-black mb-4">Basic information</h2>
+          <div id="tab1" class="checkout-tab-pane rounded-[1.75rem] border border-slate-100 bg-white/80 p-5 shadow-sm">
+            <div class="mb-5 flex items-center gap-3">
+              <div class="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-100 text-emerald-700">
+                <i class="fa-solid fa-user"></i>
+              </div>
+              <div>
+                <h2 class="text-2xl font-black text-slate-950">Basic information</h2>
+                <p class="text-sm text-slate-500">Tell us where and how to reach you.</p>
+              </div>
+            </div>
+
             <div class="grid sm:grid-cols-2 gap-4">
-              <label><span class="font-bold text-sm">First name *</span>{{ form.first_name }}{{ form.first_name.errors }}</label>
-              <label><span class="font-bold text-sm">Last name *</span>{{ form.last_name }}{{ form.last_name.errors }}</label>
-              <label class="sm:col-span-2"><span class="font-bold text-sm">Email *</span>{{ form.email }}{{ form.email.errors }}</label>
-              <label class="sm:col-span-2"><span class="font-bold text-sm">Phone *</span>{{ form.phone }}{{ form.phone.errors }}</label>
-              <label><span class="font-bold text-sm">Country *</span>{{ form.country }}{{ form.country.errors }}</label>
-              <label><span class="font-bold text-sm">County / State *</span>{{ form.county }}{{ form.county.errors }}</label>
-              <label><span class="font-bold text-sm">City / Town *</span>{{ form.city }}{{ form.city.errors }}</label>
-              <label><span class="font-bold text-sm">Village</span>{{ form.village }}{{ form.village.errors }}</label>
-              <label class="sm:col-span-2"><span class="font-bold text-sm">Address details</span>{{ form.address_detail }}{{ form.address_detail.errors }}</label>
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">First name *</span>
+                {{ form.first_name }}
+                {{ form.first_name.errors }}
+              </label>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Last name *</span>
+                {{ form.last_name }}
+                {{ form.last_name.errors }}
+              </label>
+
+              <label class="block space-y-2 sm:col-span-2">
+                <span class="block font-bold text-sm text-slate-700">Email *</span>
+                {{ form.email }}
+                {{ form.email.errors }}
+              </label>
+
+              <label class="block space-y-2 sm:col-span-2">
+                <span class="block font-bold text-sm text-slate-700">Phone *</span>
+                {{ form.phone }}
+                {{ form.phone.errors }}
+              </label>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Country *</span>
+                {{ form.country }}
+                {{ form.country.errors }}
+              </label>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">County / State *</span>
+                {{ form.county }}
+                {{ form.county.errors }}
+              </label>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">City / Town *</span>
+                {{ form.city }}
+                {{ form.city.errors }}
+              </label>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Village</span>
+                {{ form.village }}
+                {{ form.village.errors }}
+              </label>
+
+              <label class="block space-y-2 sm:col-span-2">
+                <span class="block font-bold text-sm text-slate-700">Address details</span>
+                {{ form.address_detail }}
+                {{ form.address_detail.errors }}
+              </label>
             </div>
           </div>
 
-          <div id="tab2" class="tab-content hidden rounded-3xl bg-white/70 border border-slate-100 p-5">
-            <h2 class="text-2xl font-black mb-4">Household information</h2>
+          <div id="tab2" class="checkout-tab-pane hidden rounded-[1.75rem] border border-slate-100 bg-white/80 p-5 shadow-sm">
+            <div class="mb-5 flex items-center gap-3">
+              <div class="grid h-11 w-11 place-items-center rounded-2xl bg-orange-100 text-orange-700">
+                <i class="fa-solid fa-house-user"></i>
+              </div>
+              <div>
+                <h2 class="text-2xl font-black text-slate-950">Household information</h2>
+                <p class="text-sm text-slate-500">Add household details for your order profile.</p>
+              </div>
+            </div>
+
             <div class="grid sm:grid-cols-2 gap-4">
-              <label><span class="font-bold text-sm">Gender</span>{{ form.gender }}{{ form.gender.errors }}</label>
-              <label><span class="font-bold text-sm">Age</span>{{ form.age }}{{ form.age.errors }}</label>
-              <label><span class="font-bold text-sm">National ID</span>{{ form.national_id }}{{ form.national_id.errors }}</label>
-              <label><span class="font-bold text-sm">Education</span>{{ form.education }}{{ form.education.errors }}</label>
-              <label><span class="font-bold text-sm">Marital status</span>{{ form.marital_status }}{{ form.marital_status.errors }}</label>
-              <label><span class="font-bold text-sm">Employment</span>{{ form.employment }}{{ form.employment.errors }}</label>
-              <label class="sm:col-span-2"><span class="font-bold text-sm">Economic activity</span>{{ form.economic_activity }}{{ form.economic_activity.errors }}</label>
-              <label><span class="font-bold text-sm">Monthly income</span>{{ form.monthly_income }}{{ form.monthly_income.errors }}</label>
-              <label><span class="font-bold text-sm">Buying method *</span>{{ form.buying_method }}{{ form.buying_method.errors }}</label>
-              <label class="sm:col-span-2"><span class="font-bold text-sm">Any other loans?</span>{{ form.other_loans }}{{ form.other_loans.errors }}</label>
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Gender</span>
+                {{ form.gender }}
+                {{ form.gender.errors }}
+              </label>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Age</span>
+                {{ form.age }}
+                {{ form.age.errors }}
+              </label>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">National ID</span>
+                {{ form.national_id }}
+                {{ form.national_id.errors }}
+              </label>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Education</span>
+                {{ form.education }}
+                {{ form.education.errors }}
+              </label>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Marital status</span>
+                {{ form.marital_status }}
+                {{ form.marital_status.errors }}
+              </label>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Employment</span>
+                {{ form.employment }}
+                {{ form.employment.errors }}
+              </label>
+
+              <label class="block space-y-2 sm:col-span-2">
+                <span class="block font-bold text-sm text-slate-700">Economic activity</span>
+                {{ form.economic_activity }}
+                {{ form.economic_activity.errors }}
+              </label>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Monthly income</span>
+                {{ form.monthly_income }}
+                {{ form.monthly_income.errors }}
+              </label>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Buying method *</span>
+                {{ form.buying_method }}
+                {{ form.buying_method.errors }}
+              </label>
+
+              <label class="block space-y-2 sm:col-span-2">
+                <span class="block font-bold text-sm text-slate-700">Any other loans?</span>
+                {{ form.other_loans }}
+                {{ form.other_loans.errors }}
+              </label>
             </div>
           </div>
 
-          <div id="tab3" class="tab-content hidden rounded-3xl bg-white/70 border border-slate-100 p-5">
-            <h2 class="text-2xl font-black mb-4">Cooking and energy</h2>
+          <div id="tab3" class="checkout-tab-pane hidden rounded-[1.75rem] border border-slate-100 bg-white/80 p-5 shadow-sm">
+            <div class="mb-5 flex items-center gap-3">
+              <div class="grid h-11 w-11 place-items-center rounded-2xl bg-blue-100 text-blue-700">
+                <i class="fa-solid fa-bolt"></i>
+              </div>
+              <div>
+                <h2 class="text-2xl font-black text-slate-950">Cooking and energy</h2>
+                <p class="text-sm text-slate-500">Tell us about your current cooking and power setup.</p>
+              </div>
+            </div>
+
             <div class="grid sm:grid-cols-2 gap-4">
-              <label class="sm:col-span-2"><span class="font-bold text-sm">Cooking fuel currently in use</span><div class="mt-2 rounded-3xl bg-slate-50 border border-slate-100 p-4">{{ form.cooking_fuel }}</div>{{ form.cooking_fuel.errors }}</label>
-              <label class="sm:col-span-2"><span class="font-bold text-sm">Cooking stove currently in use</span><div class="mt-2 rounded-3xl bg-slate-50 border border-slate-100 p-4">{{ form.stove_type }}</div>{{ form.stove_type.errors }}</label>
-              <label><span class="font-bold text-sm">Will you cook with this appliance?</span>{{ form.is_cook_user }}{{ form.is_cook_user.errors }}</label>
-              <label><span class="font-bold text-sm">Grid connection?</span>{{ form.grid_connection }}{{ form.grid_connection.errors }}</label>
-              <label><span class="font-bold text-sm">Utility provider</span>{{ form.utility_provider }}{{ form.utility_provider.errors }}</label>
-              <label><span class="font-bold text-sm">Monthly electricity cost</span>{{ form.monthly_electricity_cost }}{{ form.monthly_electricity_cost.errors }}</label>
+              <div class="sm:col-span-2 space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Cooking fuel currently in use</span>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+                  {% for checkbox in form.cooking_fuel %}
+                    <label for="{{ checkbox.id_for_label }}" class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50">
+                      {{ checkbox.tag }}
+                      <span>{{ checkbox.choice_label }}</span>
+                    </label>
+                  {% endfor %}
+                </div>
+
+                {{ form.cooking_fuel.errors }}
+              </div>
+
+              <div class="sm:col-span-2 space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Cooking stove currently in use</span>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+                  {% for checkbox in form.stove_type %}
+                    <label for="{{ checkbox.id_for_label }}" class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50">
+                      {{ checkbox.tag }}
+                      <span>{{ checkbox.choice_label }}</span>
+                    </label>
+                  {% endfor %}
+                </div>
+
+                {{ form.stove_type.errors }}
+              </div>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Will you cook with this appliance?</span>
+                {{ form.is_cook_user }}
+                {{ form.is_cook_user.errors }}
+              </label>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Grid connection?</span>
+                {{ form.grid_connection }}
+                {{ form.grid_connection.errors }}
+              </label>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Utility provider</span>
+                {{ form.utility_provider }}
+                {{ form.utility_provider.errors }}
+              </label>
+
+              <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Monthly electricity cost</span>
+                {{ form.monthly_electricity_cost }}
+                {{ form.monthly_electricity_cost.errors }}
+              </label>
             </div>
           </div>
 
-          <div id="tab4" class="tab-content hidden rounded-3xl bg-white/70 border border-slate-100 p-5">
-            <h2 class="text-2xl font-black mb-4">Payment</h2>
-            <label class="block"><span class="font-bold text-sm">M-Pesa number, start with 254 *</span>{{ payment_form.mpesa_phone }}{{ payment_form.mpesa_phone.errors }}</label>
-            <button id="payBtn" disabled class="shop-btn w-full mt-5 bg-slate-400 text-white cursor-not-allowed">Fill required fields to proceed</button>
+          <div id="tab4" class="checkout-tab-pane hidden rounded-[1.75rem] border border-slate-100 bg-white/80 p-5 shadow-sm">
+            <div class="mb-5 flex items-center gap-3">
+              <div class="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-100 text-emerald-700">
+                <i class="fa-solid fa-mobile-screen"></i>
+              </div>
+              <div>
+                <h2 class="text-2xl font-black text-slate-950">Payment</h2>
+                <p class="text-sm text-slate-500">Enter your M-Pesa number to receive the payment prompt.</p>
+              </div>
+            </div>
+
+            <label class="block space-y-2">
+              <span class="block font-bold text-sm text-slate-700">M-Pesa number, start with 254 *</span>
+              {{ payment_form.mpesa_phone }}
+              {{ payment_form.mpesa_phone.errors }}
+            </label>
+
+            <button id="payBtn" disabled class="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-slate-400 px-5 py-3 font-black text-white cursor-not-allowed transition">
+              Fill required fields to proceed
+            </button>
+          </div>
+
+          <div class="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <button type="button" id="prevStepBtn" class="hidden inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50">
+              <i class="fa-solid fa-arrow-left"></i>
+              Back
+            </button>
+
+            <button type="button" id="nextStepBtn" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-green-600 to-emerald-800 px-5 py-3 font-black text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)] transition hover:-translate-y-0.5 sm:ml-auto">
+              Continue
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
           </div>
         </form>
       </section>
 
-      <aside class="shop-card p-6 sticky top-28">
-        <h2 class="text-2xl font-black mb-4">Order summary</h2>
+      <aside class="lg:sticky lg:top-28 rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-[0_24px_70px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="text-2xl font-black text-slate-950">Order summary</h2>
+          <div class="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-100 text-emerald-700">
+            <i class="fa-solid fa-bag-shopping"></i>
+          </div>
+        </div>
+
         <div class="max-h-80 overflow-y-auto pr-1 space-y-3">
           {% for item in items %}
-            <div class="flex items-center gap-3 rounded-3xl bg-white/75 border border-slate-100 p-3">
-              {% if item.product.image %}<img src="{{ item.product.image.url }}" class="w-16 h-16 object-contain rounded-2xl bg-slate-50 p-1" alt="{{ item.product.name }}">{% else %}<div class="w-16 h-16 rounded-2xl bg-green-50 grid place-items-center text-green-700"><i class="fa-solid fa-box"></i></div>{% endif %}
-              <div class="flex-1 min-w-0"><p class="font-black truncate">{{ item.product.name }}</p><p class="shop-muted text-xs">Ksh. {{ item.product.price|intcomma }} × {{ item.quantity }}</p></div>
-              <p class="font-black text-sm">Ksh. {{ item.total_price|intcomma }}</p>
+            <div class="flex items-center gap-3 rounded-3xl border border-slate-100 bg-white/75 p-3">
+              {% if item.product.image %}
+                <img src="{{ item.product.image.url }}" class="w-16 h-16 object-contain rounded-2xl bg-slate-50 p-1" alt="{{ item.product.name }}">
+              {% else %}
+                <div class="w-16 h-16 rounded-2xl bg-green-50 grid place-items-center text-green-700">
+                  <i class="fa-solid fa-box"></i>
+                </div>
+              {% endif %}
+
+              <div class="flex-1 min-w-0">
+                <p class="font-black truncate text-slate-950">{{ item.product.name }}</p>
+                <p class="text-slate-500 text-xs">Ksh. {{ item.product.price|intcomma }} × {{ item.quantity }}</p>
+              </div>
+
+              <p class="font-black text-sm text-slate-950">Ksh. {{ item.total_price|intcomma }}</p>
             </div>
           {% endfor %}
         </div>
 
-        <div class="mt-6 p-4 bg-green-50/80 rounded-3xl border border-dashed border-green-300">
+        <div class="mt-6 rounded-3xl border border-dashed border-green-300 bg-green-50/80 p-4">
           <label class="block text-xs font-black text-green-800 uppercase tracking-wider mb-2">Promo code</label>
+
           <div class="flex gap-2">
-            <input type="text" id="promo-input" placeholder="ENTER CODE" class="shop-input uppercase flex-1">
-            <button type="button" onclick="applyPromo()" class="shop-btn shop-btn-primary">Apply</button>
+            <input type="text" id="promo-input" placeholder="ENTER CODE" class="min-h-12 w-full flex-1 rounded-[18px] border border-slate-300 bg-white px-4 py-3 text-sm font-black uppercase text-slate-900 shadow-sm outline-none transition focus:border-green-600 focus:ring-4 focus:ring-emerald-500/10">
+
+            <button type="button" onclick="applyPromo()" class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-green-600 to-emerald-800 px-5 py-3 font-black text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)] transition hover:-translate-y-0.5">
+              Apply
+            </button>
           </div>
+
           <div id="promo-status-container" class="mt-2 hidden items-center justify-between gap-3">
             <p id="promo-message" class="text-xs font-bold"></p>
             <button type="button" onclick="removePromo()" class="text-xs text-red-600 underline font-black uppercase">Remove</button>
@@ -102,66 +387,232 @@
         </div>
 
         <div class="mt-6 space-y-3">
-          <div class="flex justify-between shop-muted"><span>Subtotal</span><span id="summary-subtotal" class="font-black text-slate-900">Ksh. {{ subtotal|intcomma }}</span></div>
-          <div id="discount-row" class="hidden justify-between text-orange-600 font-black"><span>Promo discount</span><span id="summary-discount">- Ksh. 0.00</span></div>
-          <div class="flex justify-between text-2xl font-black border-t border-dashed border-slate-300 pt-4 text-green-700"><span>Total</span><span id="summary-total">Ksh. {{ subtotal|intcomma }}</span></div>
+          <div class="flex justify-between text-slate-500">
+            <span>Subtotal</span>
+            <span id="summary-subtotal" class="font-black text-slate-900">Ksh. {{ subtotal|intcomma }}</span>
+          </div>
+
+          <div id="discount-row" class="hidden justify-between text-orange-600 font-black">
+            <span>Promo discount</span>
+            <span id="summary-discount">- Ksh. 0.00</span>
+          </div>
+
+          <div class="flex justify-between border-t border-dashed border-slate-300 pt-4 text-2xl font-black text-green-700">
+            <span>Total</span>
+            <span id="summary-total">Ksh. {{ subtotal|intcomma }}</span>
+          </div>
         </div>
-        <p class="mt-5 text-xs shop-muted text-center"><i class="fa-solid fa-shield-halved mr-1"></i> Secure checkout</p>
+
+        <p class="mt-5 text-center text-xs text-slate-500">
+          <i class="fa-solid fa-shield-halved mr-1"></i>
+          Secure checkout
+        </p>
       </aside>
     </div>
   </main>
 
   {% include 'footer.html' %}
 </div>
+
 <script>
+const steps = [
+  { tab: "tab1", title: "Basic information", icon: "fa-user" },
+  { tab: "tab2", title: "Household information", icon: "fa-house-user" },
+  { tab: "tab3", title: "Cooking and energy", icon: "fa-bolt" },
+  { tab: "tab4", title: "Payment", icon: "fa-mobile-screen" }
+];
+
+let currentStep = 0;
+
+function showStep(index) {
+  currentStep = index;
+
+  document.querySelectorAll(".checkout-tab-pane").forEach(pane => {
+    pane.classList.add("hidden");
+  });
+
+  document.getElementById(steps[index].tab).classList.remove("hidden");
+
+  document.querySelectorAll(".tab-btn").forEach((button, buttonIndex) => {
+    const circle = button.querySelector(".step-circle");
+    const label = button.querySelector(".step-label");
+    const name = button.querySelector(".step-name");
+
+    button.classList.remove("border-emerald-200", "bg-white", "shadow-md");
+    button.classList.add("border-slate-200", "bg-white/70", "shadow-sm");
+
+    circle.className = "step-circle grid h-10 w-10 place-items-center rounded-2xl bg-slate-100 text-sm font-black text-slate-500";
+    label.className = "step-label block text-xs font-black uppercase tracking-wider text-slate-400";
+    name.className = "step-name block text-sm font-black text-slate-700";
+
+    if (buttonIndex < index) {
+      button.classList.remove("border-slate-200", "bg-white/70", "shadow-sm");
+      button.classList.add("border-emerald-100", "bg-emerald-50", "shadow-sm");
+      circle.className = "step-circle grid h-10 w-10 place-items-center rounded-2xl bg-emerald-100 text-sm font-black text-emerald-700";
+      circle.innerHTML = '<i class="fa-solid fa-check"></i>';
+      label.className = "step-label block text-xs font-black uppercase tracking-wider text-emerald-600";
+      name.className = "step-name block text-sm font-black text-slate-950";
+    }
+
+    if (buttonIndex === index) {
+      button.classList.remove("border-slate-200", "bg-white/70", "shadow-sm");
+      button.classList.add("border-emerald-200", "bg-white", "shadow-md");
+      circle.className = "step-circle grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-green-600 to-emerald-800 text-sm font-black text-white shadow-[0_10px_24px_rgba(15,143,79,0.25)]";
+      circle.textContent = buttonIndex + 1;
+      label.className = "step-label block text-xs font-black uppercase tracking-wider text-emerald-700";
+      name.className = "step-name block text-sm font-black text-slate-950";
+    }
+
+    if (buttonIndex > index) {
+      circle.textContent = buttonIndex + 1;
+    }
+  });
+
+  document.getElementById("stepTitle").textContent = steps[index].title;
+  document.getElementById("stepIcon").className = "fa-solid " + steps[index].icon + " text-xl";
+  document.getElementById("stepProgress").style.width = `${(index / 3) * 100}%`;
+
+  document.getElementById("prevStepBtn").classList.toggle("hidden", index === 0);
+  document.getElementById("nextStepBtn").classList.toggle("hidden", index === 3);
+}
+
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
-    const tab = btn.dataset.tab;
-    document.querySelectorAll(".tab-btn").forEach(b => { b.classList.remove("shop-btn-primary"); b.classList.add("shop-btn-soft"); });
-    btn.classList.add("shop-btn-primary"); btn.classList.remove("shop-btn-soft");
-    document.querySelectorAll(".tab-content").forEach(t => t.classList.add("hidden"));
-    document.getElementById(tab).classList.remove("hidden");
+    showStep(Number(btn.dataset.step));
   });
 });
-const requiredFields = ["id_first_name", "id_last_name", "id_email", "id_phone", "id_country", "id_county", "id_city", "id_buying_method", "id_mpesa_phone"];
+
+document.getElementById("nextStepBtn").addEventListener("click", () => {
+  if (currentStep < 3) showStep(currentStep + 1);
+});
+
+document.getElementById("prevStepBtn").addEventListener("click", () => {
+  if (currentStep > 0) showStep(currentStep - 1);
+});
+
+const requiredFields = [
+  "id_first_name",
+  "id_last_name",
+  "id_email",
+  "id_phone",
+  "id_country",
+  "id_county",
+  "id_city",
+  "id_buying_method",
+  "id_mpesa_phone"
+];
+
 function checkRequired() {
   let allFilled = true;
-  requiredFields.forEach(id => { const el = document.getElementById(id); if (!el || !String(el.value || '').trim()) allFilled = false; });
+
+  requiredFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el || !String(el.value || "").trim()) {
+      allFilled = false;
+    }
+  });
+
   const btn = document.getElementById("payBtn");
-  if (allFilled) { btn.disabled = false; btn.className = "shop-btn shop-btn-primary w-full mt-5"; btn.innerHTML = '<i class="fa-solid fa-mobile-screen"></i> Pay now'; }
-  else { btn.disabled = true; btn.className = "shop-btn w-full mt-5 bg-slate-400 text-white cursor-not-allowed"; btn.innerText = "Fill required fields to proceed"; }
+  if (!btn) return;
+
+  if (allFilled) {
+    btn.disabled = false;
+    btn.className = "mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-br from-green-600 to-emerald-800 px-5 py-3 font-black text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)] transition hover:-translate-y-0.5";
+    btn.innerHTML = '<i class="fa-solid fa-mobile-screen"></i> Pay now';
+  } else {
+    btn.disabled = true;
+    btn.className = "mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-slate-400 px-5 py-3 font-black text-white cursor-not-allowed transition";
+    btn.innerText = "Fill required fields to proceed";
+  }
 }
-requiredFields.forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener("input", checkRequired); });
-document.addEventListener("DOMContentLoaded", checkRequired);
-function formatCurrency(num) { return "Ksh. " + Number(num).toLocaleString("en-KE"); }
+
+requiredFields.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener("input", checkRequired);
+    el.addEventListener("change", checkRequired);
+  }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  showStep(0);
+  checkRequired();
+});
+
+function formatCurrency(num) {
+  return "Ksh. " + Number(num).toLocaleString("en-KE");
+}
+
 function applyPromo() {
-  const codeInput = document.getElementById('promo-input');
+  const codeInput = document.getElementById("promo-input");
   const code = codeInput.value.trim();
-  const msg = document.getElementById('promo-message');
-  const container = document.getElementById('promo-status-container');
-  const hiddenInput = document.getElementById('hidden-promo-code');
-  if (!code) { msg.innerText = "Enter a code first."; container.classList.remove('hidden'); container.classList.add('flex'); msg.className = "text-xs font-bold text-red-600"; return; }
-  fetch("{% url 'apply_promo' %}", { method: "POST", headers: { "X-CSRFToken": "{{ csrf_token }}", "Content-Type": "application/x-www-form-urlencoded" }, body: `code=${encodeURIComponent(code)}` })
+  const msg = document.getElementById("promo-message");
+  const container = document.getElementById("promo-status-container");
+  const hiddenInput = document.getElementById("hidden-promo-code");
+
+  if (!code) {
+    msg.innerText = "Enter a code first.";
+    container.classList.remove("hidden");
+    container.classList.add("flex");
+    msg.className = "text-xs font-bold text-red-600";
+    return;
+  }
+
+  fetch("{% url 'apply_promo' %}", {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": "{{ csrf_token }}",
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: `code=${encodeURIComponent(code)}`
+  })
   .then(res => res.json())
   .then(data => {
-    container.classList.remove('hidden'); container.classList.add('flex'); msg.className = "text-xs font-bold";
+    container.classList.remove("hidden");
+    container.classList.add("flex");
+    msg.className = "text-xs font-bold";
+
     if (data.success) {
-      msg.innerText = "Code applied."; msg.classList.add('text-green-700'); hiddenInput.value = code;
-      document.getElementById('discount-row').classList.remove('hidden'); document.getElementById('discount-row').classList.add('flex');
-      document.getElementById('summary-discount').innerText = "- " + formatCurrency(data.discount_amount);
-      document.getElementById('summary-total').innerText = formatCurrency(data.new_total);
-      codeInput.disabled = true; codeInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+      msg.innerText = "Code applied.";
+      msg.classList.add("text-green-700");
+      hiddenInput.value = code;
+
+      document.getElementById("discount-row").classList.remove("hidden");
+      document.getElementById("discount-row").classList.add("flex");
+      document.getElementById("summary-discount").innerText = "- " + formatCurrency(data.discount_amount);
+      document.getElementById("summary-total").innerText = formatCurrency(data.new_total);
+
+      codeInput.disabled = true;
+      codeInput.classList.add("bg-gray-100", "cursor-not-allowed");
     } else {
-      msg.innerText = data.message || "Invalid promo code"; msg.classList.add('text-red-600'); hiddenInput.value = "";
-      document.getElementById('discount-row').classList.add('hidden'); document.getElementById('summary-total').innerText = document.getElementById('summary-subtotal').innerText;
+      msg.innerText = data.message || "Invalid promo code";
+      msg.classList.add("text-red-600");
+      hiddenInput.value = "";
+
+      document.getElementById("discount-row").classList.add("hidden");
+      document.getElementById("summary-total").innerText = document.getElementById("summary-subtotal").innerText;
     }
   })
-  .catch(() => { msg.innerText = "Promo check failed."; container.classList.remove('hidden'); container.classList.add('flex'); msg.className = "text-xs font-bold text-red-600"; });
+  .catch(() => {
+    msg.innerText = "Promo check failed.";
+    container.classList.remove("hidden");
+    container.classList.add("flex");
+    msg.className = "text-xs font-bold text-red-600";
+  });
 }
+
 function removePromo() {
-  const codeInput = document.getElementById('promo-input'); codeInput.value = ""; codeInput.disabled = false; codeInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
-  document.getElementById('hidden-promo-code').value = ""; document.getElementById('promo-status-container').classList.add('hidden'); document.getElementById('discount-row').classList.add('hidden');
-  document.getElementById('summary-total').innerText = document.getElementById('summary-subtotal').innerText;
+  const codeInput = document.getElementById("promo-input");
+
+  codeInput.value = "";
+  codeInput.disabled = false;
+  codeInput.classList.remove("bg-gray-100", "cursor-not-allowed");
+
+  document.getElementById("hidden-promo-code").value = "";
+  document.getElementById("promo-status-container").classList.add("hidden");
+  document.getElementById("discount-row").classList.add("hidden");
+  document.getElementById("summary-total").innerText = document.getElementById("summary-subtotal").innerText;
 }
 </script>
+
 {% endblock %}

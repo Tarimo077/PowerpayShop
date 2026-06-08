@@ -14,13 +14,13 @@
         {% endif %}
         <div>
           <p class="font-black text-slate-900">{{ product.vendor.shop_name|default:product.vendor.user }}</p>
-          <p class="shop-muted text-sm">{{ product.vendor.description|default:"Approved PowerPay vendor" }}</p>
+          <p class="text-slate-500 text-sm">{{ product.vendor.description|default:"Approved PowerPay vendor" }}</p>
         </div>
       </div>
       <div class="grid gap-3 sm:grid-cols-2">
-        <div class="rounded-2xl bg-slate-50 p-4"><p class="font-black text-sm"><i class="fa-solid fa-envelope text-green-700 mr-2"></i>Email</p><p class="shop-muted text-sm break-all">{{ product.vendor.user.email|default:"N/A" }}</p></div>
-        <div class="rounded-2xl bg-slate-50 p-4"><p class="font-black text-sm"><i class="fa-solid fa-phone text-green-700 mr-2"></i>Phone</p><p class="shop-muted text-sm">{{ product.vendor.user.phone|default:"N/A" }}</p></div>
-        <div class="rounded-2xl bg-slate-50 p-4 sm:col-span-2"><p class="font-black text-sm"><i class="fa-solid fa-location-dot text-green-700 mr-2"></i>Address</p><p class="shop-muted text-sm">{{ product.vendor.address|default:"N/A" }}</p></div>
+        <div class="rounded-2xl bg-slate-50 p-4"><p class="font-black text-sm"><i class="fa-solid fa-envelope text-green-700 mr-2"></i>Email</p><p class="text-slate-500 text-sm break-all">{{ product.vendor.user.email|default:"N/A" }}</p></div>
+        <div class="rounded-2xl bg-slate-50 p-4"><p class="font-black text-sm"><i class="fa-solid fa-phone text-green-700 mr-2"></i>Phone</p><p class="text-slate-500 text-sm">{{ product.vendor.user.phone|default:"N/A" }}</p></div>
+        <div class="rounded-2xl bg-slate-50 p-4 sm:col-span-2"><p class="font-black text-sm"><i class="fa-solid fa-location-dot text-green-700 mr-2"></i>Address</p><p class="text-slate-500 text-sm">{{ product.vendor.address|default:"N/A" }}</p></div>
       </div>
     </div>
   </div>
