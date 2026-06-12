@@ -12,7 +12,7 @@
         placeholder="Search products, vendors, stoves..."
         value="{{ request.GET.q|default:'' }}"
         autocomplete="off"
-        class="min-h-12 w-full rounded-[18px] border border-slate-200 bg-white/90 py-3 pl-4 pr-12 text-slate-900 shadow-inner outline-none transition focus:border-green-600 focus:ring-4 focus:ring-emerald-500/10"
+        class="min-h-12 w-full rounded-[18px] border border-slate-200 bg-white/90 py-3 pl-4 pr-12 text-slate-900 shadow-inner outline-none transition focus:border-green-600 focus:ring-4 focus:ring-emerald-500/10 mb-2"
         hx-get="{% url 'product_search' %}"
         hx-trigger="keyup changed delay:280ms"
         hx-target="#live-results"
