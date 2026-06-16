@@ -3,127 +3,183 @@
 {% load humanize %}
 
 {% block content %}
-<div class="grid min-h-screen" style="grid-template-rows: auto 1fr auto;">
+<div class="min-h-screen grid bg-gradient-to-br from-slate-50 via-white to-slate-100"
+     style="grid-template-rows: auto 1fr auto;">
 
   {% include 'shop/navbar.html' %}
 
-  <div class="container mx-auto px-4 mt-4 mb-8">
-    <h1 class="text-3xl font-extrabold mb-6 text-green-600 dark:text-gray-100">Vendor Management</h1>
+  <!-- PAGE WRAPPER -->
+  <div class="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    <!-- Search -->
-    <form method="get" class="mb-6 flex justify-end gap-2">
-      <input type="text" name="q" value="{{ search_query }}" placeholder="Search vendors..."
-             class="input input-bordered w-full md:w-1/3 rounded-l-lg focus:ring focus:ring-green-200 focus:border-green-500">
-      <button type="submit" class="btn bg-green-500 text-white rounded-r-lg px-4"><i class="fa-solid fa-magnifying-glass mr-1"></i>Search</button>
-    </form>
-
-    <!-- Tabs -->
-    <div class="tabs tabs-boxed mb-6 relative border-b border-gray-300 gap-8">
-        <a class="tab tab-active relative" data-tab="all">All Vendors</a>
-        <a class="tab relative" data-tab="approved">Approved</a>
-        <a class="tab relative" data-tab="suspended">Suspended</a>
-        <a class="tab relative" data-tab="pending">Pending</a>
-
-        <!-- Optional active underline indicator -->
-        <span id="tabIndicator"
-                class="absolute bottom-0 h-1 bg-green-600 rounded-full transition-all duration-300"
-                style="width:0; left:0;"></span>
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">
+          Vendor Management
+        </h1>
+        <p class="text-slate-500 font-medium mt-1">
+          Manage all vendors, approvals, and statuses in one place
+        </p>
+      </div>
     </div>
 
+    <!-- SEARCH CARD -->
+    <div class="bg-white/80 backdrop-blur-xl border border-white/60 shadow-lg rounded-2xl p-4 mb-6">
+      <form method="get" class="flex flex-col md:flex-row gap-3">
+        <div class="relative flex-1">
+          <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+          <input type="text"
+                 name="q"
+                 value="{{ search_query }}"
+                 placeholder="Search vendors by name, email, or shop..."
+                 class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 outline-none bg-white">
+        </div>
 
-    <!-- Tab contents -->
+        <button type="submit"
+                class="px-6 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition shadow-md">
+          Search
+        </button>
+        {% if search_query %}
+          <a href="{% url 'vendor_admin_list' %}" class="px-6 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition shadow-md">
+            Clear
+          </a>
+        {% endif %}
+      </form>
+    </div>
+
+    <!-- TABS -->
+    <div class="relative mb-8">
+      <div class="flex gap-2 bg-white/70 backdrop-blur-xl border border-white/60 rounded-2xl p-2 shadow-sm overflow-x-auto">
+
+        <button class="tab-btn active" data-tab="all">All Vendors</button>
+        <button class="tab-btn" data-tab="approved">Approved</button>
+        <button class="tab-btn" data-tab="suspended">Suspended</button>
+        <button class="tab-btn" data-tab="pending">Pending</button>
+
+      </div>
+    </div>
+
+    <style>
+      .tab-btn {
+        padding: 10px 16px;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 14px;
+        color: #475569;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+      }
+
+      .tab-btn:hover {
+        background: #ecfdf5;
+        color: #059669;
+      }
+
+      .tab-btn.active {
+        background: linear-gradient(to right, #059669, #10b981);
+        color: white;
+        box-shadow: 0 10px 20px rgba(16,185,129,0.25);
+      }
+
+      .vendor-grid {
+        display: block;
+        /* grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); */
+        gap: 16px;
+      }
+    </style>
+
+    <!-- CONTENT -->
     <div>
-      <!-- All Vendors -->
-      <div id="tab-all">
-        {% for user in all_vendors %}
-          {% with vendor=user.vendor %}
-            {% include 'shop/vendor_card.html' %}
-          {% endwith %}
-        {% empty %}
-          <p class="text-gray-500 dark:text-gray-400 italic">No vendors to display.</p>
-        {% endfor %}
 
-        {% include 'shop/pagination.html' with products=all_vendors per_page=per_page %}
-      </div>
-
-      <!-- Approved Vendors -->
-      <div id="tab-approved" class="hidden">
-        {% for user in approved %}
-          {% with vendor=user.vendor %}
-            {% include 'shop/vendor_card.html' %}
-          {% endwith %}
-        {% empty %}
-          <p class="text-gray-500 dark:text-gray-400 italic">No approved vendors.</p>
-        {% endfor %}
-
-        {% include 'shop/pagination.html' with products=approved per_page=per_page %}
-      </div>
-
-      <!-- Suspended Vendors -->
-      <div id="tab-suspended" class="hidden">
-        {% for user in suspended %}
-          {% with vendor=user.vendor %}
-            {% if vendor.is_suspended %}
+      <!-- ALL -->
+      <div id="tab-all" class="tab-content">
+        <div class="vendor-grid">
+          {% for user in all_vendors %}
+            {% with vendor=user.vendor %}
               {% include 'shop/vendor_card.html' %}
-            {% endif %}
-          {% endwith %}
-        {% empty %}
-          <p class="text-gray-500 dark:text-gray-400 italic">No suspended vendors.</p>
-        {% endfor %}
+            {% endwith %}
+          {% empty %}
+            <div class="col-span-full text-center py-16">
+              <i class="fa-solid fa-users text-4xl text-slate-300 mb-3"></i>
+              <p class="text-slate-500 font-medium">No vendors found</p>
+            </div>
+          {% endfor %}
+        </div>
 
-        {% include 'shop/pagination.html' with products=suspended per_page=per_page %}
+        <div class="mt-6">
+          {% include 'shop/pagination.html' with products=all_vendors per_page=per_page %}
+        </div>
       </div>
 
-      <!-- Pending Vendors -->
-      <div id="tab-pending" class="hidden">
-        {% for user in pending %}
-          {% with vendor=user.vendor %}
-            {% include 'shop/vendor_card.html' %}
-          {% endwith %}
-        {% empty %}
-          <p class="text-gray-500 dark:text-gray-400 italic">No pending vendors.</p>
-        {% endfor %}
-
-        {% include 'shop/pagination.html' with products=pending per_page=per_page %}
+      <!-- APPROVED -->
+      <div id="tab-approved" class="tab-content hidden">
+        <div class="vendor-grid">
+          {% for user in approved %}
+            {% with vendor=user.vendor %}
+              {% include 'shop/vendor_card.html' %}
+            {% endwith %}
+          {% empty %}
+            <div class="col-span-full text-center py-16 text-slate-500">
+              No approved vendors yet
+            </div>
+          {% endfor %}
+        </div>
       </div>
+
+      <!-- SUSPENDED -->
+      <div id="tab-suspended" class="tab-content hidden">
+        <div class="vendor-grid">
+          {% for user in suspended %}
+            {% with vendor=user.vendor %}
+              {% include 'shop/vendor_card.html' %}
+            {% endwith %}
+          {% empty %}
+            <div class="col-span-full text-center py-16 text-slate-500">
+              No suspended vendors
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- PENDING -->
+      <div id="tab-pending" class="tab-content hidden">
+        <div class="vendor-grid">
+          {% for user in pending %}
+            {% with vendor=user.vendor %}
+              {% include 'shop/vendor_card.html' %}
+            {% endwith %}
+          {% empty %}
+            <div class="col-span-full text-center py-16 text-slate-500">
+              No pending vendors
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
     </div>
 
   </div>
 
   {% include 'footer.html' %}
-
 </div>
 
+<!-- SCRIPT -->
 <script>
-    const tabs = document.querySelectorAll('.tab');
-    const indicator = document.getElementById('tabIndicator');
+  const tabs = document.querySelectorAll(".tab-btn");
+  const contents = document.querySelectorAll(".tab-content");
 
-    function updateIndicator(activeTab) {
-    const rect = activeTab.getBoundingClientRect();
-    const parentRect = activeTab.parentElement.getBoundingClientRect();
-    indicator.style.width = rect.width + 'px';
-    indicator.style.left = (rect.left - parentRect.left) + 'px';
-    }
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
 
-    // Initial indicator position
-    updateIndicator(document.querySelector('.tab-active'));
+      // remove active
+      tabs.forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
 
-    tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-        // Remove active class from all tabs
-        tabs.forEach(t => t.classList.remove('tab-active'));
-        // Add active class to clicked tab
-        tab.classList.add('tab-active');
-
-        // Show/hide tab content
-        document.querySelectorAll('[id^="tab-"]').forEach(c => c.classList.add('hidden'));
-        document.getElementById('tab-' + tab.dataset.tab).classList.remove('hidden');
-
-        // Update indicator
-        updateIndicator(tab);
+      // show correct content
+      contents.forEach(c => c.classList.add("hidden"));
+      document.getElementById("tab-" + tab.dataset.tab).classList.remove("hidden");
     });
-    });
-
+  });
 </script>
 
 {% endblock %}

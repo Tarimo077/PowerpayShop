@@ -2,7 +2,7 @@
   <div class="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-white/80 bg-white p-4">
     <p class="text-slate-500 text-sm font-bold">
       Showing page <span class="text-green-500">{{ products.number }}</span> of <span class="text-green-500">{{ products.paginator.num_pages }}</span>
-      · <span class="text-slate-900">{{ products.paginator.count }}</span> products
+      · <span class="text-slate-900">{{ products.paginator.count }}</span> items
     </p>
     <form method="get" hx-get="{% url 'index' %}" hx-target="#productsWrapper" hx-swap="innerHTML" hx-push-url="true" class="flex items-center gap-2">
       <input type="hidden" name="search" value="{{ search }}">

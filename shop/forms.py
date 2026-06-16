@@ -7,21 +7,21 @@ class ProductForm(forms.ModelForm):
         fields = ['name', 'description', 'price', 'stock', 'image']
         widgets = {
             'name': forms.TextInput(attrs={
-                'class': 'input input-bordered w-full rounded-lg focus:ring focus:ring-green-200 focus:border-green-500',
-                'placeholder': 'Product Name'
+                'class': 'input h-10 border-2 border-black w-full rounded-lg focus:ring focus:ring-green-200 focus:border-green-500',
+                'placeholder': '\tProduct Name'
             }),
             'description': forms.Textarea(attrs={
-                'class': 'textarea textarea-bordered w-full rounded-lg focus:ring focus:ring-green-200 focus:border-green-500',
+                'class': 'textarea h-18 border-2 border-black w-full rounded-lg focus:ring focus:ring-green-200 focus:border-green-500',
                 'rows': 3,
-                'placeholder': 'Product Description'
+                'placeholder': '\tProduct Description'
             }),
             'price': forms.NumberInput(attrs={
-                'class': 'input input-bordered w-full rounded-lg focus:ring focus:ring-green-200 focus:border-green-500',
-                'placeholder': 'Price in Ksh'
+                'class': 'input h-10 border-2 border-black w-full rounded-lg focus:ring focus:ring-green-200 focus:border-green-500',
+                'placeholder': '\tPrice in Ksh'
             }),
             'stock': forms.NumberInput(attrs={
-                'class': 'input input-bordered w-full rounded-lg focus:ring focus:ring-green-200 focus:border-green-500',
-                'placeholder': 'Stock Quantity'
+                'class': 'input h-10 border-2 border-black w-full rounded-lg focus:ring focus:ring-green-200 focus:border-green-500',
+                'placeholder': '\tStock Quantity'
             }),
             'image': forms.ClearableFileInput(attrs={
                 'class': 'file-input mt-2 w-full'
@@ -34,14 +34,14 @@ class PromoCodeForm(forms.ModelForm):
         fields = ["code", "discount_type", "discount_value", "products", "valid_from", "valid_to", "usage_limit", "is_active"]
         
         widgets = {
-            "code": forms.TextInput(attrs={'class': 'w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500'}),
-            "discount_type": forms.Select(attrs={'class': 'w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500'}),
-            "discount_value": forms.NumberInput(attrs={'class': 'w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500'}),
-            "products": forms.CheckboxSelectMultiple(attrs={'class': 'rounded border-gray-300 ml-2 focus:ring-green-500'}),
-            "valid_from": forms.DateTimeInput(attrs={"type": "datetime-local", 'class': 'w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500'}),
-            "valid_to": forms.DateTimeInput(attrs={"type": "datetime-local", 'class': 'w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500'}),
-            "usage_limit": forms.NumberInput(attrs={'class': 'w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500'}),
-            "is_active": forms.CheckboxInput(attrs={'class': 'rounded border-gray-300 text-green-600 focus:ring-green-500'}),
+            "code": forms.TextInput(attrs={'class': 'border-2 h-10 w-full rounded-lg border-black shadow-sm focus:border-green-500 focus:ring-green-500'}),
+            "discount_type": forms.Select(attrs={'class': 'border-2 h-10 w-full rounded-lg border-black shadow-sm focus:border-green-500 focus:ring-green-500'}),
+            "discount_value": forms.NumberInput(attrs={'class': 'border-2 h-10 w-full rounded-lg border-black shadow-sm focus:border-green-500 focus:ring-green-500'}),
+            "products": forms.CheckboxSelectMultiple(attrs={'class': 'rounded border-black ml-2 focus:ring-green-500'}),
+            "valid_from": forms.DateTimeInput(attrs={"type": "datetime-local", 'class': 'border-2 h-10 w-full rounded-lg border-black shadow-sm focus:border-green-500 focus:ring-green-500'}),
+            "valid_to": forms.DateTimeInput(attrs={"type": "datetime-local", 'class': 'border-2 h-10 w-full rounded-lg border-black shadow-sm focus:border-green-500 focus:ring-green-500'}),
+            "usage_limit": forms.NumberInput(attrs={'class': 'border-2 h-10 w-full rounded-lg border-black shadow-sm focus:border-green-500 focus:ring-green-500'}),
+            "is_active": forms.CheckboxInput(attrs={'class': 'border-2 h-10 rounded border-black text-green-600 focus:ring-green-500'}),
         }
 
     def __init__(self, *args, **kwargs):
