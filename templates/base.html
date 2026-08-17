@@ -9,7 +9,7 @@
   <link rel="icon" href="{% static 'images/pp_no_bgcropped.png' %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://kit.fontawesome.com/69d2af506e.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
   <script>
@@ -17,7 +17,7 @@
       theme: {
         extend: {
           fontFamily: {
-            saira: ['Saira', 'system-ui', 'sans-serif']
+            inter: ['Inter', 'system-ui', 'sans-serif']
           }
         }
       }
@@ -26,14 +26,14 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style> 
     body {
-      font-family: "Saira";
+      font-family: "Inter";
     }
   </style>
   <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
   {% block extra_head %}{% endblock %}
 </head>
 
-<body class="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-orange-50 bg-fixed text-slate-900 font-saira grid grid-rows-[auto_1fr_auto]">
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-orange-50 bg-fixed text-slate-900 font-inter grid grid-rows-[auto_1fr_auto]">
   <main class="w-full">
     {% block content %}{% endblock %}
   </main>
