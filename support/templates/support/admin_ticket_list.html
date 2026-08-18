@@ -5,11 +5,11 @@
     
     {% include 'shop/navbar.html' %}
 
-<div class="p-6 mx-8 mt-6">
+<div class="p-4 mx-2 mt-4 sm:p-6 sm:mx-8 sm:mt-6">
     <h2 class="text-3xl text-green-600 font-bold mb-6"><i class="fa-solid fa-user-shield mr-2"></i>Admin Ticket Dashboard</h2>
 
-    <div class="overflow-x-auto bg-white shadow-lg rounded-xl p-4">
-        <table class="min-w-full table-auto border-collapse rounded-lg">
+    <div class="overflow-x-auto rtable-wrap bg-white shadow-lg rounded-xl p-4">
+        <table class="rtable min-w-full table-auto border-collapse rounded-lg">
             <thead class="bg-green-600 text-white text-left">
                 <tr>
                     <th class="px-4 py-3">User</th>
@@ -23,22 +23,22 @@
             <tbody class="bg-white">
                 {% for ticket in tickets %}
                 <tr class="border-b hover:bg-gray-50 transition">
-                    <td class="px-4 py-3 font-semibold">{{ ticket.user.username }}</td>
-                    <td class="px-4 py-3">{{ ticket.get_subject_display }}</td>
-                    <td class="px-4 py-3
+                    <td data-label="User" class="px-4 py-3 font-semibold">{{ ticket.user.username }}</td>
+                    <td data-label="Subject" class="px-4 py-3">{{ ticket.get_subject_display }}</td>
+                    <td data-label="Priority" class="px-4 py-3
                         {% if ticket.priority == 'low' %} text-red-500
                         {% elif ticket.priority == 'medium' %} text-yellow-500
                         {% else %} text-green-500 {% endif %}
                         font-semibold">{{ ticket.get_priority_display }}</td>
-                    <td class="px-4 py-3">
+                    <td data-label="Status" class="px-4 py-3">
                         <span class="badge text-white 
                         {% if ticket.status == 'open' %} badge-warning
                         {% elif ticket.status == 'in_progress' %} badge-info
                         {% else %} badge-success {% endif %}">
                         {{ ticket.get_status_display }}</span>
                     </td>
-                    <td class="px-4 py-3 text-gray-600">{{ ticket.created_at|date:"Y-m-d H:i" }}</td>
-                    <td class="px-4 py-3">
+                    <td data-label="Created" class="px-4 py-3 text-gray-600">{{ ticket.created_at|date:"Y-m-d H:i" }}</td>
+                    <td data-label="Actions" class="px-4 py-3">
                         <a href="{% url 'admin_ticket_detail' ticket.id %}" class="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700">
                             View / Reply
                         </a>

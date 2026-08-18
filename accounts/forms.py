@@ -6,13 +6,13 @@ from .models import User, Vendor
 class LoginForm(forms.Form):
     username = forms.CharField(
         widget=forms.TextInput(attrs={
-            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white",
+            "class": "input input-success h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white p-2",
             "placeholder": "Username"
         })
     )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
-            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white",
+            "class": "input input-success h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white p-2",
             "placeholder": "Password"
         })
     )
@@ -28,7 +28,7 @@ class StyledPasswordResetForm(PasswordResetForm):
             attrs={
                 "placeholder": "you@example.com",
                 "class": (
-                    "input input-bordered w-full border-green-300 "
+                    "input input-success p-2 h-8 w-full border-green-300 "
                     "focus:border-green-500 focus:ring focus:ring-green-200 "
                     "rounded-lg transition bg-white dark:bg-gray-800"
                 )
@@ -42,13 +42,13 @@ class StyledSetPasswordForm(SetPasswordForm):
         super().__init__(*args, **kwargs)
         self.fields["new_password1"].widget.attrs.update({
             "placeholder": "Enter new password",
-            "class": "input input-bordered w-full border-green-300 "
+            "class": "input input-success p-2 h-8 w-full border-green-300 "
                      "focus:border-green-500 focus:ring focus:ring-green-200 "
                      "rounded-lg bg-white dark:bg-gray-800 transition"
         })
         self.fields["new_password2"].widget.attrs.update({
             "placeholder": "Confirm new password",
-            "class": "input input-bordered w-full border-green-300 "
+            "class": "input input-success p-2 h-8 w-full border-green-300 "
                      "focus:border-green-500 focus:ring focus:ring-green-200 "
                      "rounded-lg bg-white dark:bg-gray-800 transition"
         })
@@ -58,38 +58,38 @@ class RegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True, widget=forms.EmailInput(
         attrs={
             "placeholder": "you@example.com",
-            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white dark:bg-gray-800"
+            "class": "input input-success p-2 h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white dark:bg-gray-800"
         }
     ))
     username = forms.CharField(widget=forms.TextInput(
         attrs={
             "placeholder": "Username",
-            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white dark:bg-gray-800"
+            "class": "input input-success p-2 h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white dark:bg-gray-800"
         }
     ))
     password1 = forms.CharField(widget=forms.PasswordInput(
         attrs={
             "placeholder": "Password",
-            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white dark:bg-gray-800"
+            "class": "input input-success p-2 h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white dark:bg-gray-800"
         }
     ))
     password2 = forms.CharField(widget=forms.PasswordInput(
         attrs={
             "placeholder": "Confirm Password",
-            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white dark:bg-gray-800"
+            "class": "input input-success p-2 h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white dark:bg-gray-800"
         }
     ))
     is_vendor = forms.BooleanField(
         required=False,
         label="Register as Vendor",
-        widget=forms.CheckboxInput(attrs={"class": "checkbox checkbox-success checkbox-xl text-green-500 rounded-lg transition"})
+        widget=forms.CheckboxInput(attrs={"class": "checkbox checkbox-success rounded-full transition text-green-500"})
     )
     # Vendor fields (initially empty)
     shop_name = forms.CharField(
         required=False,
         widget=forms.TextInput(attrs={
             "placeholder": "Shop Name",
-            "class": "input input-bordered w-full border-green-300 rounded-lg",
+            "class": "input input-success p-2 h-8 w-full border-green-300 rounded-lg",
         })
     )
     description = forms.CharField(
@@ -104,13 +104,13 @@ class RegistrationForm(UserCreationForm):
         required=False,
         widget=forms.TextInput(attrs={
             "placeholder": "Business Address",
-            "class": "input input-bordered w-full border-green-300 rounded-lg",
+            "class": "input input-success p-2 h-8 w-full border-green-300 rounded-lg",
         })
     )
     logo = forms.ImageField(
         required=False, 
         widget=forms.FileInput(attrs={
-            "class": "file-input file-input-bordered w-full"
+            "class": "file-input file-input-success w-full",
     })
     )
 
@@ -126,27 +126,27 @@ class UserProfileForm(forms.ModelForm):
 
     username = forms.CharField(
         widget=forms.TextInput(attrs={
-            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
+            "class": "input input-success p-2 h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
         })
     )
 
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={
-            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
+            "class": "input input-success p-2 h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
         })
     )
 
     first_name = forms.CharField(
         required=False,
         widget=forms.TextInput(attrs={
-            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
+            "class": "input input-success p-2 h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
         })
     )
 
     last_name = forms.CharField(
         required=False,
         widget=forms.TextInput(attrs={
-            "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
+            "class": "input input-success p-2 h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
         })
     )
 
@@ -181,17 +181,17 @@ class UserProfileForm(forms.ModelForm):
 
 class VendorProfileForm(forms.ModelForm):
     shop_name = forms.CharField(widget=forms.TextInput(attrs={
-        "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
+        "class": "input input-success p-2 h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
     }))
     logo = forms.ImageField(required=False, widget=forms.FileInput(attrs={
-        "class": "file-input file-input-bordered w-full"
+        "class": "file-input file-input-success w-full"
     }))
     description = forms.CharField(required=False, widget=forms.Textarea(attrs={
         "class": "textarea textarea-bordered w-full rounded-lg border-green-300 focus:border-green-500 focus:ring focus:ring-green-200",
         "rows": 3
     }))
     address = forms.CharField(required=False, widget=forms.TextInput(attrs={
-        "class": "input input-bordered w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
+        "class": "input input-success p-2 h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
     }))
 
     class Meta:

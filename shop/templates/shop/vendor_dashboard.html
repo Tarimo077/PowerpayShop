@@ -40,21 +40,21 @@
             </select>
           </form>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full border-separate border-spacing-y-3 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:text-xs [&_th]:font-black [&_th]:uppercase [&_th]:tracking-wider [&_th]:text-slate-500 [&_td]:border-y [&_td]:border-slate-100 [&_td]:bg-white/80 [&_td]:px-4 [&_td]:py-4 [&_td:first-child]:rounded-l-2xl [&_td:last-child]:rounded-r-2xl">
+        <div class="overflow-x-auto rtable-wrap">
+          <table class="rtable w-full border-separate border-spacing-y-3 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:text-xs [&_th]:font-black [&_th]:uppercase [&_th]:tracking-wider [&_th]:text-slate-500 [&_td]:border-y [&_td]:border-slate-100 [&_td]:bg-white/80 [&_td]:px-4 [&_td]:py-4 [&_td:first-child]:rounded-l-2xl [&_td:last-child]:rounded-r-2xl">
             <thead><tr><th>Product</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
             <tbody>
               {% for product in products %}
                 <tr>
-                  <td>
+                  <td data-label="Product">
                     <div class="flex items-center gap-3">
                       {% if product.image %}<img src="{{ product.image.url }}" class="w-14 h-14 object-contain rounded-2xl bg-slate-50 border border-slate-100 p-1" alt="{{ product.name }}">{% else %}<span class="w-14 h-14 rounded-2xl bg-green-50 grid place-items-center text-green-700"><i class="fa-solid fa-box"></i></span>{% endif %}
                       <div><p class="font-black">{{ product.name }}</p><p class="text-slate-500 text-xs">{{ product.created_at|naturalday }}</p></div>
                     </div>
                   </td>
-                  <td class="font-black text-green-700">Ksh. {{ product.price|intcomma }}</td>
-                  <td><span class="font-black {% if product.stock < 5 %}text-red-600{% else %}text-orange-500{% endif %}">{{ product.stock }}</span></td>
-                  <td>
+                  <td data-label="Price" class="font-black text-green-700">Ksh. {{ product.price|intcomma }}</td>
+                  <td data-label="Stock"><span class="font-black {% if product.stock < 5 %}text-red-600{% else %}text-orange-500{% endif %}">{{ product.stock }}</span></td>
+                  <td data-label="Actions">
                     <div class="flex gap-2">
                       <a href="{% url 'edit_product' product.id %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-emerald-500/10 text-emerald-800 hover:bg-emerald-500/20 min-h-0 py-2 text-sm"><i class="fa-solid fa-pen"></i> Edit</a>
                       <button type="button" onclick="openDeleteModal('{{ product.id }}', '{{ product.name|escapejs }}')" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-red-500 to-red-700 text-white min-h-0 py-2 text-sm"><i class="fa-solid fa-trash"></i></button>
@@ -77,18 +77,18 @@
           <h2 class="text-2xl font-black">Promo codes</h2>
           <a href="{% url 'create_promo' %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-[0_14px_30px_rgba(249,115,22,0.24)]"><i class="fa-solid fa-tag"></i> New promo</a>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full border-separate border-spacing-y-3 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:text-xs [&_th]:font-black [&_th]:uppercase [&_th]:tracking-wider [&_th]:text-slate-500 [&_td]:border-y [&_td]:border-slate-100 [&_td]:bg-white/80 [&_td]:px-4 [&_td]:py-4 [&_td:first-child]:rounded-l-2xl [&_td:last-child]:rounded-r-2xl">
+        <div class="overflow-x-auto rtable-wrap">
+          <table class="rtable w-full border-separate border-spacing-y-3 [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:text-xs [&_th]:font-black [&_th]:uppercase [&_th]:tracking-wider [&_th]:text-slate-500 [&_td]:border-y [&_td]:border-slate-100 [&_td]:bg-white/80 [&_td]:px-4 [&_td]:py-4 [&_td:first-child]:rounded-l-2xl [&_td:last-child]:rounded-r-2xl">
             <thead><tr><th>Code</th><th>Discount</th><th>Status</th><th>Usage</th><th>Expires</th><th>Actions</th></tr></thead>
             <tbody>
               {% for promo in promo_codes %}
                 <tr>
-                  <td class="font-mono font-black">{{ promo.code }}</td>
-                  <td class="font-black text-green-700">{% if promo.discount_type == 'percentage' %}{{ promo.discount_value|floatformat:0 }}%{% else %}Ksh. {{ promo.discount_value|intcomma }}{% endif %}</td>
-                  <td>{% if promo.is_active and promo.is_valid %}<span class="px-3 py-1 bg-green-50 text-green-700 rounded-full font-black text-xs">Active</span>{% else %}<span class="px-3 py-1 bg-red-50 text-red-700 rounded-full font-black text-xs">Inactive</span>{% endif %}</td>
-                  <td class="text-slate-500 font-bold">{{ promo.used_count }} / {{ promo.usage_limit|default:"∞" }}</td>
-                  <td class="text-slate-500">{{ promo.valid_to|naturalday|default:"No expiry" }}</td>
-                  <td>
+                  <td data-label="Code" class="font-mono font-black">{{ promo.code }}</td>
+                  <td data-label="Discount" class="font-black text-green-700">{% if promo.discount_type == 'percentage' %}{{ promo.discount_value|floatformat:0 }}%{% else %}Ksh. {{ promo.discount_value|intcomma }}{% endif %}</td>
+                  <td data-label="Status">{% if promo.is_active and promo.is_valid %}<span class="px-3 py-1 bg-green-50 text-green-700 rounded-full font-black text-xs">Active</span>{% else %}<span class="px-3 py-1 bg-red-50 text-red-700 rounded-full font-black text-xs">Inactive</span>{% endif %}</td>
+                  <td data-label="Usage" class="text-slate-500 font-bold">{{ promo.used_count }} / {{ promo.usage_limit|default:"∞" }}</td>
+                  <td data-label="Expires" class="text-slate-500">{{ promo.valid_to|naturalday|default:"No expiry" }}</td>
+                  <td data-label="Actions">
                     <div class="flex gap-2">
                       <a href="{% url 'edit_promo' promo.id %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-emerald-500/10 text-emerald-800 hover:bg-emerald-500/20 min-h-0 py-2 text-sm"><i class="fa-solid fa-pen"></i> Edit</a>
                       <form method="POST" action="{% url 'delete_promo' promo.id %}" onsubmit="return confirm('Delete this promo code?')">{% csrf_token %}<button type="submit" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-red-500 to-red-700 text-white min-h-0 py-2 text-sm"><i class="fa-solid fa-trash"></i></button></form>
