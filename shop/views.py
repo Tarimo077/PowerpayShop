@@ -572,6 +572,7 @@ def delete_promo(request, promo_id):
 @login_required
 def checkout(request):
     cart = _get_user_cart(request.user)
+
     if not cart or not cart.items.exists():
         messages.error(request, "Cart is empty.")
         return redirect("index")
@@ -584,28 +585,69 @@ def checkout(request):
     if request.method == "POST":
         form = CheckoutForm(request.POST)
         payment_form = PaymentForm(request.POST)
+
         promo_code_str = request.POST.get("promo_code", "").strip()
 
         if form.is_valid() and payment_form.is_valid():
+
+            # ---------------------------------------------------------
+            # PROMO CODE
+            # ---------------------------------------------------------
+
             if promo_code_str:
-                promo_obj = PromoCode.objects.filter(code__iexact=promo_code_str, is_active=True).prefetch_related("products").first()
+                promo_obj = (
+                    PromoCode.objects
+                    .filter(
+                        code__iexact=promo_code_str,
+                        is_active=True,
+                    )
+                    .prefetch_related("products")
+                    .first()
+                )
+
                 if promo_obj and promo_obj.is_valid():
-                    discount, found = _calculate_discount(cart, promo_obj)
+                    discount, found = _calculate_discount(
+                        cart,
+                        promo_obj,
+                    )
+
                     if not found:
                         discount = Decimal("0.00")
                         promo_obj = None
 
-            final_amount = max(Decimal("0.00"), subtotal - discount)
+            # ---------------------------------------------------------
+            # FINAL AMOUNT
+            # ---------------------------------------------------------
+
+            final_amount = max(
+                Decimal("0.00"),
+                subtotal - discount,
+            )
+
+            # ---------------------------------------------------------
+            # CREATE ORDER
+            # ---------------------------------------------------------
 
             order = form.save(commit=False)
+
             order.user = request.user
             order.total_amount = final_amount
             order.payment_status = "pending"
+
             order.save()
 
+            # Your internal reference.
+            #
+            # This is NOT the Safaricom MerchantRequestID or
+            # CheckoutRequestID.
             ref = f"order-{order.id}-{uuid.uuid4().hex[:6]}"
+
             order.payment_ref = ref
             order.save(update_fields=["payment_ref"])
+
+            # ---------------------------------------------------------
+            # CREATE SALES
+            # ---------------------------------------------------------
 
             sales = [
                 Sale(
@@ -619,28 +661,118 @@ def checkout(request):
                 )
                 for item in cart.items.all()
             ]
+
             Sale.objects.bulk_create(sales)
 
-            success, resp = initiate_stk_push(amount=int(final_amount), contact=payment_form.cleaned_data["mpesa_phone"], ref=ref)
+            # ---------------------------------------------------------
+            # INITIATE STK PUSH
+            # ---------------------------------------------------------
+
+            success, resp = initiate_stk_push(
+                amount=int(final_amount),
+                contact=payment_form.cleaned_data["mpesa_phone"],
+                ref=ref,
+            )
 
             if success:
+
+                # -----------------------------------------------------
+                # SAVE SAFARICOM REQUEST IDs
+                # -----------------------------------------------------
+
+                merchant_request_id = resp.get("MerchantRequestID")
+                checkout_request_id = resp.get("CheckoutRequestID")
+
+                if not merchant_request_id or not checkout_request_id:
+                    messages.error(
+                        request,
+                        "Payment request was accepted but no M-Pesa "
+                        "request reference was returned.",
+                    )
+
+                    order.payment_status = "failed"
+                    order.save(update_fields=["payment_status"])
+
+                    return redirect("checkout")
+
+                order.merchant_request_id = merchant_request_id
+                order.checkout_request_id = checkout_request_id
+
+                # Save the phone number used for the payment as well.
+                order.mpesa_phone = str(
+                    payment_form.cleaned_data["mpesa_phone"]
+                )
+
+                order.save(
+                    update_fields=[
+                        "merchant_request_id",
+                        "checkout_request_id",
+                        "mpesa_phone",
+                    ]
+                )
+
+                # -----------------------------------------------------
+                # PROMO USAGE
+                # -----------------------------------------------------
+
                 if promo_obj:
-                    PromoCode.objects.filter(pk=promo_obj.pk).update(used_count=F("used_count") + 1)
-                send_checkout_emails(order, final_amount, ref)
+                    PromoCode.objects.filter(
+                        pk=promo_obj.pk
+                    ).update(
+                        used_count=F("used_count") + 1
+                    )
+
+                # -----------------------------------------------------
+                # EMAIL
+                # -----------------------------------------------------
+
+                send_checkout_emails(
+                    order,
+                    final_amount,
+                    ref,
+                )
+
+                # -----------------------------------------------------
+                # SESSION
+                # -----------------------------------------------------
+
                 request.session["checkout_ref"] = ref
                 request.session["checkout_order_id"] = order.id
+
                 return redirect("checkout_success")
 
-            messages.error(request, f"Payment failed: {resp}")
+            # ---------------------------------------------------------
+            # STK PUSH REQUEST ITSELF FAILED
+            # ---------------------------------------------------------
+
+            messages.error(
+                request,
+                f"Payment failed: {resp}",
+            )
+
             return redirect("checkout")
+
     else:
-        form = CheckoutForm(initial={"email": request.user.email})
+        form = CheckoutForm(
+            initial={
+                "email": request.user.email,
+            }
+        )
+
         payment_form = PaymentForm()
 
     return render(
         request,
         "shop/checkout.html",
-        {"form": form, "payment_form": payment_form, "cart": cart, "items": cart.items.all(), "subtotal": subtotal, "discount": discount, "cart_total": final_amount},
+        {
+            "form": form,
+            "payment_form": payment_form,
+            "cart": cart,
+            "items": cart.items.all(),
+            "subtotal": subtotal,
+            "discount": discount,
+            "cart_total": final_amount,
+        },
     )
 
 
@@ -648,76 +780,446 @@ def checkout(request):
 def checkout_success(request):
     ref = request.session.get("checkout_ref")
     order_id = request.session.get("checkout_order_id")
-    order = CheckoutOrder.objects.filter(id=order_id).first() if order_id else None
-    return render(request, "shop/checkout_success.html", {"ref": ref, "order": order})
+
+    order = (
+        CheckoutOrder.objects.filter(id=order_id).first()
+        if order_id
+        else None
+    )
+
+    return render(
+        request,
+        "shop/checkout_success.html",
+        {
+            "ref": ref,
+            "order": order,
+        },
+    )
 
 
 def initiate_stk_push(amount, contact, ref):
+    """
+    Send the STK Push request to your M-Pesa middleware/API.
+
+    Expected successful response:
+
+    {
+        "MerchantRequestID": "...",
+        "CheckoutRequestID": "...",
+        "ResponseCode": "0",
+        "ResponseDescription": "...",
+        "CustomerMessage": "..."
+    }
+    """
+
     url = getattr(settings, "MPESA_ENDPOINT")
-    payload = {"amount": int(amount), "contact": str(contact), "ref": str(ref)}
+
+    payload = {
+        "amount": int(amount),
+        "contact": str(contact),
+        "ref": str(ref),
+    }
+
     try:
-        response = requests.post(url, json=payload, timeout=15)
+        response = requests.post(
+            url,
+            json=payload,
+            timeout=15,
+        )
+
         response.raise_for_status()
-        if response.headers.get("content-type", "").startswith("application/json"):
-            return True, response.json()
+
+        if response.headers.get(
+            "content-type",
+            ""
+        ).startswith("application/json"):
+
+            data = response.json()
+
+            # M-Pesa STK Push accepted the request.
+            if str(data.get("ResponseCode")) == "0":
+                return True, data
+
+            return False, data
+
         return True, response.text
+
     except requests.RequestException as exc:
         return False, str(exc)
 
 
 @csrf_exempt
 def payment_callback(request):
+    """
+    Safaricom STK callback endpoint.
+
+    Expected callback:
+
+    {
+        "Body": {
+            "stkCallback": {
+                "MerchantRequestID": "...",
+                "CheckoutRequestID": "...",
+                "ResultCode": 0,
+                "ResultDesc": "...",
+                "CallbackMetadata": {
+                    "Item": [...]
+                }
+            }
+        }
+    }
+    """
+
     if request.method != "POST":
-        return JsonResponse({"detail": "Method not allowed"}, status=405)
+        return JsonResponse(
+            {"detail": "Method not allowed"},
+            status=405,
+        )
+
+    # -------------------------------------------------------------
+    # PARSE JSON
+    # -------------------------------------------------------------
 
     try:
         data = json.loads(request.body)
-        callback = data["Body"]["stkCallback"]
-    except (json.JSONDecodeError, KeyError, TypeError):
-        return JsonResponse({"detail": "Invalid callback payload"}, status=400)
+
+    except (json.JSONDecodeError, TypeError):
+        return JsonResponse(
+            {"detail": "Invalid callback payload"},
+            status=400,
+        )
+
+    # -------------------------------------------------------------
+    # GET STK CALLBACK
+    # -------------------------------------------------------------
+
+    callback = (
+        data.get("Body", {})
+        .get("stkCallback")
+    )
+
+    if not callback:
+        return JsonResponse(
+            {"detail": "Invalid callback structure"},
+            status=400,
+        )
+
+    # -------------------------------------------------------------
+    # REQUEST IDENTIFIERS
+    # -------------------------------------------------------------
+
+    merchant_request_id = callback.get(
+        "MerchantRequestID"
+    )
+
+    checkout_request_id = callback.get(
+        "CheckoutRequestID"
+    )
+
+    if not merchant_request_id and not checkout_request_id:
+        return JsonResponse(
+            {"detail": "M-Pesa request reference missing"},
+            status=400,
+        )
+
+    # -------------------------------------------------------------
+    # RESULT
+    # -------------------------------------------------------------
 
     result_code = callback.get("ResultCode")
-    merchant_request_id = callback.get("MerchantRequestID") or callback.get("CheckoutRequestID")
-    if not merchant_request_id:
-        return JsonResponse({"detail": "Reference missing"}, status=400)
 
     try:
-        with transaction.atomic():
-            order = CheckoutOrder.objects.select_for_update().get(payment_ref=merchant_request_id)
-            if result_code != 0:
-                order.payment_status = "failed"
-                order.save(update_fields=["payment_status"])
-                return JsonResponse({"detail": "Payment failed"}, status=200)
+        result_code = int(result_code)
+    except (TypeError, ValueError):
+        return JsonResponse(
+            {"detail": "Invalid ResultCode"},
+            status=400,
+        )
 
-            metadata = callback.get("CallbackMetadata", {}).get("Item", [])
-            meta = {item.get("Name"): item.get("Value") for item in metadata if item.get("Name")}
-            order.payment_status = "paid"
-            order.mpesa_receipt = meta.get("MpesaReceiptNumber")
-            order.save(update_fields=["payment_status", "mpesa_receipt"])
+    result_desc = callback.get(
+        "ResultDesc",
+        "",
+    )
 
-            sales = order.sales.select_related("product")
-            sales.update(status="paid")
-            for sale in sales:
-                Product.objects.filter(pk=sale.product_id).update(stock=F("stock") - sale.quantity)
+    # -------------------------------------------------------------
+    # FIND ORDER
+    #
+    # IMPORTANT:
+    # We now search using the IDs returned by M-Pesa rather than
+    # assuming MerchantRequestID == our payment_ref.
+    # -------------------------------------------------------------
 
-            CartItem.objects.filter(cart__user=order.user).delete()
-    except CheckoutOrder.DoesNotExist:
-        return JsonResponse({"detail": "Order not found"}, status=404)
+    order = None
 
-    return JsonResponse({"detail": "Payment processed"}, status=200)
+    if checkout_request_id:
+        order = (
+            CheckoutOrder.objects
+            .filter(
+                checkout_request_id=checkout_request_id
+            )
+            .first()
+        )
+
+    if not order and merchant_request_id:
+        order = (
+            CheckoutOrder.objects
+            .filter(
+                merchant_request_id=merchant_request_id
+            )
+            .first()
+        )
+
+    if not order:
+        return JsonResponse(
+            {
+                "detail": "Order not found",
+                "MerchantRequestID": merchant_request_id,
+                "CheckoutRequestID": checkout_request_id,
+            },
+            status=404,
+        )
+
+    # -------------------------------------------------------------
+    # PROCESS ORDER ATOMICALLY
+    # -------------------------------------------------------------
+
+    with transaction.atomic():
+
+        # Lock the order to prevent duplicate callbacks from
+        # processing the same payment simultaneously.
+        order = (
+            CheckoutOrder.objects
+            .select_for_update()
+            .get(pk=order.pk)
+        )
+
+        # ---------------------------------------------------------
+        # ALREADY PROCESSED
+        #
+        # This is important because M-Pesa callbacks should be
+        # treated as potentially repeatable.
+        # ---------------------------------------------------------
+
+        if order.payment_status == "paid":
+            return JsonResponse(
+                {
+                    "detail": "Payment already processed",
+                },
+                status=200,
+            )
+
+        # ---------------------------------------------------------
+        # PAYMENT FAILED / CANCELLED
+        #
+        # Example:
+        # ResultCode = 1032
+        # ResultDesc = "Request Cancelled by user."
+        # ---------------------------------------------------------
+
+        if result_code != 0:
+
+            order.payment_status = "failed"
+
+            order.save(
+                update_fields=[
+                    "payment_status",
+                ]
+            )
+
+            return JsonResponse(
+                {
+                    "detail": "Payment failed",
+                    "ResultCode": result_code,
+                    "ResultDesc": result_desc,
+                },
+                status=200,
+            )
+
+        # ---------------------------------------------------------
+        # SUCCESS CALLBACK
+        # ---------------------------------------------------------
+
+        metadata = (
+            callback
+            .get("CallbackMetadata", {})
+            .get("Item", [])
+        )
+
+        meta = {}
+
+        for item in metadata:
+            name = item.get("Name")
+
+            if name:
+                meta[name] = item.get("Value")
+
+        # ---------------------------------------------------------
+        # EXTRACT PAYMENT DETAILS
+        # ---------------------------------------------------------
+
+        mpesa_receipt = meta.get(
+            "MpesaReceiptNumber"
+        )
+
+        mpesa_amount = meta.get(
+            "Amount"
+        )
+
+        mpesa_phone = meta.get(
+            "PhoneNumber"
+        )
+
+        transaction_date_raw = meta.get(
+            "TransactionDate"
+        )
+
+        # ---------------------------------------------------------
+        # TRANSACTION DATE
+        #
+        # M-Pesa sends:
+        #
+        # 20260819121149
+        #
+        # Format:
+        # YYYYMMDDHHMMSS
+        # ---------------------------------------------------------
+
+        transaction_date = None
+
+        if transaction_date_raw:
+
+            try:
+                from datetime import datetime
+
+                transaction_date = datetime.strptime(
+                    str(transaction_date_raw),
+                    "%Y%m%d%H%M%S",
+                )
+
+            except (ValueError, TypeError):
+                transaction_date = None
+
+        # ---------------------------------------------------------
+        # UPDATE ORDER
+        # ---------------------------------------------------------
+
+        order.payment_status = "paid"
+
+        if mpesa_receipt:
+            order.mpesa_receipt = str(
+                mpesa_receipt
+            )
+
+        if mpesa_amount is not None:
+            order.mpesa_amount = Decimal(
+                str(mpesa_amount)
+            )
+
+        if mpesa_phone:
+            order.mpesa_phone = str(
+                mpesa_phone
+            )
+
+        if transaction_date:
+            order.mpesa_transaction_date = transaction_date
+
+        order.save(
+            update_fields=[
+                "payment_status",
+                "mpesa_receipt",
+                "mpesa_amount",
+                "mpesa_phone",
+                "mpesa_transaction_date",
+            ]
+        )
+
+        # ---------------------------------------------------------
+        # UPDATE SALES
+        # ---------------------------------------------------------
+
+        sales = order.sales.select_related(
+            "product"
+        )
+
+        sales.update(
+            status="paid"
+        )
+
+        # ---------------------------------------------------------
+        # REDUCE STOCK
+        # ---------------------------------------------------------
+
+        for sale in sales:
+
+            Product.objects.filter(
+                pk=sale.product_id
+            ).update(
+                stock=F("stock") - sale.quantity
+            )
+
+        # ---------------------------------------------------------
+        # CLEAR CART
+        # ---------------------------------------------------------
+
+        CartItem.objects.filter(
+            cart__user=order.user
+        ).delete()
+
+    # -------------------------------------------------------------
+    # RETURN SUCCESS TO M-PESA
+    # -------------------------------------------------------------
+
+    return JsonResponse(
+        {
+            "detail": "Payment processed",
+            "MpesaReceiptNumber": mpesa_receipt,
+            "CheckoutRequestID": checkout_request_id,
+        },
+        status=200,
+    )
 
 
 @login_required
 def check_payment_status(request):
-    order_id = request.session.get("checkout_order_id")
-    order = CheckoutOrder.objects.filter(id=order_id).first() if order_id else None
+    """
+    Used by checkout_success.html to poll the order status.
+    """
+
+    order_id = request.session.get(
+        "checkout_order_id"
+    )
+
+    order = (
+        CheckoutOrder.objects.filter(
+            id=order_id
+        ).first()
+        if order_id
+        else None
+    )
+
     if not order:
-        return JsonResponse({"status": "unknown"})
-    return JsonResponse({"status": order.payment_status, "receipt": order.mpesa_receipt})
+        return JsonResponse(
+            {"status": "unknown"}
+        )
+
+    return JsonResponse(
+        {
+            "status": order.payment_status,
+            "receipt": order.mpesa_receipt,
+        }
+    )
 
 
 def send_checkout_emails(order, cart_total, ref):
-    html_user = render_to_string("emails/checkout_user_email.html", {"order": order, "cart_total": cart_total, "ref": ref})
+    html_user = render_to_string(
+        "emails/checkout_user_email.html",
+        {
+            "order": order,
+            "cart_total": cart_total,
+            "ref": ref,
+        },
+    )
+
     send_mail(
         subject="Your PowerPay order",
         message="Your order has been received.",
