@@ -1,20 +1,22 @@
 {% extends "base.html" %}
 {% load static %}
+{% block title %}
+  Powerpay Africa | OTP Verification
+{% endblock %}
 {% block content %}
 
-<div class="relative flex justify-center items-center min-h-screen overflow-hidden bg-gradient-to-r from-green-100 via-orange-100 to-green-50">
+<div class="relative flex justify-center items-center min-h-screen overflow-hidden px-4">
 
-  <!-- Animated Floating Shapes -->
-  <div class="absolute w-64 h-64 bg-green-300 rounded-full opacity-40 animate-bounce -top-32 -left-32"></div>
-  <div class="absolute w-72 h-72 bg-orange-300 rounded-full opacity-30 animate-bounce -bottom-36 -right-36"></div>
-  <div class="absolute w-48 h-48 bg-green-400 rounded-full opacity-20 animate-bounce top-1/4 right-1/4"></div>
+  <!-- Soft background shapes -->
+  <div class="absolute w-64 h-64 bg-green-300 rounded-full opacity-40 -top-32 -left-32"></div>
+  <div class="absolute w-72 h-72 bg-orange-300 rounded-full opacity-30 -bottom-36 -right-36"></div>
 
   <!-- OTP Card -->
-  <div class="card w-96 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 transform transition duration-500 z-10">
+  <div class="card w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 z-10">
 
     <!-- Logo -->
     <div class="flex justify-center mb-4">
-      <img src="{% static 'images/pplogo.png' %}" alt="PowerPayShop Logo" class="w-2/3 h-2/3 object-contain">
+      <img src="{% static 'images/pplogo.png' %}" alt="PowerPayShop Logo" class="object-contain">
     </div>
 
     <!-- Tagline -->
@@ -32,12 +34,12 @@
 
       <!-- SIX OTP BOXES -->
       <div class="flex justify-between gap-2 mb-4">
-        <input type="text" maxlength="1" class="otp-box input input-bordered w-12 h-12 text-center text-xl rounded-lg font-bold border-green-300 focus:border-green-500 focus:ring focus:ring-green-200" />
-        <input type="text" maxlength="1" class="otp-box input input-bordered w-12 h-12 text-center text-xl rounded-lg font-bold border-green-300 focus:border-green-500 focus:ring focus:ring-green-200" />
-        <input type="text" maxlength="1" class="otp-box input input-bordered w-12 h-12 text-center text-xl rounded-lg font-bold border-green-300 focus:border-green-500 focus:ring focus:ring-green-200" />
-        <input type="text" maxlength="1" class="otp-box input input-bordered w-12 h-12 text-center text-xl rounded-lg font-bold border-green-300 focus:border-green-500 focus:ring focus:ring-green-200" />
-        <input type="text" maxlength="1" class="otp-box input input-bordered w-12 h-12 text-center text-xl rounded-lg font-bold border-green-300 focus:border-green-500 focus:ring focus:ring-green-200" />
-        <input type="text" maxlength="1" class="otp-box input input-bordered w-12 h-12 text-center text-xl rounded-lg font-bold border-green-300 focus:border-green-500 focus:ring focus:ring-green-200" />
+        <input type="text" maxlength="1" class="otp-box input input-bordered border w-12 h-12 text-center text-xl rounded-lg font-bold border-green-300 focus:border-green-500 focus:ring focus:ring-green-200" />
+        <input type="text" maxlength="1" class="otp-box input input-bordered border w-12 h-12 text-center text-xl rounded-lg font-bold border-green-300 focus:border-green-500 focus:ring focus:ring-green-200" />
+        <input type="text" maxlength="1" class="otp-box input input-bordered border w-12 h-12 text-center text-xl rounded-lg font-bold border-green-300 focus:border-green-500 focus:ring focus:ring-green-200" />
+        <input type="text" maxlength="1" class="otp-box input input-bordered border w-12 h-12 text-center text-xl rounded-lg font-bold border-green-300 focus:border-green-500 focus:ring focus:ring-green-200" />
+        <input type="text" maxlength="1" class="otp-box input input-bordered border w-12 h-12 text-center text-xl rounded-lg font-bold border-green-300 focus:border-green-500 focus:ring focus:ring-green-200" />
+        <input type="text" maxlength="1" class="otp-box input input-bordered border w-12 h-12 text-center text-xl rounded-lg font-bold border-green-300 focus:border-green-500 focus:ring focus:ring-green-200" />
       </div>
 
       <!-- Hidden field (final OTP string) -->
@@ -45,7 +47,7 @@
 
       <div class="flex justify-center">
         <button type="submit" 
-                class="btn bg-gradient-to-r from-green-500 to-orange-400 text-white font-bold w-1/2 hover:from-green-500 hover:to-orange-500 transition rounded-lg shadow-lg">
+                class="btn bg-green-600 hover:bg-green-700 text-white font-bold w-1/2 transition rounded-lg shadow-lg">
           <i class="fa-solid fa-lock fa-flip m-2"></i> Verify OTP
         </button>
       </div>

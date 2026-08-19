@@ -1,27 +1,35 @@
-<!DOCTYPE html>
-<html>
-  <body style="font-family: Rubik, Arial, sans-serif; background:#f9fafb; padding:0;">
-    <div style="max-width:600px; margin:30px auto; background:white; border-radius:16px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,0.08);">
-      <div style="background: linear-gradient(90deg,#22c55e,#f97316); padding:24px; text-align:center;">
-        <img src="https://appliatrix.com/static/css/pplogo.png" alt="PowerPayShop" style="width:110px; height:auto; display:block; margin:0 auto 8px;">
-        <h1 style="color:#fff; margin:0;">PowerPay Africa</h1>
-      </div>
+{% extends "emails/base_email.html" %}
+{% load humanize %}
 
-      <div style="padding:28px; color:#374151;">
-        <p>Vendor {{ vendor.username }},</p>
-        <p>A new order was placed: <strong>{{ ref }}</strong></p>
-        <p>Customer: {{ order.first_name }} {{ order.last_name }} ({{ order.email }})</p>
-        <ul>
-        {% for sale in sales %}
-            <li>{{ sale.product.name }} x {{ sale.quantity }} — Ksh. {{ sale.total_price|intcomma }}</li>
-        {% endfor %}
-        </ul>
-        <p>Total: Ksh. {{ cart_total|intcomma }}</p>
-      </div>
+{% block title %}New PowerPay Africa order{% endblock %}
+{% block preheader %}Order {{ ref }} was just placed with your shop.{% endblock %}
+{% block eyebrow %}New order{% endblock %}
+{% block heading %}You have a new order{% endblock %}
 
-      <div style="background:#f3f4f6; padding:12px; text-align:center; font-size:12px; color:#9ca3af;">
-        &copy; 2025 PowerPay Africa. All rights reserved.
-      </div>
-    </div>
-  </body>
-</html>
+{% block content %}
+  <p style="margin:0 0 14px 0;">Hello <strong style="color:#0f172a;">{{ vendor.username }}</strong>,</p>
+  <p style="margin:0 0 22px 0;">
+    A new order <strong style="color:#0f172a;">{{ ref }}</strong> was placed by
+    {{ order.first_name }} {{ order.last_name }} ({{ order.email }}).
+  </p>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+         style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:6px 14px;">
+    {% for sale in sales %}
+    <tr>
+      <td style="padding:8px 6px; font-size:13px; color:#64748b;">{{ sale.product.name }} &times; {{ sale.quantity }}</td>
+      <td style="padding:8px 6px; font-size:13px; color:#0f172a; font-weight:700; text-align:right;">KES {{ sale.total_price|floatformat:2|intcomma }}</td>
+    </tr>
+    {% endfor %}
+    <tr>
+      <td style="padding:12px 6px; font-size:13px; color:#64748b; border-top:1px solid #e2e8f0;">Order total</td>
+      <td style="padding:12px 6px; font-size:15px; color:#ea580c; font-weight:800; text-align:right; border-top:1px solid #e2e8f0;">KES {{ cart_total|floatformat:2|intcomma }}</td>
+    </tr>
+  </table>
+{% endblock %}
+
+{% block footer_note %}
+  <p style="margin:0 0 10px 0; font-size:12px; color:#64748b;">
+    Please prepare the items for dispatch once payment is confirmed.
+  </p>
+{% endblock %}
