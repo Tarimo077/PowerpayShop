@@ -31,12 +31,13 @@ class ProductForm(forms.ModelForm):
 class PromoCodeForm(forms.ModelForm):
     class Meta:
         model = PromoCode
-        fields = ["code", "discount_type", "discount_value", "products", "valid_from", "valid_to", "usage_limit", "is_active"]
+        fields = ["code", "discount_type", "discount_value", "visibility", "products", "valid_from", "valid_to", "usage_limit", "is_active"]
         
         widgets = {
             "code": forms.TextInput(attrs={'class': 'border-2 h-10 w-full rounded-lg border-black shadow-sm focus:border-green-500 focus:ring-green-500'}),
             "discount_type": forms.Select(attrs={'class': 'border-2 h-10 w-full rounded-lg border-black shadow-sm focus:border-green-500 focus:ring-green-500'}),
             "discount_value": forms.NumberInput(attrs={'class': 'border-2 h-10 w-full rounded-lg border-black shadow-sm focus:border-green-500 focus:ring-green-500'}),
+            "visibility": forms.Select(attrs={'class': 'border-2 h-10 w-full rounded-lg border-black shadow-sm focus:border-green-500 focus:ring-green-500'}),
             "products": forms.CheckboxSelectMultiple(attrs={'class': 'rounded border-black ml-2 focus:ring-green-500'}),
             "valid_from": forms.DateTimeInput(attrs={"type": "datetime-local", 'class': 'border-2 h-10 w-full rounded-lg border-black shadow-sm focus:border-green-500 focus:ring-green-500'}),
             "valid_to": forms.DateTimeInput(attrs={"type": "datetime-local", 'class': 'border-2 h-10 w-full rounded-lg border-black shadow-sm focus:border-green-500 focus:ring-green-500'}),

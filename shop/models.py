@@ -3,6 +3,7 @@ from accounts.models import Vendor, User
 from django.conf import settings
 from multiselectfield import MultiSelectField
 from django.core.validators import MaxValueValidator
+from decimal import Decimal
 from django.utils import timezone
 
 class Product(models.Model):
@@ -28,6 +29,34 @@ class Product(models.Model):
         if self.max_stock == 0:
             return 0
         return round((self.stock / self.max_stock) * 100)
+
+    def best_public_promo(self):
+        product_promos = getattr(self, "prefetched_public_promos", None)
+        if product_promos is None:
+            product_promos = self.promo_codes.filter(visibility="public")
+
+        vendor_promos = getattr(self.vendor, "prefetched_public_promos", None)
+        if vendor_promos is None:
+            vendor_promos = self.vendor.promo_codes.filter(visibility="public").prefetch_related("products")
+
+        candidates = list(product_promos)
+        for promo in vendor_promos:
+            product_ids = {product.id for product in promo.products.all()}
+            if not product_ids and promo not in candidates:
+                candidates.append(promo)
+
+        valid_promos = [promo for promo in candidates if promo.is_valid()]
+        return max(valid_promos, key=lambda promo: promo.discount_for(self.price), default=None)
+
+    def discounted_price(self):
+        promo = self.best_public_promo()
+        return self.price - promo.discount_for(self.price) if promo else self.price
+
+    def discount_percentage(self):
+        promo = self.best_public_promo()
+        if not promo or not self.price:
+            return 0
+        return int((promo.discount_for(self.price) / self.price * Decimal("100")).quantize(Decimal("1")))
 
     def __str__(self):
         return self.name
@@ -59,6 +88,10 @@ class PromoCode(models.Model):
         ('percentage', 'Percentage'),
         ('fixed', 'Fixed Amount'),
     )
+    VISIBILITY_CHOICES = (
+        ('public', 'Public'),
+        ('private', 'Private'),
+    )
 
     vendor = models.ForeignKey(
         Vendor, 
@@ -69,6 +102,7 @@ class PromoCode(models.Model):
     code = models.CharField(max_length=20, unique=True)
     discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPE_CHOICES)
     discount_value = models.DecimalField(max_digits=10, decimal_places=2)
+    visibility = models.CharField(max_length=7, choices=VISIBILITY_CHOICES, default='private')
 
     products = models.ManyToManyField(Product, blank=True, related_name='promo_codes')
 
@@ -85,11 +119,21 @@ class PromoCode(models.Model):
         now = timezone.now()
         if not self.is_active:
             return False
+        if self.valid_from and now < self.valid_from:
+            return False
         if self.valid_to and now > self.valid_to:
             return False
         if self.usage_limit and self.used_count >= self.usage_limit:
             return False
         return True
+
+    def discount_for(self, price):
+        price = Decimal(price)
+        if self.discount_type == "percentage":
+            discount = price * self.discount_value / Decimal("100")
+        else:
+            discount = self.discount_value
+        return min(price, max(Decimal("0.00"), discount))
 
     def __str__(self):
         return f"{self.code} ({self.vendor.shop_name})"
@@ -129,27 +173,26 @@ class CartItem(models.Model):
 
 class CheckoutOrder(models.Model):
     COOKING_FUEL_CHOICES = [
-        ('charcoal', 'Charcoal'),
-        ('firewood', 'Firewood'),
-        ('lpg', 'LPG'),
-        ('electricity', 'Electricity'),
-        ('biogas', 'Biogas'),
-        ('briquettes', 'Briquettes'),
-        ('ethanol', 'Ethanol'),
-        ('pellets', 'Pellets'),
-        ('kerosene', 'Kerosene'),
-        ('sawdust', 'Sawdust'),
-        ('other', 'Other'),
+    ('charcoal', 'Charcoal'),
+    ('firewood', 'Firewood'),
+    ('lpg', 'LPG'),
+    ('electricity', 'Electricity'),
+    ('biogas', 'Biogas'),
+    ('briquettes', 'Briquettes'),
+    ('ethanol', 'Ethanol'),
+    ('pellets', 'Pellets'),
+    ('kerosene', 'Kerosene'),
+    ('sawdust', 'Sawdust'),
+    ('other', 'Other'),
     ]
-
     COOKING_STOVE_CHOICES = [
-        ('traditional_charcoal', 'Traditional Charcoal'),
-        ('improved_charcoal', 'Improved Charcoal'),
-        ('traditional_firewood', 'Improved Firewood'),
-        ('lpg', 'LPG'),
-        ('electric', 'Electric'),
-        ('bio_ethanol', 'Bio-ethanol'),
-        ('other', 'Other'),
+    ('traditional_charcoal', 'Traditional Charcoal'),
+    ('improved_charcoal', 'Improved Charcoal'),
+    ('traditional_firewood', 'Improved Firewood'),
+    ('lpg', 'LPG'),
+    ('electric', 'Electric'),
+    ('bio_ethanol', 'Bio-ethanol'),
+    ('other', 'Other'),
     ]
 
     PAYMENT_STATUS = [
@@ -158,373 +201,63 @@ class CheckoutOrder(models.Model):
         ("failed", "Failed"),
         ("cancelled", "Cancelled"),
     ]
-
-    # =========================================================
-    # ORDER / PAYMENT
-    # =========================================================
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
-
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
-
-    # ---------------------------------------------------------
-    # Internal PowerPay payment reference
-    #
-    # Example:
-    # order-123-a4f91c
-    #
-    # This is generated by your Django application.
-    # ---------------------------------------------------------
-
-    payment_ref = models.CharField(
-        max_length=200,
-        blank=True,
-        null=True,
-        db_index=True,
-    )
-
-    # ---------------------------------------------------------
-    # M-Pesa identifiers
-    #
-    # These come from the initial STK Push response.
-    # ---------------------------------------------------------
-
-    merchant_request_id = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-        db_index=True,
-    )
-
-    checkout_request_id = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-        db_index=True,
-    )
-
-    # ---------------------------------------------------------
-    # Payment status
-    # ---------------------------------------------------------
-
-    payment_status = models.CharField(
-        max_length=20,
-        choices=PAYMENT_STATUS,
-        default="pending",
-    )
-
-    # ---------------------------------------------------------
-    # M-Pesa payment information
-    # ---------------------------------------------------------
-
-    mpesa_receipt = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-        db_index=True,
-    )
-
-    mpesa_amount = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        blank=True,
-        null=True,
-    )
-
-    mpesa_phone = models.CharField(
-        max_length=20,
-        blank=True,
-        null=True,
-    )
-
-    mpesa_transaction_date = models.DateTimeField(
-        blank=True,
-        null=True,
-    )
-
-    # ---------------------------------------------------------
-    # Order amount
-    # ---------------------------------------------------------
-
-    total_amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0,
-    )
-
-    # =========================================================
-    # BASIC CUSTOMER INFORMATION
-    # =========================================================
-
-    first_name = models.CharField(
-        max_length=100
-    )
-
-    last_name = models.CharField(
-        max_length=100
-    )
-
+    payment_ref = models.CharField(max_length=200, blank=True, null=True)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default="pending")
+    mpesa_receipt = models.CharField(max_length=100, blank=True, null=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    # Basic info
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
     email = models.EmailField()
+    phone = models.CharField(max_length=20)
 
-    phone = models.CharField(
-        max_length=20
-    )
+    buying_method = models.CharField(max_length=20, choices=[('cash', 'Cash'), ('loan', 'Loan')])
+    is_cook_user = models.CharField(max_length=10, blank=True, null=True, choices=[('yes', 'Yes'), ('no', 'No')])
+    gender = models.CharField(max_length=10, blank=True, null=True, choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')])
+    age = models.IntegerField(blank=True, null=True)
+    national_id = models.IntegerField(blank=True, null=True)
 
-    # =========================================================
-    # PURCHASE INFORMATION
-    # =========================================================
+    education = models.CharField(max_length=30, blank=True, null=True, choices=[('primary', 'Primary'), ('secondary', 'Secondary'), ('tertiary', 'Tertiary')])
+    marital_status = models.CharField(max_length=20, blank=True, null=True, choices=[('single', 'Single'),('married', 'Married')])
+    employment = models.CharField(max_length=50, blank=True, null=True, choices=[('self_employed', 'Self Employed'), ('formal', 'Formal'), ('business_owner', 'Business Owner')])
+    economic_activity = models.CharField(max_length=255, blank=True, null=True)
 
-    buying_method = models.CharField(
-        max_length=20,
-        choices=[
-            ('cash', 'Cash'),
-            ('loan', 'Loan'),
-        ],
-    )
-
-    is_cook_user = models.CharField(
-        max_length=10,
-        blank=True,
-        null=True,
-        choices=[
-            ('yes', 'Yes'),
-            ('no', 'No'),
-        ],
-    )
-
-    gender = models.CharField(
-        max_length=10,
-        blank=True,
-        null=True,
-        choices=[
-            ('male', 'Male'),
-            ('female', 'Female'),
-            ('other', 'Other'),
-        ],
-    )
-
-    age = models.IntegerField(
-        blank=True,
-        null=True,
-    )
-
-    national_id = models.IntegerField(
-        blank=True,
-        null=True,
-    )
-
-    # =========================================================
-    # CUSTOMER PROFILE
-    # =========================================================
-
-    education = models.CharField(
-        max_length=30,
-        blank=True,
-        null=True,
-        choices=[
-            ('primary', 'Primary'),
-            ('secondary', 'Secondary'),
-            ('tertiary', 'Tertiary'),
-        ],
-    )
-
-    marital_status = models.CharField(
-        max_length=20,
-        blank=True,
-        null=True,
-        choices=[
-            ('single', 'Single'),
-            ('married', 'Married'),
-        ],
-    )
-
-    employment = models.CharField(
-        max_length=50,
-        blank=True,
-        null=True,
-        choices=[
-            ('self_employed', 'Self Employed'),
-            ('formal', 'Formal'),
-            ('business_owner', 'Business Owner'),
-        ],
-    )
-
-    economic_activity = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-    )
-
-    monthly_income = models.CharField(
-        max_length=200,
-        blank=True,
-        null=True,
-        choices=[
-            ('below_30,000', 'Below Ksh 30,000'),
-            ('30,000_50,000', 'Ksh 30,000 - Ksh 50,000'),
-            ('50,000_100,000', 'Ksh 50,000 - Ksh 100,000'),
-            ('above_100,000', 'Above Ksh 100,000'),
-        ],
-    )
-
-    other_loans = models.CharField(
-        max_length=10,
-        blank=True,
-        null=True,
-        choices=[
-            ('yes', 'Yes'),
-            ('no', 'No'),
-        ],
-    )
-
-    grid_connection = models.CharField(
-        max_length=10,
-        blank=True,
-        null=True,
-        choices=[
-            ('yes', 'Yes'),
-            ('no', 'No'),
-        ],
-    )
-
-    # =========================================================
-    # COOKING INFORMATION
-    # =========================================================
+    monthly_income = models.CharField(max_length=200, blank=True, null=True, choices=[('below_30,000', 'Below Ksh 30,000'), ('30,000_50,000', 'Ksh 30,000 - Ksh 50,000'), ('50,000_100,000', 'Ksh 50,000 - Ksh 100,000'), ('above_100,000', 'Above Ksh 100,000') ])
+    other_loans = models.CharField(max_length=10, blank=True, null=True, choices=[('yes', 'Yes'), ('no', 'No')])
+    grid_connection = models.CharField(max_length=10, blank=True, null=True, choices=[('yes', 'Yes'), ('no', 'No')])
 
     cooking_fuel = MultiSelectField(
         choices=COOKING_FUEL_CHOICES,
         blank=True,
         null=True,
-        verbose_name="Cooking Fuel Currently In Use",
+        verbose_name="Cooking Fuel Currently In Use"
     )
 
     stove_type = MultiSelectField(
         choices=COOKING_STOVE_CHOICES,
         blank=True,
         null=True,
-        verbose_name="Cooking Stove Currently In Use",
+        verbose_name="Cooking Stove Currently In Use"
     )
 
-    monthly_cooking_cost = models.IntegerField(
-        blank=True,
-        null=True,
-    )
+    monthly_cooking_cost = models.IntegerField(blank=True, null=True)
+    home_or_business = models.CharField(blank=True, null=True, choices=[('home', 'Home'), ('business', 'Business')])
+    appliance_financed = models.CharField(blank=True, null=True,  choices=[('electric_pressure_cooker', 'Electric Pressure cooker'), ('induction_cooker', 'Induction Cooker'), ('fridge', 'Fridge'), ('tv', 'TV'), ('electric_mill', 'Electric Mill'), ('air_conditioner', 'Air Conditioner')])
+    repayment_period = models.IntegerField(blank=True, null=True, validators=[MaxValueValidator(12)])
 
-    home_or_business = models.CharField(
-        blank=True,
-        null=True,
-        choices=[
-            ('home', 'Home'),
-            ('business', 'Business'),
-        ],
-    )
+    utility_provider = models.CharField(blank=True, null=True, choices=[('kenya_power', 'Kenya Power'), ('other', 'Other')])
+    monthly_electricity_cost = models.IntegerField(blank=True, null=True)
+    financier = models.CharField(blank=True, null=True, choices=[('powerpayafrica', 'Powerpay Africa'), ('cms', 'CMS')])
 
-    # =========================================================
-    # APPLIANCE / FINANCING
-    # =========================================================
+    country = models.CharField(max_length=100)
+    county = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+    village = models.CharField(max_length=100, blank=True, null=True)
+    address_detail = models.CharField(max_length=255, blank=True, null=True)
 
-    appliance_financed = models.CharField(
-        blank=True,
-        null=True,
-        choices=[
-            (
-                'electric_pressure_cooker',
-                'Electric Pressure cooker',
-            ),
-            (
-                'induction_cooker',
-                'Induction Cooker',
-            ),
-            (
-                'fridge',
-                'Fridge',
-            ),
-            (
-                'tv',
-                'TV',
-            ),
-            (
-                'electric_mill',
-                'Electric Mill',
-            ),
-            (
-                'air_conditioner',
-                'Air Conditioner',
-            ),
-        ],
-    )
-
-    repayment_period = models.IntegerField(
-        blank=True,
-        null=True,
-        validators=[
-            MaxValueValidator(12)
-        ],
-    )
-
-    # =========================================================
-    # ELECTRICITY
-    # =========================================================
-
-    utility_provider = models.CharField(
-        blank=True,
-        null=True,
-        choices=[
-            ('kenya_power', 'Kenya Power'),
-            ('other', 'Other'),
-        ],
-    )
-
-    monthly_electricity_cost = models.IntegerField(
-        blank=True,
-        null=True,
-    )
-
-    financier = models.CharField(
-        blank=True,
-        null=True,
-        choices=[
-            ('powerpayafrica', 'Powerpay Africa'),
-            ('cms', 'CMS'),
-        ],
-    )
-
-    # =========================================================
-    # LOCATION
-    # =========================================================
-
-    country = models.CharField(
-        max_length=100
-    )
-
-    county = models.CharField(
-        max_length=100
-    )
-
-    city = models.CharField(
-        max_length=100
-    )
-
-    village = models.CharField(
-        max_length=100,
-        blank=True,
-        null=True,
-    )
-
-    address_detail = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-    )
-
-    # =========================================================
-    # STRING REPRESENTATION
-    # =========================================================
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.buying_method}"

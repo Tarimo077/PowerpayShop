@@ -392,14 +392,20 @@
             <span id="summary-subtotal" class="font-black text-slate-900">Ksh. {{ subtotal|intcomma }}</span>
           </div>
 
-          <div id="discount-row" class="hidden justify-between text-orange-600 font-black">
+          <div id="discount-row" class="{% if not discount %}hidden{% else %}flex{% endif %} justify-between text-orange-600 font-black">
             <span>Promo discount</span>
-            <span id="summary-discount">- Ksh. 0.00</span>
+            <span id="summary-discount">- Ksh. {{ discount|intcomma }}</span>
           </div>
+          <div id="applied-promo-lines" class="space-y-2 text-sm">
+            {% for promo in applied_promos %}<div class="flex justify-between font-bold text-orange-700"><span>Promo {{ promo.code }} (auto)</span><span>- Ksh. {{ promo.cart_discount|intcomma }}</span></div>{% endfor %}
+          </div>
+          <template id="auto-promo-lines-template">
+            {% for promo in applied_promos %}<div class="flex justify-between font-bold text-orange-700"><span>Promo {{ promo.code }} (auto)</span><span>- Ksh. {{ promo.cart_discount|intcomma }}</span></div>{% endfor %}
+          </template>
 
           <div class="flex justify-between border-t border-dashed border-slate-300 pt-4 text-2xl font-black text-green-700">
             <span>Total</span>
-            <span id="summary-total">Ksh. {{ subtotal|intcomma }}</span>
+            <span id="summary-total">Ksh. {{ cart_total|intcomma }}</span>
           </div>
         </div>
 
@@ -581,6 +587,9 @@ function applyPromo() {
       document.getElementById("discount-row").classList.add("flex");
       document.getElementById("summary-discount").innerText = "- " + formatCurrency(data.discount_amount);
       document.getElementById("summary-total").innerText = formatCurrency(data.new_total);
+      document.getElementById("applied-promo-lines").innerHTML = (data.applied_promos || []).map(promo =>
+        `<div class="flex justify-between font-bold text-orange-700"><span>Promo ${promo.code}${promo.auto ? " (auto)" : ""}</span><span>- ${formatCurrency(promo.discount)}</span></div>`
+      ).join("");
 
       codeInput.disabled = true;
       codeInput.classList.add("bg-gray-100", "cursor-not-allowed");
@@ -589,8 +598,8 @@ function applyPromo() {
       msg.classList.add("text-red-600");
       hiddenInput.value = "";
 
-      document.getElementById("discount-row").classList.add("hidden");
-      document.getElementById("summary-total").innerText = document.getElementById("summary-subtotal").innerText;
+      document.getElementById("summary-discount").innerText = "- Ksh. {{ discount|escapejs }}";
+      document.getElementById("summary-total").innerText = "Ksh. {{ cart_total|escapejs }}";
     }
   })
   .catch(() => {
@@ -610,8 +619,10 @@ function removePromo() {
 
   document.getElementById("hidden-promo-code").value = "";
   document.getElementById("promo-status-container").classList.add("hidden");
-  document.getElementById("discount-row").classList.add("hidden");
-  document.getElementById("summary-total").innerText = document.getElementById("summary-subtotal").innerText;
+  document.getElementById("discount-row").classList.toggle("hidden", {{ discount|yesno:"false,true" }});
+  document.getElementById("summary-discount").innerText = "- Ksh. {{ discount|escapejs }}";
+  document.getElementById("summary-total").innerText = "Ksh. {{ cart_total|escapejs }}";
+  document.getElementById("applied-promo-lines").innerHTML = document.getElementById("auto-promo-lines-template").innerHTML;
 }
 </script>
 

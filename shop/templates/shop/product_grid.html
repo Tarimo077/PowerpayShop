@@ -46,7 +46,15 @@
           <p class="text-slate-500 text-sm line-clamp-2 min-h-[2.5rem]">{{ product.description|default:"No description provided." }}</p>
 
           <div class="mt-4 flex items-center justify-between gap-3">
-            <p class="text-xl font-black text-emerald-800">Ksh. {{ product.price|intcomma }}</p>
+            {% if product.best_public_promo %}
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-sm font-bold text-slate-400 line-through">Ksh. {{ product.price|intcomma }}</span>
+                <span class="text-xl font-black text-emerald-800">Ksh. {{ product.discounted_price|intcomma }}</span>
+                <span class="rounded-full bg-orange-100 px-2 py-1 text-xs font-black text-orange-700">-{{ product.discount_percentage }}%</span>
+              </div>
+            {% else %}
+              <p class="text-xl font-black text-emerald-800">Ksh. {{ product.price|intcomma }}</p>
+            {% endif %}
             <span class="text-xs font-black text-orange-600 bg-orange-50 px-3 py-1 rounded-full">{{ product.stock }} left</span>
           </div>
 

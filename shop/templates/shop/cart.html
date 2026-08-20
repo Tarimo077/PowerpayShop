@@ -49,8 +49,11 @@
           <h2 class="text-2xl font-black mb-5">Order summary</h2>
           <div class="space-y-4">
             <div class="flex justify-between text-slate-500"><span>Subtotal</span><span id="subtotal" class="font-black text-slate-900">Ksh. {{ cart.total_price|intcomma }}</span></div>
-            <div id="discount-row" class="hidden justify-between text-orange-600 font-black"><span>Discount</span><span id="discount-amount">- Ksh. 0.00</span></div>
-            <div class="border-t border-dashed border-slate-300 pt-4 flex justify-between text-2xl font-black text-green-700"><span>Total</span><span id="cart-total">Ksh. {{ cart.total_price|intcomma }}</span></div>
+            <div id="discount-row" class="{% if not discount %}hidden{% else %}flex{% endif %} justify-between text-orange-600 font-black"><span>Discount</span><span id="discount-amount">- Ksh. {{ discount|intcomma }}</span></div>
+            <div id="applied-promos" class="space-y-2 text-sm">
+              {% for promo in applied_promos %}<div class="flex justify-between font-bold text-orange-700"><span>Promo {{ promo.code }} (auto)</span><span>- Ksh. {{ promo.cart_discount|intcomma }}</span></div>{% endfor %}
+            </div>
+            <div class="border-t border-dashed border-slate-300 pt-4 flex justify-between text-2xl font-black text-green-700"><span>Total</span><span id="cart-total">Ksh. {{ cart_total|intcomma }}</span></div>
           </div>
           <input type="hidden" id="promo-input" value="{{ request.session.applied_promo|default:'' }}">
           <a href="{% url 'checkout' %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)] w-full mt-6 text-lg"><i class="fa-solid fa-lock"></i> Proceed to checkout</a>
@@ -86,10 +89,10 @@ function sendQtyUpdate(itemId, newQty) {
   .then(data => {
     if (data.error) return;
     document.getElementById(`item-total-${itemId}`).innerText = "Line total: " + formatCurrency(data.item_total);
-    updatePriceUI(data.cart_total, data.discount_amount || 0, data.new_total || data.cart_total);
+    updatePriceUI(data.cart_total, data.discount_amount || 0, data.new_total || data.cart_total, data.applied_promos || []);
   });
 }
-function updatePriceUI(subtotal, discount, total) {
+function updatePriceUI(subtotal, discount, total, promos) {
   document.getElementById("subtotal").innerText = formatCurrency(subtotal);
   if (discount > 0) {
     document.getElementById('discount-row').classList.remove('hidden');
@@ -99,6 +102,9 @@ function updatePriceUI(subtotal, discount, total) {
     document.getElementById('discount-row').classList.add('hidden');
   }
   document.getElementById("cart-total").innerText = formatCurrency(total);
+  document.getElementById("applied-promos").innerHTML = promos.map(promo =>
+    `<div class="flex justify-between font-bold text-orange-700"><span>Promo ${promo.code}${promo.auto ? " (auto)" : ""}</span><span>- ${formatCurrency(promo.discount)}</span></div>`
+  ).join("");
 }
 function changeQty(itemId, delta) {
   const input = document.getElementById(`qty-${itemId}`);

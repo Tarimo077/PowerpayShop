@@ -13,7 +13,11 @@
             <span class="block font-black text-sm truncate">{{ product.name }}</span>
             <span class="block text-xs text-slate-500 truncate">{{ product.vendor.shop_name|default:product.vendor.user }}</span>
           </span>
-          <span class="text-green-700 font-black text-sm whitespace-nowrap">Ksh {{ product.price|intcomma }}</span>
+          {% if product.best_public_promo %}
+            <span class="flex items-center gap-1.5 whitespace-nowrap"><span class="text-xs text-slate-400 line-through">Ksh {{ product.price|intcomma }}</span><span class="text-green-700 font-black text-sm">Ksh {{ product.discounted_price|intcomma }}</span><span class="rounded-full bg-orange-100 px-1.5 py-0.5 text-[0.65rem] font-black text-orange-700">-{{ product.discount_percentage }}%</span></span>
+          {% else %}
+            <span class="text-green-700 font-black text-sm whitespace-nowrap">Ksh {{ product.price|intcomma }}</span>
+          {% endif %}
         </a>
       </li>
     {% endfor %}
