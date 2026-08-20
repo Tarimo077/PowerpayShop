@@ -18,8 +18,8 @@ class Ticket(models.Model):
 
     SUBJECT_CHOICES = [
         ("account", "Account Issue"),
-        ("order", "Order Issue"),
-        ("billing", "Billing & Payment"),
+        ("device", "Device Issue"),
+        #("billing", "Billing & Payment"),
         ("technical", "Technical Problem"),
         ("feature", "Feature Request"),
         ("other", "Other"),

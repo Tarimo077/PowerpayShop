@@ -70,7 +70,7 @@
         </a>
       </li>
       <li>
-        <a href="{% url 'admin_ticket_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
+        <a href="{% url 'support:admin_ticket_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
           <span class="grid h-9 w-9 place-items-center rounded-xl bg-slate-100 text-emerald-700">
             <i class="fa-solid fa-ticket"></i>
           </span>
@@ -79,7 +79,7 @@
       </li>
     {% else %}
       <li>
-        <a href="{% url 'support_ticket_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
+        <a href="{% url 'support:support_ticket_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
           <span class="grid h-9 w-9 place-items-center rounded-xl bg-slate-100 text-emerald-700">
             <i class="fa-solid fa-ticket"></i>
           </span>
@@ -169,7 +169,7 @@
           </a>
         </li>
         <li>
-          <a href="{% url 'admin_ticket_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
+          <a href="{% url 'support:admin_ticket_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
             <span class="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-emerald-700">
               <i class="fa-solid fa-ticket"></i>
             </span>
@@ -178,7 +178,7 @@
         </li>
       {% else %}
         <li>
-          <a href="{% url 'support_ticket_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
+          <a href="{% url 'support:support_ticket_list' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800">
             <span class="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-emerald-700">
               <i class="fa-solid fa-ticket"></i>
             </span>
