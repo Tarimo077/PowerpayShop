@@ -6,29 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0f8f4f">
   <title>{% block title %}PowerPayShop{% endblock %}</title>
-  <link rel="icon" href="{% static 'images/pp_no_bgcropped.png' %}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://kit.fontawesome.com/69d2af506e.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            inter: ['Inter', 'system-ui', 'sans-serif']
-          }
-        }
-      }
-    };
-  </script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="{% static 'images/pp_no_bgcropped.webp' %}">
+  <link rel="stylesheet" href="{% static 'vendor/inter/index.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/fontawesome/css/all.min.css' %}">
+  <script src="{% static 'vendor/htmx/htmx.min.js' %}" defer></script>
   <style> 
     *, *::before, *::after { box-sizing: border-box; }
     html { overflow-x: hidden; }
     body {
-      font-family: "Inter";
+      font-family: "Inter Variable", system-ui, sans-serif;
       min-width: 0;
       overflow-x: hidden;
     }
@@ -42,6 +28,7 @@
     }
   </style>
   <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
+  <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
   {% block extra_head %}{% endblock %}
 </head>
 

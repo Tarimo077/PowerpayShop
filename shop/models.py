@@ -16,6 +16,12 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     max_stock = models.IntegerField(default=100)  # optional: set maximum stock
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["vendor", "-created_at"], name="shop_prod_vendor_created_idx"),
+            models.Index(fields=["price"], name="shop_product_price_idx"),
+        ]
+
     def average_rating(self):
         ratings = self.ratings.all()
         if not ratings:
@@ -114,6 +120,14 @@ class PromoCode(models.Model):
     valid_to = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=["visibility", "is_active", "valid_to"],
+                name="shop_promo_public_valid_idx",
+            ),
+        ]
 
     def is_valid(self):
         now = timezone.now()

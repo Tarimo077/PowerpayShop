@@ -34,6 +34,12 @@ class Ticket(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["status", "priority", "-created_at"], name="support_status_priority_idx"),
+            models.Index(fields=["user", "-created_at"], name="support_user_created_idx"),
+        ]
+
     def __str__(self):
         return f"[{self.status}] {self.subject}"
 
@@ -46,6 +52,9 @@ class TicketMessage(models.Model):
 
     class Meta:
         ordering = ("created_at",)
+        indexes = [
+            models.Index(fields=["ticket", "created_at"], name="support_msg_ticket_created_idx"),
+        ]
 
     def __str__(self):
         return f"Message on Ticket #{self.ticket.id}"
