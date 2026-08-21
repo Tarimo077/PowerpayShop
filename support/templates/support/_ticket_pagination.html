@@ -1,5 +1,5 @@
 {% with qs="&q="|add:q|add:"&status="|add:status|add:"&priority="|add:priority %}
-<form method="get" class="mt-4 flex justify-end items-center gap-2">
+<form method="get" class="mt-4 flex flex-wrap items-center justify-end gap-2">
     <input type="hidden" name="q" value="{{ q }}">
     <input type="hidden" name="status" value="{{ status }}">
     <input type="hidden" name="priority" value="{{ priority }}">
@@ -13,7 +13,7 @@
 </form>
 
 {% if tickets.has_other_pages %}
-<div class="flex flex-wrap justify-center items-center gap-2 mt-5">
+<div class="mt-5 flex flex-wrap items-center justify-center gap-2">
     {% if tickets.has_previous %}
     <a href="?page={{ tickets.previous_page_number }}&per_page={{ per_page }}{{ qs }}"
        class="px-3.5 py-2 rounded-xl bg-base-100 border border-base-200 text-sm hover:bg-success hover:text-white transition">

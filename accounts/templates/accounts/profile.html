@@ -11,7 +11,7 @@
     </div>
 
     <div class="grid lg:grid-cols-[.35fr_.65fr] gap-6 items-start mx-2">
-      <aside class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-6 text-center sticky top-28">
+      <aside class="rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-center shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl sm:p-6 lg:sticky lg:top-28">
         <div class="w-28 h-28 mx-auto rounded-[2rem] bg-gradient-to-br from-green-700 to-orange-500 text-white grid place-items-center text-5xl font-black shadow-xl">{{ request.user.username|first|upper }}</div>
         <h2 class="text-2xl font-black mt-4">{{ request.user.username }}</h2>
         <p class="text-slate-500 text-sm break-all">{{ request.user.email }}</p>

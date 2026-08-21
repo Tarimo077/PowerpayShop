@@ -4,7 +4,7 @@
   <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
 
     <!-- VENDOR INFO -->
-    <div class="flex items-start gap-4">
+    <div class="flex min-w-0 items-start gap-3 sm:gap-4">
 
       <!-- LOGO -->
       <div class="relative">
@@ -19,9 +19,9 @@
       </div>
 
       <!-- DETAILS -->
-      <div class="space-y-2">
+      <div class="min-w-0 space-y-2">
 
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <h3 class="font-bold text-slate-900 text-lg">
             {{ user.username }}
           </h3>
@@ -42,7 +42,7 @@
           {% endif %}
         </div>
 
-        <p class="text-sm text-slate-500 flex items-center gap-2">
+        <p class="flex min-w-0 items-center gap-2 break-all text-sm text-slate-500">
           <i class="fa-solid fa-envelope text-xs"></i> {{ user.email }}
         </p>
 
@@ -68,7 +68,7 @@
     </div>
 
     <!-- ACTIONS -->
-    <div class="flex flex-wrap md:flex-nowrap items-center gap-2">
+    <div class="flex w-full flex-wrap items-center gap-2 md:w-auto md:flex-nowrap">
 
       {% if not user.is_vendor_approved %}
         <a href="{% url 'vendor_approve' user.id %}"

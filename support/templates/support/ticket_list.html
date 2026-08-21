@@ -7,10 +7,9 @@
 
 {% include "shop/navbar.html" %}
 
-<div class="flex min-h-screen bg-base-200">
+<div class="min-h-screen bg-base-200">
 
-    <div class="px-4 py-2 w-full overflow-x-auto transition-all duration-300
-            lg:ml-64 ml-0 space-y-6" id="page-content">
+    <main class="mx-auto w-full max-w-[1500px] space-y-5 px-3 py-5 sm:space-y-6 sm:px-5 sm:py-8 lg:px-8" id="page-content">
 
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -19,24 +18,24 @@
                 </h2>
                 <p class="text-sm text-base-content/60 mt-1">Track your support requests and chat with the team.</p>
             </div>
-            <a href="{% url 'support:create_ticket' %}" class="btn p-2 mr-2 bg-orange-500 text-white border-0 rounded-xl shadow-sm">
+            <a href="{% url 'support:create_ticket' %}" class="btn bg-success text-white border-0 rounded-xl shadow-sm">
                 <i class="fa-solid fa-ticket mr-2"></i> New Ticket
             </a>
         </div>
 
         <!-- Summary cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 md:grid-cols-4 sm:gap-5">
             {% include "support/_stat_card.html" with label="Total Tickets" value=stats.total icon="fa-ticket" tone="text-purple-500" tip="Total number of support tickets you have submitted." %}
             {% include "support/_stat_card.html" with label="Open" value=stats.open icon="fa-envelope-open-text" tone="text-orange-500" tip="Tickets awaiting a first response from the support team." %}
             {% include "support/_stat_card.html" with label="In Progress" value=stats.in_progress icon="fa-hourglass-half" tone="text-blue-500" tip="Tickets the support team is actively working on." %}
             {% include "support/_stat_card.html" with label="Closed" value=stats.closed icon="fa-circle-check" tone="text-green-500" tip="Tickets that have been resolved and closed." %}
         </div>
 
-        <div class="bg-white shadow-sm border border-base-200 rounded-2xl p-5 w-full">
+        <div class="w-full min-w-0 rounded-2xl border border-base-200 bg-white p-3 shadow-sm sm:p-5">
 
             <!-- Filters -->
             <form method="get" class="flex flex-wrap items-end gap-3 mb-5">
-                <div class="flex-1 min-w-[200px]">
+                <div class="w-full min-w-0 flex-1 sm:min-w-[200px]">
                     <label class="text-[11px] uppercase tracking-wide font-semibold text-base-content/50">Search</label>
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-base-content/40"></i>
@@ -44,18 +43,18 @@
                                class="w-full rounded-xl border border-base-300 bg-base-100 pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-success">
                     </div>
                 </div>
-                <div>
+                <div class="w-full sm:w-auto">
                     <label class="text-[11px] uppercase tracking-wide font-semibold text-base-content/50">Status</label>
-                    <select name="status" class="rounded-xl border border-base-300 bg-base-100 px-3 py-2 text-sm">
+                    <select name="status" class="w-full rounded-xl border border-base-300 bg-base-100 px-3 py-2 text-sm sm:w-auto">
                         <option value="">All</option>
                         {% for key, value in status_choices %}
                         <option value="{{ key }}" {% if status == key %}selected{% endif %}>{{ value }}</option>
                         {% endfor %}
                     </select>
                 </div>
-                <div>
+                <div class="w-full sm:w-auto">
                     <label class="text-[11px] uppercase tracking-wide font-semibold text-base-content/50">Priority</label>
-                    <select name="priority" class="rounded-xl border border-base-300 bg-base-100 px-3 py-2 text-sm">
+                    <select name="priority" class="w-full rounded-xl border border-base-300 bg-base-100 px-3 py-2 text-sm sm:w-auto">
                         <option value="">All</option>
                         {% for key, value in priority_choices %}
                         <option value="{{ key }}" {% if priority == key %}selected{% endif %}>{{ value }}</option>
@@ -63,19 +62,18 @@
                     </select>
                 </div>
                 <input type="hidden" name="per_page" value="{{ per_page }}">
-                <button type="submit" class="btn p-2 text-center text-sm bg-green-500 text-white border-0 rounded-xl">
+                <button type="submit" class="btn w-full rounded-xl bg-green-500 p-2 text-white sm:w-auto">
                     <i class="fa-solid fa-filter mr-2"></i> Apply
                 </button>
                 {% if q or status or priority %}
-                <a href="{% url 'support:support_ticket_list' %}" class="btn btn-ghost rounded-xl">Reset</a>
+                <a href="{% url 'support:support_ticket_list' %}" class="btn bg-red-500 p-2 text-white rounded-xl">Reset</a>
                 {% endif %}
             </form>
 
-            <div class="overflow-x-auto rounded-xl border border-base-200">
-                <table class="w-full table-auto border-collapse">
+            <div class="responsive-scroll rounded-xl border border-base-200">
+                <table class="w-full min-w-[760px] table-auto border-collapse">
                     <thead class="bg-green-500 text-white">
                         <tr>
-                            <th class="px-5 py-3 text-left text-sm font-semibold">#</th>
                             <th class="px-5 py-3 text-left text-sm font-semibold">Subject</th>
                             <th class="px-5 py-3 text-left text-sm font-semibold">Status</th>
                             <th class="px-5 py-3 text-left text-sm font-semibold">Priority</th>
@@ -87,7 +85,6 @@
                     <tbody>
                         {% for ticket in tickets %}
                         <tr class="border-b border-base-200 hover:bg-base-200/50 transition">
-                            <td class="px-5 py-3 text-sm font-semibold text-base-content/60">#{{ ticket.id }}</td>
                             <td class="px-5 py-3">
                                 <p class="font-semibold text-sm">{{ ticket.get_subject_display }}</p>
                                 <p class="text-xs text-base-content/50 truncate max-w-xs">{{ ticket.description|truncatechars:60 }}</p>
@@ -116,10 +113,10 @@
                             <td class="px-5 py-3 text-sm text-base-content/60">
                                 {% if ticket.last_activity %}{{ ticket.last_activity|naturaltime }}{% else %}—{% endif %}
                             </td>
-                            <td class="px-5 py-3">
+                            <td class="px-5 py-3 flex flex-col justify-center align-middle gap-2">
                                 <a href="{% url 'support:ticket_detail' ticket.id %}"
-                                   class="btn p-2 text-white bg-blue-500 hover:bg-blue-600 border-0 rounded-lg text-xs">
-                                    <i class="fa-solid fa-comments mr-1"></i> Open
+                                   class="btn btn-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs p-2">
+                                    <i class="fa-solid fa-comments"></i> Open
                                 </a>
                             </td>
                         </tr>
@@ -141,7 +138,7 @@
 
             {% include "support/_ticket_pagination.html" %}
         </div>
-    </div>
+    </main>
 </div>
 
 {% endblock %}

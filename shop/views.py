@@ -10,7 +10,7 @@ from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Avg, Count, F, Prefetch, Q, Sum
-from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden, request
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -703,7 +703,7 @@ def checkout_success(request):
 
 def initiate_stk_push(amount, contact, ref):
     url = getattr(settings, "MPESA_ENDPOINT")
-    payload = {"amount": int(amount), "contact": str(contact), "ref": str(ref)}
+    payload = {"amount": int(amount), "contact": str(contact), "ref": str(ref), "callback": request.build_absolute_uri(reverse("payment_callback"))}
     try:
         response = requests.post(url, json=payload, timeout=15)
         response.raise_for_status()

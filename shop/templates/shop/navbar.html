@@ -1,8 +1,8 @@
 {% load static %}
 <nav class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-[0_12px_35px_rgba(15,23,42,0.07)] backdrop-blur-xl">
-  <div class="w-full mx-auto px-2 sm:px-3 lg:px-4 relative grid min-h-[76px] grid-cols-[auto_minmax(260px,1fr)_auto] items-center gap-4 px-3 sm:px-4 lg:px-6 max-[900px]:grid-cols-[1fr_auto]">
+  <div class="relative grid min-h-[76px] w-full grid-cols-[auto_minmax(260px,1fr)_auto] items-center gap-2 px-2 sm:gap-4 sm:px-4 lg:px-6 max-[900px]:grid-cols-[minmax(0,1fr)_auto]">
     <a href="{% url 'index' %}" class="order-1 flex items-center gap-3 shrink-0" aria-label="PowerPay Shop home">
-      <img src="{% static 'images/pplogo.png' %}" alt="PowerPay" class="h-12 w-auto object-contain">
+      <img src="{% static 'images/pplogo.png' %}" alt="PowerPay" class="h-10 w-auto max-w-[130px] object-contain sm:h-12 sm:max-w-none">
     </a>
 
     <form method="GET" action="{% url 'product_search' %}" class="relative order-2 max-[900px]:order-3 max-[900px]:col-span-2">
@@ -22,7 +22,7 @@
       <div id="live-results" class="absolute inset-x-0 top-[calc(100%+0.55rem)] z-[70] overflow-hidden rounded-[22px] bg-white/95 shadow-[0_18px_45px_rgba(15,23,42,0.16)] hidden"></div>
     </form>
 
-    <div class="order-3 flex items-center justify-end gap-2 whitespace-nowrap sm:gap-3 md:gap-4 max-[900px]:order-2">
+    <div class="order-3 flex min-w-0 items-center justify-end gap-0.5 whitespace-nowrap sm:gap-3 md:gap-4 max-[900px]:order-2">
       {% if user.is_authenticated %}
         <a href="{% url 'wishlist_page' %}" class="inline-flex min-w-[74px] flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-xs font-extrabold text-emerald-800 transition hover:bg-emerald-50 hover:text-orange-500 max-[640px]:min-w-11 max-[640px]:px-2" title="Favourites">
           <span class="relative"><i class="fa-solid fa-heart text-lg sm:text-xl"></i>{% if wishlist_count > 0 %}<span class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1.5 text-[0.72rem] font-black text-white absolute -top-3 -right-3">{{ wishlist_count }}</span>{% endif %}</span>

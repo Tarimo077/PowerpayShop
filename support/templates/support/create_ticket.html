@@ -6,10 +6,9 @@
 
 {% include "shop/navbar.html" %}
 
-<div class="flex min-h-screen bg-base-200">
+<div class="min-h-screen bg-base-200">
 
-    <div class="px-4 py-2 w-full overflow-x-auto transition-all duration-300
-            lg:ml-64 ml-0 space-y-6" id="page-content">
+    <main class="mx-auto w-full max-w-6xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-5 sm:py-8 lg:px-8" id="page-content">
 
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -23,8 +22,8 @@
             </a>
         </div>
 
-        <div class="grid lg:grid-cols-3 gap-6">
-            <form method="POST" class="lg:col-span-2 bg-base-100 border border-base-200 rounded-2xl p-6 shadow-sm space-y-5">
+        <div class="grid gap-5 lg:grid-cols-3 lg:gap-6">
+            <form method="POST" class="space-y-5 rounded-2xl border border-base-200 bg-base-100 p-4 shadow-sm sm:p-6 lg:col-span-2">
                 {% csrf_token %}
 
                 {% if form.non_field_errors %}
@@ -49,13 +48,13 @@
                 {% endfor %}
 
                 <div class="flex justify-end pt-2">
-                    <button type="submit" class="btn bg-success text-white border-0 rounded-xl">
+                    <button type="submit" class="btn w-full rounded-xl border-0 bg-success text-white sm:w-auto">
                         <i class="fa-solid fa-paper-plane mr-2"></i> Submit Ticket
                     </button>
                 </div>
             </form>
 
-            <div class="bg-base-100 border border-base-200 rounded-2xl p-6 shadow-sm h-fit space-y-4">
+            <div class="h-fit space-y-4 rounded-2xl border border-base-200 bg-base-100 p-4 shadow-sm sm:p-6">
                 <p class="font-semibold flex items-center gap-2">
                     <i class="fa-solid fa-lightbulb text-success"></i> Tips for a fast response
                 </p>
@@ -70,7 +69,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 </div>
 
 {% endblock %}
