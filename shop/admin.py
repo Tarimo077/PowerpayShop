@@ -36,7 +36,8 @@ class CartItemAdmin(admin.ModelAdmin):
 
 @admin.register(CheckoutOrder)
 class CheckoutOrderAdmin(admin.ModelAdmin):
-    list_display = ('user', 'email', 'phone', 'payment_ref', 'submitted_at')
+    list_display = ('user', 'email', 'phone', 'warranty_selected', 'payment_status', 'payment_ref', 'submitted_at')
+    list_filter = ('warranty_selected', 'payment_status', 'buying_method')
     ordering = ('-submitted_at',)
 
 @admin.register(ProductRating)

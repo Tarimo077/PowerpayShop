@@ -225,7 +225,7 @@ class CheckoutOrder(models.Model):
     # Basic info
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    email = models.EmailField()
+    email = models.EmailField(blank=True)
     phone = models.CharField(max_length=20)
 
     buying_method = models.CharField(max_length=20, choices=[('cash', 'Cash'), ('loan', 'Loan')])
@@ -268,9 +268,13 @@ class CheckoutOrder(models.Model):
 
     country = models.CharField(max_length=100)
     county = models.CharField(max_length=100)
-    city = models.CharField(max_length=100)
+    city = models.CharField(max_length=100, blank=True)
     village = models.CharField(max_length=100, blank=True, null=True)
     address_detail = models.CharField(max_length=255, blank=True, null=True)
+
+    warranty_selected = models.BooleanField(default=False)
+    warranty_signature = models.ImageField(upload_to="warranty_signatures/%Y/%m/", blank=True, null=True)
+    warranty_accepted_at = models.DateTimeField(blank=True, null=True)
 
 
     def __str__(self):

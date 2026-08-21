@@ -1,4 +1,9 @@
+import base64
+import binascii
+from io import BytesIO
+
 from django import forms
+from PIL import Image, UnidentifiedImageError
 from .models import Product, PromoCode, CheckoutOrder, ProductRating, ProductGallery
 
 class ProductForm(forms.ModelForm):
@@ -78,8 +83,9 @@ CHECKOUT_FIELD_NAMES = [
     "gender", "age", "national_id", "education", "marital_status",
     "employment", "economic_activity", "monthly_income", "buying_method",
     "other_loans", "cooking_fuel", "stove_type", "is_cook_user",
-    "grid_connection", "utility_provider", "monthly_electricity_cost",
+    "monthly_cooking_cost", "grid_connection", "utility_provider", "monthly_electricity_cost",
     "appliance_financed", "repayment_period", "financier", "home_or_business",
+    "warranty_selected",
 ]
 
 CHECKOUT_INPUT_CLASSES = (
@@ -103,6 +109,9 @@ CHECKOUT_CHECKBOX_CLASSES = (
 
 
 class CheckoutForm(forms.ModelForm):
+    warranty_consent = forms.BooleanField(required=False)
+    signature_data = forms.CharField(required=False, widget=forms.HiddenInput())
+
     class Meta:
         model = CheckoutOrder
         fields = CHECKOUT_FIELD_NAMES
@@ -123,6 +132,10 @@ class CheckoutForm(forms.ModelForm):
             "phone": forms.TextInput(attrs={
                 "class": CHECKOUT_INPUT_CLASSES,
                 "placeholder": "07XX XXX XXX"
+            }),
+
+            "warranty_selected": forms.CheckboxInput(attrs={
+                "class": CHECKOUT_CHECKBOX_CLASSES,
             }),
 
             "country": forms.TextInput(attrs={
@@ -188,6 +201,11 @@ class CheckoutForm(forms.ModelForm):
                 "class": CHECKOUT_CHECKBOX_CLASSES
             }),
 
+            "monthly_cooking_cost": forms.NumberInput(attrs={
+                "class": CHECKOUT_INPUT_CLASSES,
+                "placeholder": "Monthly cooking cost"
+            }),
+
             "is_cook_user": forms.Select(attrs={
                 "class": CHECKOUT_SELECT_CLASSES
             }),
@@ -217,6 +235,79 @@ class CheckoutForm(forms.ModelForm):
                 "class": CHECKOUT_SELECT_CLASSES
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].required = False
+        self.fields["city"].required = False
+        self.fields["buying_method"].choices = [
+            ("", "Select buying method"),
+            ("cash", "Cash"),
+            ("loan", "Loan - coming soon"),
+        ]
+        self.fields["buying_method"].widget.attrs["data-disable-value"] = "loan"
+
+    def clean_buying_method(self):
+        method = self.cleaned_data.get("buying_method")
+        if method != "cash":
+            raise forms.ValidationError("Cash is currently the only available buying method.")
+        return method
+
+    def clean(self):
+        cleaned = super().clean()
+        if not cleaned.get("warranty_selected"):
+            return cleaned
+
+        required_warranty_fields = {
+            "city": "City / Town",
+            "village": "Village",
+            "address_detail": "Street / address details",
+            "gender": "Gender",
+            "age": "Age",
+            "national_id": "National ID",
+            "education": "Education",
+            "marital_status": "Marital status",
+            "employment": "Employment",
+            "economic_activity": "Economic activity",
+            "monthly_income": "Monthly income",
+            "other_loans": "Other loans",
+            "home_or_business": "Home or business",
+            "cooking_fuel": "Cooking fuel",
+            "stove_type": "Cooking stove",
+            "is_cook_user": "Appliance cooking use",
+            "monthly_cooking_cost": "Monthly cooking cost",
+            "grid_connection": "Grid connection",
+        }
+        if cleaned.get("grid_connection") == "yes":
+            required_warranty_fields.update({
+                "utility_provider": "Utility provider",
+                "monthly_electricity_cost": "Monthly electricity cost",
+            })
+
+        for field_name, label in required_warranty_fields.items():
+            if cleaned.get(field_name) in (None, "", [], ()):
+                self.add_error(field_name, f"{label} is required for the warranty certificate.")
+
+        if not cleaned.get("warranty_consent"):
+            self.add_error("warranty_consent", "Consent is required to issue the warranty certificate.")
+
+        signature = cleaned.get("signature_data", "")
+        if not signature.startswith("data:image/png;base64,"):
+            self.add_error("signature_data", "Please add your electronic signature.")
+        elif len(signature) > 1_500_000:
+            self.add_error("signature_data", "The signature is too large. Please clear it and sign again.")
+        else:
+            try:
+                signature_bytes = base64.b64decode(signature.split(",", 1)[1], validate=True)
+                image = Image.open(BytesIO(signature_bytes))
+                image.verify()
+                if image.format != "PNG" or image.width < 50 or image.height < 20:
+                    raise ValueError
+                cleaned["signature_bytes"] = signature_bytes
+            except (binascii.Error, UnidentifiedImageError, OSError, ValueError):
+                self.add_error("signature_data", "Please clear the signature and sign again.")
+
+        return cleaned
 
 class PaymentForm(forms.Form):
     mpesa_phone = forms.CharField(

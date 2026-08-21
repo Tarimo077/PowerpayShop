@@ -7,13 +7,16 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
+from django.core.files.base import ContentFile
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Avg, Count, F, Prefetch, Q, Sum
-from django.http import JsonResponse, HttpResponse, HttpResponseForbidden, request
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 
@@ -31,6 +34,7 @@ from .models import (
     Sale,
     Wishlist,
 )
+from .warranty import build_warranty_pdf
 
 
 def _safe_decimal(value):
@@ -650,7 +654,16 @@ def checkout(request):
             order.user = request.user
             order.total_amount = final_amount
             order.payment_status = "pending"
+            if order.warranty_selected:
+                order.warranty_accepted_at = timezone.now()
             order.save()
+
+            if order.warranty_selected:
+                order.warranty_signature.save(
+                    f"order-{order.pk}-signature.png",
+                    ContentFile(form.cleaned_data["signature_bytes"]),
+                    save=True,
+                )
 
             ref = f"order-{order.id}-{uuid.uuid4().hex[:6]}"
             order.payment_ref = ref
@@ -670,7 +683,7 @@ def checkout(request):
             ]
             Sale.objects.bulk_create(sales)
 
-            success, resp = initiate_stk_push(amount=int(final_amount), contact=payment_form.cleaned_data["mpesa_phone"], ref=ref)
+            success, resp = initiate_stk_push(request, amount=int(final_amount), contact=payment_form.cleaned_data["mpesa_phone"], ref=ref)
 
             if success:
                 if applied_promos:
@@ -697,11 +710,11 @@ def checkout(request):
 def checkout_success(request):
     ref = request.session.get("checkout_ref")
     order_id = request.session.get("checkout_order_id")
-    order = CheckoutOrder.objects.filter(id=order_id).first() if order_id else None
+    order = CheckoutOrder.objects.prefetch_related("sales__product").filter(id=order_id, user=request.user).first() if order_id else None
     return render(request, "shop/checkout_success.html", {"ref": ref, "order": order})
 
 
-def initiate_stk_push(amount, contact, ref):
+def initiate_stk_push(request, amount, contact, ref):
     url = getattr(settings, "MPESA_ENDPOINT")
     payload = {"amount": int(amount), "contact": str(contact), "ref": str(ref), "callback": request.build_absolute_uri(reverse("payment_callback"))}
     try:
@@ -765,12 +778,34 @@ def check_payment_status(request):
     return JsonResponse({"status": order.payment_status, "receipt": order.mpesa_receipt})
 
 
+@login_required
+def download_warranty(request, sale_id):
+    sale = get_object_or_404(
+        Sale.objects.select_related("order", "product__vendor"),
+        pk=sale_id,
+        customer=request.user,
+        order__user=request.user,
+    )
+    if sale.order.payment_status != "paid" or sale.status != "paid":
+        return HttpResponseForbidden("The warranty becomes available after payment is confirmed.")
+    if not sale.order.warranty_selected or not sale.order.warranty_signature:
+        return HttpResponseForbidden("This order does not include a warranty certificate.")
+
+    pdf = build_warranty_pdf(sale)
+    filename = f"warranty-{slugify(sale.product.name) or 'product'}-{sale.pk}.pdf"
+    response = HttpResponse(pdf, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    response["X-Content-Type-Options"] = "nosniff"
+    return response
+
+
 def send_checkout_emails(order, cart_total, ref):
     html_user = render_to_string("emails/checkout_user_email.html", {"order": order, "cart_total": cart_total, "ref": ref})
-    send_mail(
-        subject="Your PowerPay order",
-        message="Your order has been received.",
-        from_email=None,
-        recipient_list=[order.email],
-        html_message=html_user,
-    )
+    if order.email:
+        send_mail(
+            subject="Your PowerPay order",
+            message="Your order has been received.",
+            from_email=None,
+            recipient_list=[order.email],
+            html_message=html_user,
+        )

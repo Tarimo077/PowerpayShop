@@ -29,5 +29,6 @@ urlpatterns = [
     path("cart/update/<int:item_id>/", views.update_cart_quantity, name="update_cart_quantity"),
     path("payment/callback/", views.payment_callback, name="payment_callback"),
     path("check-payment-status/", views.check_payment_status, name="check_payment_status"),
+    path("warranty/<int:sale_id>/download/", views.download_warranty, name="download_warranty"),
 
 ]

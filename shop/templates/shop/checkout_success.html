@@ -2,83 +2,57 @@
 {% load static %}
 {% block content %}
 
-<div class="min-h-screen flex items-center justify-center p-6 bg-gradient-to-r from-green-100 to-orange-100">
+<div class="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-r from-green-100 to-orange-100">
+  <div class="w-full max-w-xl rounded-[2rem] bg-white p-6 sm:p-8 shadow-2xl text-center">
+    <img src="{% static 'images/pplogo.webp' %}" width="96" height="22" decoding="async" class="w-24 mx-auto mb-4" alt="PowerPay logo">
+    <h2 class="text-2xl font-bold text-green-700 mb-3">Waiting for payment confirmation</h2>
+    <p class="text-gray-700">We sent an M-Pesa prompt to your phone. Enter your PIN to complete payment.</p>
 
-  <div class="card bg-white p-8 rounded-2xl shadow-2xl text-center max-w-xl">
+    {% if ref %}<p class="mt-4 break-all text-sm text-gray-500">Reference: <span class="font-mono">{{ ref }}</span></p>{% endif %}
 
-    <img src="{% static 'images/pplogo.webp' %}" width="96" height="22" decoding="async" class="w-24 mx-auto mb-4" alt="logo">
+    <div id="payment-status" class="mt-6 text-lg font-semibold text-orange-600">Waiting for payment...</div>
+    <div id="payment-success" class="{% if not order or order.payment_status != 'paid' %}hidden{% endif %} mt-6 text-green-700 font-bold text-xl">
+      <i class="fa-solid fa-circle-check"></i> Payment successful
+    </div>
 
-    <h2 class="text-2xl font-bold text-green-700 mb-3">
-      Waiting for payment confirmation
-    </h2>
-
-    <p class="text-gray-700">
-      We have sent an STK push to your phone. Please enter your MPESA PIN to complete the payment.
-    </p>
-
-    {% if ref %}
-    <p class="mt-4 text-sm text-gray-500">
-      Reference: <span class="font-mono">{{ ref }}</span>
-    </p>
+    {% if order and order.warranty_selected %}
+      <div id="warranty-downloads" class="{% if order.payment_status != 'paid' %}hidden{% endif %} mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-left">
+        <h3 class="font-black text-emerald-900">Your warranty certificates</h3>
+        <p class="mt-1 text-sm text-emerald-800">Download and keep one certificate for each purchased product.</p>
+        <div class="mt-3 space-y-2">
+          {% for sale in order.sales.all %}
+            <a href="{% url 'download_warranty' sale.id %}" class="flex min-h-11 items-center justify-between gap-3 rounded-xl bg-white px-4 py-3 font-bold text-emerald-800 shadow-sm">
+              <span class="truncate">{{ sale.product.name }}</span>
+              <span class="shrink-0"><i class="fa-solid fa-download"></i> PDF</span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
     {% endif %}
 
-    <!-- STATUS AREA -->
-    <div id="payment-status" class="mt-6 text-lg font-semibold text-orange-600">
-      Waiting for payment...
-    </div>
-
-    <!-- SUCCESS MESSAGE -->
-    <div id="payment-success" class="hidden mt-6 text-green-700 font-bold text-xl">
-      ✓ Payment Successful
-    </div>
-
-    <div class="mt-6">
-      <a href="{% url 'index' %}" class="btn bg-green-600 text-white rounded-lg px-6 py-2">
-        Continue shopping
-      </a>
-    </div>
-
+    <div class="mt-6"><a href="{% url 'index' %}" class="inline-flex min-h-11 items-center justify-center rounded-full bg-green-600 px-6 py-2 font-bold text-white">Continue shopping</a></div>
   </div>
-
 </div>
 
-
 <script>
-
 function checkPayment() {
-
-    fetch("{% url 'check_payment_status' %}")
+  fetch("{% url 'check_payment_status' %}")
     .then(response => response.json())
     .then(data => {
-
-        if (data.status === "paid") {
-
-            document.getElementById("payment-status").innerHTML =
-                "Payment confirmed.";
-
-            document.getElementById("payment-success").classList.remove("hidden");
-
-            clearInterval(paymentChecker);
-
-        }
-
-        else if (data.status === "failed") {
-
-            document.getElementById("payment-status").innerHTML =
-                "Payment failed or cancelled.";
-
-            clearInterval(paymentChecker);
-        }
-
+      if (data.status === "paid") {
+        document.getElementById("payment-status").textContent = "Payment confirmed.";
+        document.getElementById("payment-success").classList.remove("hidden");
+        const warrantyDownloads = document.getElementById("warranty-downloads");
+        if (warrantyDownloads) warrantyDownloads.classList.remove("hidden");
+        clearInterval(paymentChecker);
+      } else if (data.status === "failed") {
+        document.getElementById("payment-status").textContent = "Payment failed or cancelled.";
+        clearInterval(paymentChecker);
+      }
     })
-    .catch(error => {
-        console.log("Payment check error:", error);
-    });
-
+    .catch(error => console.log("Payment check error:", error));
 }
-
-let paymentChecker = setInterval(checkPayment, 3000);
-
+{% if not order or order.payment_status != 'paid' %}const paymentChecker = setInterval(checkPayment, 3000);{% endif %}
 </script>
 
 {% endblock %}

@@ -94,6 +94,13 @@
           {% csrf_token %}
           <input type="hidden" name="promo_code" id="hidden-promo-code" value="">
 
+          {% if form.errors or payment_form.errors %}
+            <div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700" role="alert">
+              Please review the highlighted checkout fields before paying.
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
           <div id="tab1" class="checkout-tab-pane rounded-[1.75rem] border border-slate-100 bg-white/80 p-5 shadow-sm">
             <div class="mb-5 flex items-center gap-3">
               <div class="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-100 text-emerald-700">
@@ -119,7 +126,7 @@
               </label>
 
               <label class="block space-y-2 sm:col-span-2">
-                <span class="block font-bold text-sm text-slate-700">Email *</span>
+                <span class="block font-bold text-sm text-slate-700">Email <span class="font-normal text-slate-400">(optional)</span></span>
                 {{ form.email }}
                 {{ form.email.errors }}
               </label>
@@ -142,8 +149,15 @@
                 {{ form.county.errors }}
               </label>
 
+              <label class="block space-y-2 sm:col-span-2">
+                <span class="block font-bold text-sm text-slate-700">Buying method *</span>
+                {{ form.buying_method }}
+                {{ form.buying_method.errors }}
+                <span class="block text-xs text-slate-500">Cash is available now. Loan purchasing is coming soon.</span>
+              </label>
+
               <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">City / Town *</span>
+                <span class="block font-bold text-sm text-slate-700">City / Town <span class="font-normal text-slate-400">(required with warranty)</span></span>
                 {{ form.city }}
                 {{ form.city.errors }}
               </label>
@@ -159,6 +173,14 @@
                 {{ form.address_detail }}
                 {{ form.address_detail.errors }}
               </label>
+
+              <label class="sm:col-span-2 flex cursor-pointer items-start gap-4 rounded-3xl border border-emerald-200 bg-emerald-50/70 p-4">
+                {{ form.warranty_selected }}
+                <span>
+                  <span class="block font-black text-slate-950">Add the free one-year product warranty</span>
+                  <span class="mt-1 block text-sm text-slate-600">Select this to provide warranty details, sign electronically, and download your certificate after payment.</span>
+                </span>
+              </label>
             </div>
           </div>
 
@@ -169,7 +191,7 @@
               </div>
               <div>
                 <h2 class="text-2xl font-black text-slate-950">Household information</h2>
-                <p class="text-sm text-slate-500">Add household details for your order profile.</p>
+                <p class="text-sm text-slate-500">These details are collected only for your warranty record.</p>
               </div>
             </div>
 
@@ -222,16 +244,16 @@
                 {{ form.monthly_income.errors }}
               </label>
 
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Buying method *</span>
-                {{ form.buying_method }}
-                {{ form.buying_method.errors }}
-              </label>
-
               <label class="block space-y-2 sm:col-span-2">
                 <span class="block font-bold text-sm text-slate-700">Any other loans?</span>
                 {{ form.other_loans }}
                 {{ form.other_loans.errors }}
+              </label>
+
+              <label class="block space-y-2 sm:col-span-2">
+                <span class="block font-bold text-sm text-slate-700">Used at home or business</span>
+                {{ form.home_or_business }}
+                {{ form.home_or_business.errors }}
               </label>
             </div>
           </div>
@@ -285,6 +307,12 @@
               </label>
 
               <label class="block space-y-2">
+                <span class="block font-bold text-sm text-slate-700">Monthly cooking cost</span>
+                {{ form.monthly_cooking_cost }}
+                {{ form.monthly_cooking_cost.errors }}
+              </label>
+
+              <label class="block space-y-2">
                 <span class="block font-bold text-sm text-slate-700">Grid connection?</span>
                 {{ form.grid_connection }}
                 {{ form.grid_connection.errors }}
@@ -301,6 +329,21 @@
                 {{ form.monthly_electricity_cost }}
                 {{ form.monthly_electricity_cost.errors }}
               </label>
+
+              <div class="sm:col-span-2 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                <h3 class="font-black text-slate-950">Electronic signature *</h3>
+                <p class="mt-1 text-sm text-slate-500">Sign inside the box using your finger, mouse, or stylus.</p>
+                <canvas id="signatureCanvas" width="900" height="240" class="mt-3 h-36 w-full touch-none rounded-2xl border-2 border-dashed border-slate-300 bg-white"></canvas>
+                {{ form.signature_data }}
+                {{ form.signature_data.errors }}
+                <button type="button" id="clearSignature" class="mt-3 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-black text-slate-700">Clear signature</button>
+              </div>
+
+              <label class="sm:col-span-2 flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
+                {{ form.warranty_consent }}
+                <span>I accept the warranty terms and consent to the warranty, carbon-title, and data-processing information in the certificate.</span>
+              </label>
+              <div class="sm:col-span-2">{{ form.warranty_consent.errors }}</div>
             </div>
           </div>
 
@@ -429,8 +472,14 @@ const steps = [
 ];
 
 let currentStep = 0;
+const warrantyToggle = document.getElementById("id_warranty_selected");
+
+function activeSteps() {
+  return warrantyToggle && warrantyToggle.checked ? [0, 1, 2, 3] : [0, 3];
+}
 
 function showStep(index) {
+  if (!(activeSteps().includes(index))) index = 3;
   currentStep = index;
 
   document.querySelectorAll(".checkout-tab-pane").forEach(pane => {
@@ -476,9 +525,11 @@ function showStep(index) {
 
   document.getElementById("stepTitle").textContent = steps[index].title;
   document.getElementById("stepIcon").className = "fa-solid " + steps[index].icon + " text-xl";
-  document.getElementById("stepProgress").style.width = `${(index / 3) * 100}%`;
+  const active = activeSteps();
+  const activePosition = active.indexOf(index);
+  document.getElementById("stepProgress").style.width = `${(activePosition / (active.length - 1)) * 100}%`;
 
-  document.getElementById("prevStepBtn").classList.toggle("hidden", index === 0);
+  document.getElementById("prevStepBtn").classList.toggle("hidden", activePosition === 0);
   document.getElementById("nextStepBtn").classList.toggle("hidden", index === 3);
 }
 
@@ -489,23 +540,33 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
 });
 
 document.getElementById("nextStepBtn").addEventListener("click", () => {
-  if (currentStep < 3) showStep(currentStep + 1);
+  const active = activeSteps();
+  const position = active.indexOf(currentStep);
+  if (position < active.length - 1) showStep(active[position + 1]);
 });
 
 document.getElementById("prevStepBtn").addEventListener("click", () => {
-  if (currentStep > 0) showStep(currentStep - 1);
+  const active = activeSteps();
+  const position = active.indexOf(currentStep);
+  if (position > 0) showStep(active[position - 1]);
 });
 
 const requiredFields = [
   "id_first_name",
   "id_last_name",
-  "id_email",
   "id_phone",
   "id_country",
   "id_county",
-  "id_city",
   "id_buying_method",
   "id_mpesa_phone"
+];
+
+const warrantyRequiredFields = [
+  "id_city", "id_village", "id_address_detail", "id_gender", "id_age",
+  "id_national_id", "id_education", "id_marital_status", "id_employment",
+  "id_economic_activity", "id_monthly_income", "id_other_loans",
+  "id_home_or_business", "id_is_cook_user", "id_monthly_cooking_cost",
+  "id_grid_connection"
 ];
 
 function checkRequired() {
@@ -517,6 +578,21 @@ function checkRequired() {
       allFilled = false;
     }
   });
+
+  if (warrantyToggle && warrantyToggle.checked) {
+    warrantyRequiredFields.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el || !String(el.value || "").trim()) allFilled = false;
+    });
+    if (!document.querySelector('input[name="cooking_fuel"]:checked')) allFilled = false;
+    if (!document.querySelector('input[name="stove_type"]:checked')) allFilled = false;
+    if (!document.getElementById("id_signature_data").value) allFilled = false;
+    if (!document.getElementById("id_warranty_consent").checked) allFilled = false;
+    if (document.getElementById("id_grid_connection").value === "yes") {
+      if (!document.getElementById("id_utility_provider").value) allFilled = false;
+      if (!document.getElementById("id_monthly_electricity_cost").value) allFilled = false;
+    }
+  }
 
   const btn = document.getElementById("payBtn");
   if (!btn) return;
@@ -540,7 +616,74 @@ requiredFields.forEach(id => {
   }
 });
 
+function updateWarrantyFlow() {
+  const selected = Boolean(warrantyToggle && warrantyToggle.checked);
+  document.querySelectorAll('.tab-btn[data-step="1"], .tab-btn[data-step="2"]').forEach(button => {
+    button.classList.toggle("hidden", !selected);
+  });
+  if (!selected && (currentStep === 1 || currentStep === 2)) showStep(3);
+  checkRequired();
+}
+
+if (warrantyToggle) warrantyToggle.addEventListener("change", updateWarrantyFlow);
+
+document.querySelectorAll('#tab2 input, #tab2 select, #tab3 input, #tab3 select').forEach(el => {
+  el.addEventListener("input", checkRequired);
+  el.addEventListener("change", checkRequired);
+});
+
+const buyingMethod = document.getElementById("id_buying_method");
+if (buyingMethod) {
+  const loanOption = buyingMethod.querySelector('option[value="loan"]');
+  if (loanOption) loanOption.disabled = true;
+}
+
+const signatureCanvas = document.getElementById("signatureCanvas");
+const signatureInput = document.getElementById("id_signature_data");
+const signatureContext = signatureCanvas.getContext("2d");
+let signing = false;
+
+signatureContext.lineWidth = 4;
+signatureContext.lineCap = "round";
+signatureContext.strokeStyle = "#0f172a";
+
+function signaturePoint(event) {
+  const rect = signatureCanvas.getBoundingClientRect();
+  return {
+    x: (event.clientX - rect.left) * (signatureCanvas.width / rect.width),
+    y: (event.clientY - rect.top) * (signatureCanvas.height / rect.height)
+  };
+}
+
+signatureCanvas.addEventListener("pointerdown", event => {
+  signing = true;
+  signatureCanvas.setPointerCapture(event.pointerId);
+  const point = signaturePoint(event);
+  signatureContext.beginPath();
+  signatureContext.moveTo(point.x, point.y);
+});
+signatureCanvas.addEventListener("pointermove", event => {
+  if (!signing) return;
+  const point = signaturePoint(event);
+  signatureContext.lineTo(point.x, point.y);
+  signatureContext.stroke();
+});
+function finishSignature() {
+  if (!signing) return;
+  signing = false;
+  signatureInput.value = signatureCanvas.toDataURL("image/png");
+  checkRequired();
+}
+signatureCanvas.addEventListener("pointerup", finishSignature);
+signatureCanvas.addEventListener("pointercancel", finishSignature);
+document.getElementById("clearSignature").addEventListener("click", () => {
+  signatureContext.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+  signatureInput.value = "";
+  checkRequired();
+});
+
 document.addEventListener("DOMContentLoaded", () => {
+  updateWarrantyFlow();
   showStep(0);
   checkRequired();
 });
