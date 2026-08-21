@@ -15,18 +15,11 @@
       <i class="fa-solid fa-circle-check"></i> Payment successful
     </div>
 
-    {% if order and order.warranty_selected %}
-      <div id="warranty-downloads" class="{% if order.payment_status != 'paid' %}hidden{% endif %} mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-left">
-        <h3 class="font-black text-emerald-900">Your warranty certificates</h3>
-        <p class="mt-1 text-sm text-emerald-800">Download and keep one certificate for each purchased product.</p>
-        <div class="mt-3 space-y-2">
-          {% for sale in order.sales.all %}
-            <a href="{% url 'download_warranty' sale.id %}" class="flex min-h-11 items-center justify-between gap-3 rounded-xl bg-white px-4 py-3 font-bold text-emerald-800 shadow-sm">
-              <span class="truncate">{{ sale.product.name }}</span>
-              <span class="shrink-0"><i class="fa-solid fa-download"></i> PDF</span>
-            </a>
-          {% endfor %}
-        </div>
+    {% if order %}
+      <div id="warranty-next" class="{% if order.payment_status != 'paid' %}hidden{% endif %} mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-left">
+        <h3 class="font-black text-emerald-900">Protect your purchase</h3>
+        <p class="mt-1 text-sm text-emerald-800">Register your product warranty from your account when you are ready.</p>
+        <a href="{% url 'warranties' %}" class="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-700 px-5 font-black text-white">Go to warranties</a>
       </div>
     {% endif %}
 
@@ -42,8 +35,8 @@ function checkPayment() {
       if (data.status === "paid") {
         document.getElementById("payment-status").textContent = "Payment confirmed.";
         document.getElementById("payment-success").classList.remove("hidden");
-        const warrantyDownloads = document.getElementById("warranty-downloads");
-        if (warrantyDownloads) warrantyDownloads.classList.remove("hidden");
+        const warrantyNext = document.getElementById("warranty-next");
+        if (warrantyNext) warrantyNext.classList.remove("hidden");
         clearInterval(paymentChecker);
       } else if (data.status === "failed") {
         document.getElementById("payment-status").textContent = "Payment failed or cancelled.";

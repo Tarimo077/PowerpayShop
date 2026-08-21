@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load static %}
 {% load humanize %}
 {% block title %}Checkout | PowerPay Shop{% endblock %}
 {% block content %}
@@ -7,766 +6,126 @@
 <div class="min-h-screen grid grid-rows-[auto_1fr_auto]">
   {% include 'shop/navbar.html' %}
 
-  <main class="w-full max-w-[1500px] mx-auto px-3 sm:px-5 lg:px-8 py-6 sm:py-8 lg:py-10">
-    <div class="mb-8">
+  <main class="w-full max-w-[1400px] mx-auto px-3 sm:px-5 lg:px-8 py-6 sm:py-10">
+    <div class="mb-7">
       <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-emerald-800">
-        <i class="fa-solid fa-lock"></i>
-        Secure checkout
+        <i class="fa-solid fa-lock"></i> Secure checkout
       </span>
-
-      <h1 class="mt-4 text-4xl sm:text-5xl font-black tracking-tight text-slate-950">
-        Finish your order
-      </h1>
-
-      <p class="mt-2 max-w-2xl text-slate-500">
-        A few details, one M-Pesa prompt, and your order is ready to go.
-      </p>
+      <h1 class="mt-4 text-3xl sm:text-5xl font-black tracking-tight text-slate-950">Complete your purchase</h1>
+      <p class="mt-2 max-w-2xl text-slate-500">Enter the essentials below and approve one M-Pesa prompt. Warranty registration is available from your account after payment.</p>
     </div>
 
-    <div class="grid lg:grid-cols-[1fr_410px] gap-6 items-start">
-      <section class="overflow-hidden rounded-[2rem] border border-white/80 bg-white/90 shadow-[0_24px_70px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+    <form method="POST" id="checkoutForm" class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_410px] lg:items-start">
+      {% csrf_token %}
+      <input type="hidden" name="promo_code" id="hidden-promo-code" value="">
 
-        <div class="border-b border-slate-100 bg-gradient-to-br from-white via-emerald-50/70 to-orange-50/70 p-5 sm:p-6">
-          <div class="mb-5 flex items-center justify-between gap-4">
-            <div>
-              <p class="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">
-                Checkout progress
-              </p>
-              <h2 id="stepTitle" class="mt-1 text-2xl font-black text-slate-950">
-                Basic information
-              </h2>
-            </div>
-
-            <div class="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm">
-              <i id="stepIcon" class="fa-solid fa-user text-xl"></i>
-            </div>
+      <section class="rounded-[2rem] border border-white/80 bg-white/95 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.12)] sm:p-7">
+        <div class="mb-6 flex items-center gap-3">
+          <span class="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-100 text-emerald-700"><i class="fa-solid fa-user"></i></span>
+          <div>
+            <h2 class="text-2xl font-black text-slate-950">Purchase details</h2>
+            <p class="text-sm text-slate-500">Only the information needed to process your order.</p>
           </div>
+        </div>
 
-          <div class="relative">
-            <div class="absolute left-0 right-0 top-5 hidden h-1 rounded-full bg-slate-200 sm:block"></div>
-            <div id="stepProgress" class="absolute left-0 top-5 hidden h-1 w-0 rounded-full bg-gradient-to-r from-emerald-600 to-green-700 transition-all duration-300 sm:block"></div>
+        {% if form.errors or payment_form.errors %}
+          <div class="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700" role="alert">
+            Please review the highlighted fields below. {{ form.non_field_errors }}
+          </div>
+        {% endif %}
 
-            <div class="relative grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <button type="button" class="tab-btn rounded-3xl border border-emerald-200 bg-white p-3 text-left shadow-md transition hover:-translate-y-0.5" data-tab="tab1" data-step="0">
-                <div class="flex items-center gap-3">
-                  <span class="step-circle grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-green-600 to-emerald-800 text-sm font-black text-white shadow-[0_10px_24px_rgba(15,143,79,0.25)]">1</span>
-                  <span>
-                    <span class="step-label block text-xs font-black uppercase tracking-wider text-emerald-700">Step 1</span>
-                    <span class="step-name block text-sm font-black text-slate-950">Basic</span>
-                  </span>
-                </div>
-              </button>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="block space-y-2"><span class="text-sm font-bold text-slate-700">First name *</span>{{ form.first_name }}{{ form.first_name.errors }}</label>
+          <label class="block space-y-2"><span class="text-sm font-bold text-slate-700">Last name *</span>{{ form.last_name }}{{ form.last_name.errors }}</label>
+          <label class="block space-y-2 sm:col-span-2"><span class="text-sm font-bold text-slate-700">Email <span class="font-normal text-slate-400">(optional)</span></span>{{ form.email }}{{ form.email.errors }}</label>
+          <label class="block space-y-2 sm:col-span-2"><span class="text-sm font-bold text-slate-700">Phone *</span>{{ form.phone }}{{ form.phone.errors }}</label>
+          <label class="block space-y-2"><span class="text-sm font-bold text-slate-700">Country *</span>{{ form.country }}{{ form.country.errors }}</label>
+          <label class="block space-y-2"><span class="text-sm font-bold text-slate-700">County / State *</span>{{ form.county }}{{ form.county.errors }}</label>
+          <label class="block space-y-2 sm:col-span-2">
+            <span class="text-sm font-bold text-slate-700">Buying method *</span>{{ form.buying_method }}{{ form.buying_method.errors }}
+            <span class="block text-xs text-slate-500">Cash is available. Loan purchasing is coming soon.</span>
+          </label>
+        </div>
 
-              <button type="button" class="tab-btn rounded-3xl border border-slate-200 bg-white/70 p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-tab="tab2" data-step="1">
-                <div class="flex items-center gap-3">
-                  <span class="step-circle grid h-10 w-10 place-items-center rounded-2xl bg-slate-100 text-sm font-black text-slate-500">2</span>
-                  <span>
-                    <span class="step-label block text-xs font-black uppercase tracking-wider text-slate-400">Step 2</span>
-                    <span class="step-name block text-sm font-black text-slate-700">Household</span>
-                  </span>
-                </div>
-              </button>
-
-              <button type="button" class="tab-btn rounded-3xl border border-slate-200 bg-white/70 p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-tab="tab3" data-step="2">
-                <div class="flex items-center gap-3">
-                  <span class="step-circle grid h-10 w-10 place-items-center rounded-2xl bg-slate-100 text-sm font-black text-slate-500">3</span>
-                  <span>
-                    <span class="step-label block text-xs font-black uppercase tracking-wider text-slate-400">Step 3</span>
-                    <span class="step-name block text-sm font-black text-slate-700">Energy</span>
-                  </span>
-                </div>
-              </button>
-
-              <button type="button" class="tab-btn rounded-3xl border border-slate-200 bg-white/70 p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md" data-tab="tab4" data-step="3">
-                <div class="flex items-center gap-3">
-                  <span class="step-circle grid h-10 w-10 place-items-center rounded-2xl bg-slate-100 text-sm font-black text-slate-500">4</span>
-                  <span>
-                    <span class="step-label block text-xs font-black uppercase tracking-wider text-slate-400">Step 4</span>
-                    <span class="step-name block text-sm font-black text-slate-700">Payment</span>
-                  </span>
-                </div>
-              </button>
+        <div class="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50/70 p-4 sm:p-5">
+          <div class="flex items-start gap-3">
+            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-emerald-700"><i class="fa-solid fa-mobile-screen"></i></span>
+            <div class="min-w-0 flex-1">
+              <h3 class="font-black text-slate-950">M-Pesa payment</h3>
+              <p class="mb-3 text-sm text-slate-600">Enter the number that should receive the payment prompt.</p>
+              <label class="block space-y-2"><span class="text-sm font-bold text-slate-700">M-Pesa number, starting with 254 *</span>{{ payment_form.mpesa_phone }}{{ payment_form.mpesa_phone.errors }}</label>
             </div>
           </div>
         </div>
 
-        <form method="POST" id="checkoutForm" class="space-y-5 p-4 sm:p-6">
-          {% csrf_token %}
-          <input type="hidden" name="promo_code" id="hidden-promo-code" value="">
-
-          {% if form.errors or payment_form.errors %}
-            <div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700" role="alert">
-              Please review the highlighted checkout fields before paying.
-              {{ form.non_field_errors }}
-            </div>
-          {% endif %}
-
-          <div id="tab1" class="checkout-tab-pane rounded-[1.75rem] border border-slate-100 bg-white/80 p-5 shadow-sm">
-            <div class="mb-5 flex items-center gap-3">
-              <div class="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-100 text-emerald-700">
-                <i class="fa-solid fa-user"></i>
-              </div>
-              <div>
-                <h2 class="text-2xl font-black text-slate-950">Basic information</h2>
-                <p class="text-sm text-slate-500">Tell us where and how to reach you.</p>
-              </div>
-            </div>
-
-            <div class="grid sm:grid-cols-2 gap-4">
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">First name *</span>
-                {{ form.first_name }}
-                {{ form.first_name.errors }}
-              </label>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Last name *</span>
-                {{ form.last_name }}
-                {{ form.last_name.errors }}
-              </label>
-
-              <label class="block space-y-2 sm:col-span-2">
-                <span class="block font-bold text-sm text-slate-700">Email <span class="font-normal text-slate-400">(optional)</span></span>
-                {{ form.email }}
-                {{ form.email.errors }}
-              </label>
-
-              <label class="block space-y-2 sm:col-span-2">
-                <span class="block font-bold text-sm text-slate-700">Phone *</span>
-                {{ form.phone }}
-                {{ form.phone.errors }}
-              </label>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Country *</span>
-                {{ form.country }}
-                {{ form.country.errors }}
-              </label>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">County / State *</span>
-                {{ form.county }}
-                {{ form.county.errors }}
-              </label>
-
-              <label class="block space-y-2 sm:col-span-2">
-                <span class="block font-bold text-sm text-slate-700">Buying method *</span>
-                {{ form.buying_method }}
-                {{ form.buying_method.errors }}
-                <span class="block text-xs text-slate-500">Cash is available now. Loan purchasing is coming soon.</span>
-              </label>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">City / Town <span class="font-normal text-slate-400">(required with warranty)</span></span>
-                {{ form.city }}
-                {{ form.city.errors }}
-              </label>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Village</span>
-                {{ form.village }}
-                {{ form.village.errors }}
-              </label>
-
-              <label class="block space-y-2 sm:col-span-2">
-                <span class="block font-bold text-sm text-slate-700">Address details</span>
-                {{ form.address_detail }}
-                {{ form.address_detail.errors }}
-              </label>
-
-              <label class="sm:col-span-2 flex cursor-pointer items-start gap-4 rounded-3xl border border-emerald-200 bg-emerald-50/70 p-4">
-                {{ form.warranty_selected }}
-                <span>
-                  <span class="block font-black text-slate-950">Add the free one-year product warranty</span>
-                  <span class="mt-1 block text-sm text-slate-600">Select this to provide warranty details, sign electronically, and download your certificate after payment.</span>
-                </span>
-              </label>
-            </div>
-          </div>
-
-          <div id="tab2" class="checkout-tab-pane hidden rounded-[1.75rem] border border-slate-100 bg-white/80 p-5 shadow-sm">
-            <div class="mb-5 flex items-center gap-3">
-              <div class="grid h-11 w-11 place-items-center rounded-2xl bg-orange-100 text-orange-700">
-                <i class="fa-solid fa-house-user"></i>
-              </div>
-              <div>
-                <h2 class="text-2xl font-black text-slate-950">Household information</h2>
-                <p class="text-sm text-slate-500">These details are collected only for your warranty record.</p>
-              </div>
-            </div>
-
-            <div class="grid sm:grid-cols-2 gap-4">
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Gender</span>
-                {{ form.gender }}
-                {{ form.gender.errors }}
-              </label>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Age</span>
-                {{ form.age }}
-                {{ form.age.errors }}
-              </label>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">National ID</span>
-                {{ form.national_id }}
-                {{ form.national_id.errors }}
-              </label>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Education</span>
-                {{ form.education }}
-                {{ form.education.errors }}
-              </label>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Marital status</span>
-                {{ form.marital_status }}
-                {{ form.marital_status.errors }}
-              </label>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Employment</span>
-                {{ form.employment }}
-                {{ form.employment.errors }}
-              </label>
-
-              <label class="block space-y-2 sm:col-span-2">
-                <span class="block font-bold text-sm text-slate-700">Economic activity</span>
-                {{ form.economic_activity }}
-                {{ form.economic_activity.errors }}
-              </label>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Monthly income</span>
-                {{ form.monthly_income }}
-                {{ form.monthly_income.errors }}
-              </label>
-
-              <label class="block space-y-2 sm:col-span-2">
-                <span class="block font-bold text-sm text-slate-700">Any other loans?</span>
-                {{ form.other_loans }}
-                {{ form.other_loans.errors }}
-              </label>
-
-              <label class="block space-y-2 sm:col-span-2">
-                <span class="block font-bold text-sm text-slate-700">Used at home or business</span>
-                {{ form.home_or_business }}
-                {{ form.home_or_business.errors }}
-              </label>
-            </div>
-          </div>
-
-          <div id="tab3" class="checkout-tab-pane hidden rounded-[1.75rem] border border-slate-100 bg-white/80 p-5 shadow-sm">
-            <div class="mb-5 flex items-center gap-3">
-              <div class="grid h-11 w-11 place-items-center rounded-2xl bg-blue-100 text-blue-700">
-                <i class="fa-solid fa-bolt"></i>
-              </div>
-              <div>
-                <h2 class="text-2xl font-black text-slate-950">Cooking and energy</h2>
-                <p class="text-sm text-slate-500">Tell us about your current cooking and power setup.</p>
-              </div>
-            </div>
-
-            <div class="grid sm:grid-cols-2 gap-4">
-              <div class="sm:col-span-2 space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Cooking fuel currently in use</span>
-
-                <div class="grid gap-3 sm:grid-cols-2">
-                  {% for checkbox in form.cooking_fuel %}
-                    <label for="{{ checkbox.id_for_label }}" class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50">
-                      {{ checkbox.tag }}
-                      <span>{{ checkbox.choice_label }}</span>
-                    </label>
-                  {% endfor %}
-                </div>
-
-                {{ form.cooking_fuel.errors }}
-              </div>
-
-              <div class="sm:col-span-2 space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Cooking stove currently in use</span>
-
-                <div class="grid gap-3 sm:grid-cols-2">
-                  {% for checkbox in form.stove_type %}
-                    <label for="{{ checkbox.id_for_label }}" class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50">
-                      {{ checkbox.tag }}
-                      <span>{{ checkbox.choice_label }}</span>
-                    </label>
-                  {% endfor %}
-                </div>
-
-                {{ form.stove_type.errors }}
-              </div>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Will you cook with this appliance?</span>
-                {{ form.is_cook_user }}
-                {{ form.is_cook_user.errors }}
-              </label>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Monthly cooking cost</span>
-                {{ form.monthly_cooking_cost }}
-                {{ form.monthly_cooking_cost.errors }}
-              </label>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Grid connection?</span>
-                {{ form.grid_connection }}
-                {{ form.grid_connection.errors }}
-              </label>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Utility provider</span>
-                {{ form.utility_provider }}
-                {{ form.utility_provider.errors }}
-              </label>
-
-              <label class="block space-y-2">
-                <span class="block font-bold text-sm text-slate-700">Monthly electricity cost</span>
-                {{ form.monthly_electricity_cost }}
-                {{ form.monthly_electricity_cost.errors }}
-              </label>
-
-              <div class="sm:col-span-2 rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                <h3 class="font-black text-slate-950">Electronic signature *</h3>
-                <p class="mt-1 text-sm text-slate-500">Sign inside the box using your finger, mouse, or stylus.</p>
-                <canvas id="signatureCanvas" width="900" height="240" class="mt-3 h-36 w-full touch-none rounded-2xl border-2 border-dashed border-slate-300 bg-white"></canvas>
-                {{ form.signature_data }}
-                {{ form.signature_data.errors }}
-                <button type="button" id="clearSignature" class="mt-3 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-black text-slate-700">Clear signature</button>
-              </div>
-
-              <label class="sm:col-span-2 flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
-                {{ form.warranty_consent }}
-                <span>I accept the warranty terms and consent to the warranty, carbon-title, and data-processing information in the certificate.</span>
-              </label>
-              <div class="sm:col-span-2">{{ form.warranty_consent.errors }}</div>
-            </div>
-          </div>
-
-          <div id="tab4" class="checkout-tab-pane hidden rounded-[1.75rem] border border-slate-100 bg-white/80 p-5 shadow-sm">
-            <div class="mb-5 flex items-center gap-3">
-              <div class="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-100 text-emerald-700">
-                <i class="fa-solid fa-mobile-screen"></i>
-              </div>
-              <div>
-                <h2 class="text-2xl font-black text-slate-950">Payment</h2>
-                <p class="text-sm text-slate-500">Enter your M-Pesa number to receive the payment prompt.</p>
-              </div>
-            </div>
-
-            <label class="block space-y-2">
-              <span class="block font-bold text-sm text-slate-700">M-Pesa number, start with 254 *</span>
-              {{ payment_form.mpesa_phone }}
-              {{ payment_form.mpesa_phone.errors }}
-            </label>
-
-            <button id="payBtn" disabled class="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-slate-400 px-5 py-3 font-black text-white cursor-not-allowed transition">
-              Fill required fields to proceed
-            </button>
-          </div>
-
-          <div class="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <button type="button" id="prevStepBtn" class="hidden inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-50">
-              <i class="fa-solid fa-arrow-left"></i>
-              Back
-            </button>
-
-            <button type="button" id="nextStepBtn" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-br from-green-600 to-emerald-800 px-5 py-3 font-black text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)] transition hover:-translate-y-0.5 sm:ml-auto">
-              Continue
-              <i class="fa-solid fa-arrow-right"></i>
-            </button>
-          </div>
-        </form>
+        <button id="payBtn" disabled class="mt-6 inline-flex min-h-13 w-full items-center justify-center gap-2 rounded-full bg-slate-400 px-6 py-4 font-black text-white cursor-not-allowed transition">
+          Fill required fields to proceed
+        </button>
+        <p class="mt-3 text-center text-xs text-slate-500"><i class="fa-solid fa-shield-halved mr-1"></i> Payment is submitted securely through M-Pesa.</p>
       </section>
 
-      <aside class="lg:sticky lg:top-28 rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-[0_24px_70px_rgba(15,23,42,0.12)] backdrop-blur-xl">
-        <div class="mb-4 flex items-center justify-between">
-          <h2 class="text-2xl font-black text-slate-950">Order summary</h2>
-          <div class="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-100 text-emerald-700">
-            <i class="fa-solid fa-bag-shopping"></i>
-          </div>
-        </div>
-
-        <div class="max-h-80 overflow-y-auto pr-1 space-y-3">
+      <aside class="rounded-[2rem] border border-white/80 bg-white/95 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.12)] sm:p-6 lg:sticky lg:top-28">
+        <div class="mb-4 flex items-center justify-between"><h2 class="text-2xl font-black text-slate-950">Order summary</h2><span class="grid h-10 w-10 place-items-center rounded-2xl bg-emerald-100 text-emerald-700"><i class="fa-solid fa-bag-shopping"></i></span></div>
+        <div class="max-h-72 space-y-3 overflow-y-auto pr-1">
           {% for item in items %}
-            <div class="flex items-center gap-3 rounded-3xl border border-slate-100 bg-white/75 p-3">
-              {% if item.product.image %}
-                <img src="{{ item.product.image.url }}" class="w-16 h-16 object-contain rounded-2xl bg-slate-50 p-1" alt="{{ item.product.name }}">
-              {% else %}
-                <div class="w-16 h-16 rounded-2xl bg-green-50 grid place-items-center text-green-700">
-                  <i class="fa-solid fa-box"></i>
-                </div>
-              {% endif %}
-
-              <div class="flex-1 min-w-0">
-                <p class="font-black truncate text-slate-950">{{ item.product.name }}</p>
-                <p class="text-slate-500 text-xs">Ksh. {{ item.product.price|intcomma }} × {{ item.quantity }}</p>
-              </div>
-
-              <p class="font-black text-sm text-slate-950">Ksh. {{ item.total_price|intcomma }}</p>
+            <div class="flex items-center gap-3 rounded-3xl border border-slate-100 bg-white p-3">
+              {% if item.product.image %}<img src="{{ item.product.image.url }}" class="h-16 w-16 rounded-2xl bg-slate-50 object-contain p-1" alt="{{ item.product.name }}">{% else %}<span class="grid h-16 w-16 place-items-center rounded-2xl bg-green-50 text-green-700"><i class="fa-solid fa-box"></i></span>{% endif %}
+              <div class="min-w-0 flex-1"><p class="truncate font-black text-slate-950">{{ item.product.name }}</p><p class="text-xs text-slate-500">Ksh. {{ item.product.price|intcomma }} x {{ item.quantity }}</p></div>
+              <p class="text-sm font-black text-slate-950">Ksh. {{ item.total_price|intcomma }}</p>
             </div>
           {% endfor %}
         </div>
 
-        <div class="mt-6 rounded-3xl border border-dashed border-green-300 bg-green-50/80 p-4">
-          <label class="block text-xs font-black text-green-800 uppercase tracking-wider mb-2">Promo code</label>
-
-          <div class="flex flex-col gap-2 sm:flex-row">
-            <input type="text" id="promo-input" placeholder="ENTER CODE" class="min-h-12 w-full flex-1 rounded-[18px] border border-slate-300 bg-white px-4 py-3 text-sm font-black uppercase text-slate-900 shadow-sm outline-none transition focus:border-green-600 focus:ring-4 focus:ring-emerald-500/10">
-
-            <button type="button" onclick="applyPromo()" class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-br from-green-600 to-emerald-800 px-5 py-3 font-black text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)] transition hover:-translate-y-0.5 sm:w-auto">
-              Apply
-            </button>
-          </div>
-
-          <div id="promo-status-container" class="mt-2 hidden items-center justify-between gap-3">
-            <p id="promo-message" class="text-xs font-bold"></p>
-            <button type="button" onclick="removePromo()" class="text-xs text-red-600 underline font-black uppercase">Remove</button>
-          </div>
+        <div class="mt-5 rounded-3xl border border-dashed border-green-300 bg-green-50/80 p-4">
+          <label class="mb-2 block text-xs font-black uppercase tracking-wider text-green-800">Private promo code</label>
+          <div class="flex flex-col gap-2 sm:flex-row"><input type="text" id="promo-input" placeholder="ENTER CODE" class="min-h-12 min-w-0 flex-1 rounded-[18px] border border-slate-300 bg-white px-4 py-3 text-sm font-black uppercase"><button type="button" onclick="applyPromo()" class="min-h-12 rounded-full bg-emerald-700 px-5 font-black text-white">Apply</button></div>
+          <div id="promo-status-container" class="mt-2 hidden items-center justify-between gap-3"><p id="promo-message" class="text-xs font-bold"></p><button type="button" onclick="removePromo()" class="text-xs font-black uppercase text-red-600 underline">Remove</button></div>
         </div>
 
         <div class="mt-6 space-y-3">
-          <div class="flex justify-between text-slate-500">
-            <span>Subtotal</span>
-            <span id="summary-subtotal" class="font-black text-slate-900">Ksh. {{ subtotal|intcomma }}</span>
-          </div>
-
-          <div id="discount-row" class="{% if not discount %}hidden{% else %}flex{% endif %} justify-between text-orange-600 font-black">
-            <span>Promo discount</span>
-            <span id="summary-discount">- Ksh. {{ discount|intcomma }}</span>
-          </div>
-          <div id="applied-promo-lines" class="space-y-2 text-sm">
-            {% for promo in applied_promos %}<div class="flex justify-between font-bold text-orange-700"><span>Promo {{ promo.code }} (auto)</span><span>- Ksh. {{ promo.cart_discount|intcomma }}</span></div>{% endfor %}
-          </div>
-          <template id="auto-promo-lines-template">
-            {% for promo in applied_promos %}<div class="flex justify-between font-bold text-orange-700"><span>Promo {{ promo.code }} (auto)</span><span>- Ksh. {{ promo.cart_discount|intcomma }}</span></div>{% endfor %}
-          </template>
-
-          <div class="flex justify-between border-t border-dashed border-slate-300 pt-4 text-2xl font-black text-green-700">
-            <span>Total</span>
-            <span id="summary-total">Ksh. {{ cart_total|intcomma }}</span>
-          </div>
+          <div class="flex justify-between text-slate-500"><span>Subtotal</span><span class="font-black text-slate-900">Ksh. {{ subtotal|intcomma }}</span></div>
+          <div id="discount-row" class="{% if not discount %}hidden{% else %}flex{% endif %} justify-between font-black text-orange-600"><span>Promo discount</span><span id="summary-discount">- Ksh. {{ discount|intcomma }}</span></div>
+          <div id="applied-promo-lines" class="space-y-2 text-sm">{% for promo in applied_promos %}<div class="flex justify-between font-bold text-orange-700"><span>Promo {{ promo.code }} (auto)</span><span>- Ksh. {{ promo.cart_discount|intcomma }}</span></div>{% endfor %}</div>
+          <template id="auto-promo-lines-template">{% for promo in applied_promos %}<div class="flex justify-between font-bold text-orange-700"><span>Promo {{ promo.code }} (auto)</span><span>- Ksh. {{ promo.cart_discount|intcomma }}</span></div>{% endfor %}</template>
+          <div class="flex justify-between border-t border-dashed border-slate-300 pt-4 text-2xl font-black text-green-700"><span>Total</span><span id="summary-total">Ksh. {{ cart_total|intcomma }}</span></div>
         </div>
-
-        <p class="mt-5 text-center text-xs text-slate-500">
-          <i class="fa-solid fa-shield-halved mr-1"></i>
-          Secure checkout
-        </p>
       </aside>
-    </div>
+    </form>
   </main>
-
   {% include 'footer.html' %}
 </div>
 
 <script>
-const steps = [
-  { tab: "tab1", title: "Basic information", icon: "fa-user" },
-  { tab: "tab2", title: "Household information", icon: "fa-house-user" },
-  { tab: "tab3", title: "Cooking and energy", icon: "fa-bolt" },
-  { tab: "tab4", title: "Payment", icon: "fa-mobile-screen" }
-];
-
-let currentStep = 0;
-const warrantyToggle = document.getElementById("id_warranty_selected");
-
-function activeSteps() {
-  return warrantyToggle && warrantyToggle.checked ? [0, 1, 2, 3] : [0, 3];
-}
-
-function showStep(index) {
-  if (!(activeSteps().includes(index))) index = 3;
-  currentStep = index;
-
-  document.querySelectorAll(".checkout-tab-pane").forEach(pane => {
-    pane.classList.add("hidden");
-  });
-
-  document.getElementById(steps[index].tab).classList.remove("hidden");
-
-  document.querySelectorAll(".tab-btn").forEach((button, buttonIndex) => {
-    const circle = button.querySelector(".step-circle");
-    const label = button.querySelector(".step-label");
-    const name = button.querySelector(".step-name");
-
-    button.classList.remove("border-emerald-200", "bg-white", "shadow-md");
-    button.classList.add("border-slate-200", "bg-white/70", "shadow-sm");
-
-    circle.className = "step-circle grid h-10 w-10 place-items-center rounded-2xl bg-slate-100 text-sm font-black text-slate-500";
-    label.className = "step-label block text-xs font-black uppercase tracking-wider text-slate-400";
-    name.className = "step-name block text-sm font-black text-slate-700";
-
-    if (buttonIndex < index) {
-      button.classList.remove("border-slate-200", "bg-white/70", "shadow-sm");
-      button.classList.add("border-emerald-100", "bg-emerald-50", "shadow-sm");
-      circle.className = "step-circle grid h-10 w-10 place-items-center rounded-2xl bg-emerald-100 text-sm font-black text-emerald-700";
-      circle.innerHTML = '<i class="fa-solid fa-check"></i>';
-      label.className = "step-label block text-xs font-black uppercase tracking-wider text-emerald-600";
-      name.className = "step-name block text-sm font-black text-slate-950";
-    }
-
-    if (buttonIndex === index) {
-      button.classList.remove("border-slate-200", "bg-white/70", "shadow-sm");
-      button.classList.add("border-emerald-200", "bg-white", "shadow-md");
-      circle.className = "step-circle grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-green-600 to-emerald-800 text-sm font-black text-white shadow-[0_10px_24px_rgba(15,143,79,0.25)]";
-      circle.textContent = buttonIndex + 1;
-      label.className = "step-label block text-xs font-black uppercase tracking-wider text-emerald-700";
-      name.className = "step-name block text-sm font-black text-slate-950";
-    }
-
-    if (buttonIndex > index) {
-      circle.textContent = buttonIndex + 1;
-    }
-  });
-
-  document.getElementById("stepTitle").textContent = steps[index].title;
-  document.getElementById("stepIcon").className = "fa-solid " + steps[index].icon + " text-xl";
-  const active = activeSteps();
-  const activePosition = active.indexOf(index);
-  document.getElementById("stepProgress").style.width = `${(activePosition / (active.length - 1)) * 100}%`;
-
-  document.getElementById("prevStepBtn").classList.toggle("hidden", activePosition === 0);
-  document.getElementById("nextStepBtn").classList.toggle("hidden", index === 3);
-}
-
-document.querySelectorAll(".tab-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    showStep(Number(btn.dataset.step));
-  });
-});
-
-document.getElementById("nextStepBtn").addEventListener("click", () => {
-  const active = activeSteps();
-  const position = active.indexOf(currentStep);
-  if (position < active.length - 1) showStep(active[position + 1]);
-});
-
-document.getElementById("prevStepBtn").addEventListener("click", () => {
-  const active = activeSteps();
-  const position = active.indexOf(currentStep);
-  if (position > 0) showStep(active[position - 1]);
-});
-
-const requiredFields = [
-  "id_first_name",
-  "id_last_name",
-  "id_phone",
-  "id_country",
-  "id_county",
-  "id_buying_method",
-  "id_mpesa_phone"
-];
-
-const warrantyRequiredFields = [
-  "id_city", "id_village", "id_address_detail", "id_gender", "id_age",
-  "id_national_id", "id_education", "id_marital_status", "id_employment",
-  "id_economic_activity", "id_monthly_income", "id_other_loans",
-  "id_home_or_business", "id_is_cook_user", "id_monthly_cooking_cost",
-  "id_grid_connection"
-];
-
+const requiredFields = ["id_first_name", "id_last_name", "id_phone", "id_country", "id_county", "id_buying_method", "id_mpesa_phone"];
 function checkRequired() {
-  let allFilled = true;
-
-  requiredFields.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el || !String(el.value || "").trim()) {
-      allFilled = false;
-    }
-  });
-
-  if (warrantyToggle && warrantyToggle.checked) {
-    warrantyRequiredFields.forEach(id => {
-      const el = document.getElementById(id);
-      if (!el || !String(el.value || "").trim()) allFilled = false;
-    });
-    if (!document.querySelector('input[name="cooking_fuel"]:checked')) allFilled = false;
-    if (!document.querySelector('input[name="stove_type"]:checked')) allFilled = false;
-    if (!document.getElementById("id_signature_data").value) allFilled = false;
-    if (!document.getElementById("id_warranty_consent").checked) allFilled = false;
-    if (document.getElementById("id_grid_connection").value === "yes") {
-      if (!document.getElementById("id_utility_provider").value) allFilled = false;
-      if (!document.getElementById("id_monthly_electricity_cost").value) allFilled = false;
-    }
-  }
-
-  const btn = document.getElementById("payBtn");
-  if (!btn) return;
-
-  if (allFilled) {
-    btn.disabled = false;
-    btn.className = "mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-br from-green-600 to-emerald-800 px-5 py-3 font-black text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)] transition hover:-translate-y-0.5";
-    btn.innerHTML = '<i class="fa-solid fa-mobile-screen"></i> Pay now';
-  } else {
-    btn.disabled = true;
-    btn.className = "mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-slate-400 px-5 py-3 font-black text-white cursor-not-allowed transition";
-    btn.innerText = "Fill required fields to proceed";
-  }
+  const ready = requiredFields.every(id => String(document.getElementById(id)?.value || "").trim());
+  const button = document.getElementById("payBtn");
+  button.disabled = !ready;
+  button.className = ready
+    ? "mt-6 inline-flex min-h-13 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-br from-green-600 to-emerald-800 px-6 py-4 font-black text-white shadow-lg transition hover:-translate-y-0.5"
+    : "mt-6 inline-flex min-h-13 w-full items-center justify-center gap-2 rounded-full bg-slate-400 px-6 py-4 font-black text-white cursor-not-allowed transition";
+  button.innerHTML = ready ? '<i class="fa-solid fa-mobile-screen"></i> Pay now' : "Fill required fields to proceed";
 }
-
-requiredFields.forEach(id => {
-  const el = document.getElementById(id);
-  if (el) {
-    el.addEventListener("input", checkRequired);
-    el.addEventListener("change", checkRequired);
-  }
-});
-
-function updateWarrantyFlow() {
-  const selected = Boolean(warrantyToggle && warrantyToggle.checked);
-  document.querySelectorAll('.tab-btn[data-step="1"], .tab-btn[data-step="2"]').forEach(button => {
-    button.classList.toggle("hidden", !selected);
-  });
-  if (!selected && (currentStep === 1 || currentStep === 2)) showStep(3);
-  checkRequired();
-}
-
-if (warrantyToggle) warrantyToggle.addEventListener("change", updateWarrantyFlow);
-
-document.querySelectorAll('#tab2 input, #tab2 select, #tab3 input, #tab3 select').forEach(el => {
-  el.addEventListener("input", checkRequired);
-  el.addEventListener("change", checkRequired);
-});
-
+requiredFields.forEach(id => { const element = document.getElementById(id); if (element) { element.addEventListener("input", checkRequired); element.addEventListener("change", checkRequired); } });
 const buyingMethod = document.getElementById("id_buying_method");
-if (buyingMethod) {
-  const loanOption = buyingMethod.querySelector('option[value="loan"]');
-  if (loanOption) loanOption.disabled = true;
-}
+if (buyingMethod) { const loan = buyingMethod.querySelector('option[value="loan"]'); if (loan) loan.disabled = true; }
+document.addEventListener("DOMContentLoaded", checkRequired);
 
-const signatureCanvas = document.getElementById("signatureCanvas");
-const signatureInput = document.getElementById("id_signature_data");
-const signatureContext = signatureCanvas.getContext("2d");
-let signing = false;
-
-signatureContext.lineWidth = 4;
-signatureContext.lineCap = "round";
-signatureContext.strokeStyle = "#0f172a";
-
-function signaturePoint(event) {
-  const rect = signatureCanvas.getBoundingClientRect();
-  return {
-    x: (event.clientX - rect.left) * (signatureCanvas.width / rect.width),
-    y: (event.clientY - rect.top) * (signatureCanvas.height / rect.height)
-  };
-}
-
-signatureCanvas.addEventListener("pointerdown", event => {
-  signing = true;
-  signatureCanvas.setPointerCapture(event.pointerId);
-  const point = signaturePoint(event);
-  signatureContext.beginPath();
-  signatureContext.moveTo(point.x, point.y);
-});
-signatureCanvas.addEventListener("pointermove", event => {
-  if (!signing) return;
-  const point = signaturePoint(event);
-  signatureContext.lineTo(point.x, point.y);
-  signatureContext.stroke();
-});
-function finishSignature() {
-  if (!signing) return;
-  signing = false;
-  signatureInput.value = signatureCanvas.toDataURL("image/png");
-  checkRequired();
-}
-signatureCanvas.addEventListener("pointerup", finishSignature);
-signatureCanvas.addEventListener("pointercancel", finishSignature);
-document.getElementById("clearSignature").addEventListener("click", () => {
-  signatureContext.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
-  signatureInput.value = "";
-  checkRequired();
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  updateWarrantyFlow();
-  showStep(0);
-  checkRequired();
-});
-
-function formatCurrency(num) {
-  return "Ksh. " + Number(num).toLocaleString("en-KE");
-}
-
+function formatCurrency(value) { return "Ksh. " + Number(value).toLocaleString("en-KE"); }
 function applyPromo() {
-  const codeInput = document.getElementById("promo-input");
-  const code = codeInput.value.trim();
-  const msg = document.getElementById("promo-message");
-  const container = document.getElementById("promo-status-container");
-  const hiddenInput = document.getElementById("hidden-promo-code");
-
-  if (!code) {
-    msg.innerText = "Enter a code first.";
-    container.classList.remove("hidden");
-    container.classList.add("flex");
-    msg.className = "text-xs font-bold text-red-600";
-    return;
-  }
-
-  fetch("{% url 'apply_promo' %}", {
-    method: "POST",
-    headers: {
-      "X-CSRFToken": "{{ csrf_token }}",
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: `code=${encodeURIComponent(code)}`
-  })
-  .then(res => res.json())
-  .then(data => {
-    container.classList.remove("hidden");
-    container.classList.add("flex");
-    msg.className = "text-xs font-bold";
-
-    if (data.success) {
-      msg.innerText = "Code applied.";
-      msg.classList.add("text-green-700");
-      hiddenInput.value = code;
-
-      document.getElementById("discount-row").classList.remove("hidden");
-      document.getElementById("discount-row").classList.add("flex");
-      document.getElementById("summary-discount").innerText = "- " + formatCurrency(data.discount_amount);
-      document.getElementById("summary-total").innerText = formatCurrency(data.new_total);
-      document.getElementById("applied-promo-lines").innerHTML = (data.applied_promos || []).map(promo =>
-        `<div class="flex justify-between font-bold text-orange-700"><span>Promo ${promo.code}${promo.auto ? " (auto)" : ""}</span><span>- ${formatCurrency(promo.discount)}</span></div>`
-      ).join("");
-
-      codeInput.disabled = true;
-      codeInput.classList.add("bg-gray-100", "cursor-not-allowed");
-    } else {
-      msg.innerText = data.message || "Invalid promo code";
-      msg.classList.add("text-red-600");
-      hiddenInput.value = "";
-
-      document.getElementById("summary-discount").innerText = "- Ksh. {{ discount|escapejs }}";
-      document.getElementById("summary-total").innerText = "Ksh. {{ cart_total|escapejs }}";
-    }
-  })
-  .catch(() => {
-    msg.innerText = "Promo check failed.";
-    container.classList.remove("hidden");
-    container.classList.add("flex");
-    msg.className = "text-xs font-bold text-red-600";
-  });
+  const input = document.getElementById("promo-input"); const code = input.value.trim(); const message = document.getElementById("promo-message"); const container = document.getElementById("promo-status-container");
+  container.classList.remove("hidden"); container.classList.add("flex");
+  if (!code) { message.textContent = "Enter a code first."; message.className = "text-xs font-bold text-red-600"; return; }
+  fetch("{% url 'apply_promo' %}", {method: "POST", headers: {"X-CSRFToken": "{{ csrf_token }}", "Content-Type": "application/x-www-form-urlencoded"}, body: `code=${encodeURIComponent(code)}`})
+    .then(response => response.json()).then(data => {
+      if (!data.success) { message.textContent = data.message || "Invalid promo code"; message.className = "text-xs font-bold text-red-600"; return; }
+      message.textContent = "Code applied."; message.className = "text-xs font-bold text-green-700"; document.getElementById("hidden-promo-code").value = code; input.disabled = true;
+      document.getElementById("discount-row").classList.remove("hidden"); document.getElementById("discount-row").classList.add("flex"); document.getElementById("summary-discount").textContent = "- " + formatCurrency(data.discount_amount); document.getElementById("summary-total").textContent = formatCurrency(data.new_total);
+      document.getElementById("applied-promo-lines").innerHTML = (data.applied_promos || []).map(p => `<div class="flex justify-between font-bold text-orange-700"><span>Promo ${p.code}${p.auto ? " (auto)" : ""}</span><span>- ${formatCurrency(p.discount)}</span></div>`).join("");
+    }).catch(() => { message.textContent = "Promo check failed."; message.className = "text-xs font-bold text-red-600"; });
 }
-
 function removePromo() {
-  const codeInput = document.getElementById("promo-input");
-
-  codeInput.value = "";
-  codeInput.disabled = false;
-  codeInput.classList.remove("bg-gray-100", "cursor-not-allowed");
-
-  document.getElementById("hidden-promo-code").value = "";
-  document.getElementById("promo-status-container").classList.add("hidden");
-  document.getElementById("discount-row").classList.toggle("hidden", {{ discount|yesno:"false,true" }});
-  document.getElementById("summary-discount").innerText = "- Ksh. {{ discount|escapejs }}";
-  document.getElementById("summary-total").innerText = "Ksh. {{ cart_total|escapejs }}";
-  document.getElementById("applied-promo-lines").innerHTML = document.getElementById("auto-promo-lines-template").innerHTML;
+  const input = document.getElementById("promo-input"); input.value = ""; input.disabled = false; document.getElementById("hidden-promo-code").value = ""; document.getElementById("promo-status-container").classList.add("hidden"); document.getElementById("discount-row").classList.toggle("hidden", {{ discount|yesno:"false,true" }}); document.getElementById("summary-discount").textContent = "- Ksh. {{ discount|escapejs }}"; document.getElementById("summary-total").textContent = "Ksh. {{ cart_total|escapejs }}"; document.getElementById("applied-promo-lines").innerHTML = document.getElementById("auto-promo-lines-template").innerHTML;
 }
 </script>
-
 {% endblock %}

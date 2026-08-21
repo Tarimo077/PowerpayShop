@@ -79,13 +79,15 @@ class GalleryForm(forms.Form):
 
 CHECKOUT_FIELD_NAMES = [
     "first_name", "last_name", "email", "phone",
-    "country", "county", "city", "village", "address_detail",
-    "gender", "age", "national_id", "education", "marital_status",
-    "employment", "economic_activity", "monthly_income", "buying_method",
-    "other_loans", "cooking_fuel", "stove_type", "is_cook_user",
-    "monthly_cooking_cost", "grid_connection", "utility_provider", "monthly_electricity_cost",
-    "appliance_financed", "repayment_period", "financier", "home_or_business",
-    "warranty_selected",
+    "country", "county", "buying_method",
+]
+
+WARRANTY_FIELD_NAMES = [
+    "city", "village", "address_detail", "gender", "age", "national_id",
+    "education", "marital_status", "employment", "economic_activity",
+    "monthly_income", "other_loans", "home_or_business", "cooking_fuel",
+    "stove_type", "is_cook_user", "monthly_cooking_cost", "grid_connection",
+    "utility_provider", "monthly_electricity_cost",
 ]
 
 CHECKOUT_INPUT_CLASSES = (
@@ -109,137 +111,22 @@ CHECKOUT_CHECKBOX_CLASSES = (
 
 
 class CheckoutForm(forms.ModelForm):
-    warranty_consent = forms.BooleanField(required=False)
-    signature_data = forms.CharField(required=False, widget=forms.HiddenInput())
-
     class Meta:
         model = CheckoutOrder
         fields = CHECKOUT_FIELD_NAMES
-
         widgets = {
-            "first_name": forms.TextInput(attrs={
-                "class": CHECKOUT_INPUT_CLASSES,
-                "placeholder": "First name"
-            }),
-            "last_name": forms.TextInput(attrs={
-                "class": CHECKOUT_INPUT_CLASSES,
-                "placeholder": "Last name"
-            }),
-            "email": forms.EmailInput(attrs={
-                "class": CHECKOUT_INPUT_CLASSES,
-                "placeholder": "email@example.com"
-            }),
-            "phone": forms.TextInput(attrs={
-                "class": CHECKOUT_INPUT_CLASSES,
-                "placeholder": "07XX XXX XXX"
-            }),
-
-            "warranty_selected": forms.CheckboxInput(attrs={
-                "class": CHECKOUT_CHECKBOX_CLASSES,
-            }),
-
-            "country": forms.TextInput(attrs={
-                "class": CHECKOUT_INPUT_CLASSES,
-                "placeholder": "Country"
-            }),
-            "county": forms.TextInput(attrs={
-                "class": CHECKOUT_INPUT_CLASSES,
-                "placeholder": "County / State"
-            }),
-            "city": forms.TextInput(attrs={
-                "class": CHECKOUT_INPUT_CLASSES,
-                "placeholder": "City / Town"
-            }),
-            "village": forms.TextInput(attrs={
-                "class": CHECKOUT_INPUT_CLASSES,
-                "placeholder": "Village"
-            }),
-            "address_detail": forms.TextInput(attrs={
-                "class": CHECKOUT_INPUT_CLASSES,
-                "placeholder": "Street, estate, house number, landmark..."
-            }),
-
-            "gender": forms.Select(attrs={
-                "class": CHECKOUT_SELECT_CLASSES
-            }),
-            "age": forms.NumberInput(attrs={
-                "class": CHECKOUT_INPUT_CLASSES,
-                "placeholder": "Age"
-            }),
-            "national_id": forms.NumberInput(attrs={
-                "class": CHECKOUT_INPUT_CLASSES,
-                "placeholder": "National ID"
-            }),
-            "education": forms.Select(attrs={
-                "class": CHECKOUT_SELECT_CLASSES
-            }),
-            "marital_status": forms.Select(attrs={
-                "class": CHECKOUT_SELECT_CLASSES
-            }),
-            "employment": forms.Select(attrs={
-                "class": CHECKOUT_SELECT_CLASSES
-            }),
-            "economic_activity": forms.TextInput(attrs={
-                "class": CHECKOUT_INPUT_CLASSES,
-                "placeholder": "Economic activity"
-            }),
-            "monthly_income": forms.Select(attrs={
-                "class": CHECKOUT_SELECT_CLASSES
-            }),
-
-            "buying_method": forms.Select(attrs={
-                "class": CHECKOUT_SELECT_CLASSES
-            }),
-            "other_loans": forms.Select(attrs={
-                "class": CHECKOUT_SELECT_CLASSES
-            }),
-
-            "cooking_fuel": forms.CheckboxSelectMultiple(attrs={
-                "class": CHECKOUT_CHECKBOX_CLASSES
-            }),
-            "stove_type": forms.CheckboxSelectMultiple(attrs={
-                "class": CHECKOUT_CHECKBOX_CLASSES
-            }),
-
-            "monthly_cooking_cost": forms.NumberInput(attrs={
-                "class": CHECKOUT_INPUT_CLASSES,
-                "placeholder": "Monthly cooking cost"
-            }),
-
-            "is_cook_user": forms.Select(attrs={
-                "class": CHECKOUT_SELECT_CLASSES
-            }),
-            "grid_connection": forms.Select(attrs={
-                "class": CHECKOUT_SELECT_CLASSES
-            }),
-            "utility_provider": forms.Select(attrs={
-                "class": CHECKOUT_SELECT_CLASSES
-            }),
-            "monthly_electricity_cost": forms.NumberInput(attrs={
-                "class": CHECKOUT_INPUT_CLASSES,
-                "placeholder": "Monthly electricity cost"
-            }),
-
-            "appliance_financed": forms.Select(attrs={
-                "class": CHECKOUT_SELECT_CLASSES
-            }),
-            "repayment_period": forms.NumberInput(attrs={
-                "class": CHECKOUT_INPUT_CLASSES,
-                "placeholder": "Repayment period in months"
-            }),
-            "financier": forms.Select(attrs={
-                "class": CHECKOUT_SELECT_CLASSES
-            }),
-
-            "home_or_business": forms.Select(attrs={
-                "class": CHECKOUT_SELECT_CLASSES
-            }),
+            "first_name": forms.TextInput(attrs={"class": CHECKOUT_INPUT_CLASSES, "placeholder": "First name"}),
+            "last_name": forms.TextInput(attrs={"class": CHECKOUT_INPUT_CLASSES, "placeholder": "Last name"}),
+            "email": forms.EmailInput(attrs={"class": CHECKOUT_INPUT_CLASSES, "placeholder": "email@example.com"}),
+            "phone": forms.TextInput(attrs={"class": CHECKOUT_INPUT_CLASSES, "placeholder": "07XX XXX XXX"}),
+            "country": forms.TextInput(attrs={"class": CHECKOUT_INPUT_CLASSES, "placeholder": "Country"}),
+            "county": forms.TextInput(attrs={"class": CHECKOUT_INPUT_CLASSES, "placeholder": "County / State"}),
+            "buying_method": forms.Select(attrs={"class": CHECKOUT_SELECT_CLASSES}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["email"].required = False
-        self.fields["city"].required = False
         self.fields["buying_method"].choices = [
             ("", "Select buying method"),
             ("cash", "Cash"),
@@ -253,43 +140,41 @@ class CheckoutForm(forms.ModelForm):
             raise forms.ValidationError("Cash is currently the only available buying method.")
         return method
 
+
+class WarrantyRegistrationForm(forms.ModelForm):
+    warranty_consent = forms.BooleanField(required=True)
+    signature_data = forms.CharField(required=False, widget=forms.HiddenInput())
+
+    class Meta:
+        model = CheckoutOrder
+        fields = WARRANTY_FIELD_NAMES
+        widgets = {
+            "cooking_fuel": forms.CheckboxSelectMultiple(attrs={"class": CHECKOUT_CHECKBOX_CLASSES}),
+            "stove_type": forms.CheckboxSelectMultiple(attrs={"class": CHECKOUT_CHECKBOX_CLASSES}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if name in {"warranty_consent", "signature_data", "cooking_fuel", "stove_type"}:
+                continue
+            field.widget.attrs["class"] = CHECKOUT_SELECT_CLASSES if isinstance(field.widget, forms.Select) else CHECKOUT_INPUT_CLASSES
+
+        required = set(WARRANTY_FIELD_NAMES) - {"utility_provider", "monthly_electricity_cost"}
+        for name in required:
+            self.fields[name].required = True
+        self.fields["address_detail"].widget.attrs["placeholder"] = "Street, estate, house number, landmark..."
+        self.fields["economic_activity"].widget.attrs["placeholder"] = "Economic activity"
+        self.fields["monthly_cooking_cost"].widget.attrs["placeholder"] = "Monthly cooking cost"
+        self.fields["monthly_electricity_cost"].widget.attrs["placeholder"] = "Monthly electricity cost"
+
     def clean(self):
         cleaned = super().clean()
-        if not cleaned.get("warranty_selected"):
-            return cleaned
-
-        required_warranty_fields = {
-            "city": "City / Town",
-            "village": "Village",
-            "address_detail": "Street / address details",
-            "gender": "Gender",
-            "age": "Age",
-            "national_id": "National ID",
-            "education": "Education",
-            "marital_status": "Marital status",
-            "employment": "Employment",
-            "economic_activity": "Economic activity",
-            "monthly_income": "Monthly income",
-            "other_loans": "Other loans",
-            "home_or_business": "Home or business",
-            "cooking_fuel": "Cooking fuel",
-            "stove_type": "Cooking stove",
-            "is_cook_user": "Appliance cooking use",
-            "monthly_cooking_cost": "Monthly cooking cost",
-            "grid_connection": "Grid connection",
-        }
         if cleaned.get("grid_connection") == "yes":
-            required_warranty_fields.update({
-                "utility_provider": "Utility provider",
-                "monthly_electricity_cost": "Monthly electricity cost",
-            })
-
-        for field_name, label in required_warranty_fields.items():
-            if cleaned.get(field_name) in (None, "", [], ()):
-                self.add_error(field_name, f"{label} is required for the warranty certificate.")
-
-        if not cleaned.get("warranty_consent"):
-            self.add_error("warranty_consent", "Consent is required to issue the warranty certificate.")
+            if not cleaned.get("utility_provider"):
+                self.add_error("utility_provider", "Utility provider is required when connected to the grid.")
+            if cleaned.get("monthly_electricity_cost") in (None, ""):
+                self.add_error("monthly_electricity_cost", "Monthly electricity cost is required when connected to the grid.")
 
         signature = cleaned.get("signature_data", "")
         if not signature.startswith("data:image/png;base64,"):

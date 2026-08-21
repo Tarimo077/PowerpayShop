@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}My Warranties | PowerPay Shop{% endblock %}
+{% block content %}
+<div class="min-h-screen grid grid-rows-[auto_1fr_auto]">
+  {% include 'shop/navbar.html' %}
+  <main class="mx-auto w-full max-w-6xl px-3 py-7 sm:px-6 sm:py-10">
+    <div class="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div><span class="inline-flex rounded-full bg-emerald-100 px-4 py-2 text-xs font-black uppercase tracking-wider text-emerald-800">Your purchases</span><h1 class="mt-3 text-3xl font-black text-slate-950 sm:text-5xl">My warranties</h1><p class="mt-2 max-w-2xl text-slate-500">Register a paid purchase, then download its branded warranty certificate whenever you need it.</p></div>
+      <a href="{% url 'index' %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-5 font-black text-slate-700 shadow-sm"><i class="fa-solid fa-store"></i> Shop</a>
+    </div>
+
+    <div class="space-y-5">
+      {% for order in orders %}
+        <article class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+          <div class="flex flex-col gap-3 border-b border-slate-100 bg-slate-50/80 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div><p class="text-xs font-black uppercase tracking-wider text-slate-400">Order {{ order.payment_ref|default:order.id }}</p><p class="mt-1 font-bold text-slate-700">{{ order.submitted_at|date:"d M Y, H:i" }} · Ksh. {{ order.total_amount|intcomma }}</p></div>
+            {% if order.payment_status == 'paid' %}<span class="inline-flex w-fit rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-black uppercase text-emerald-800">Paid</span>{% else %}<span class="inline-flex w-fit rounded-full bg-orange-100 px-3 py-1.5 text-xs font-black uppercase text-orange-800">{{ order.get_payment_status_display }}</span>{% endif %}
+          </div>
+
+          <div class="p-4 sm:p-5">
+            <div class="grid gap-3 md:grid-cols-2">
+              {% for sale in order.sales.all %}
+                <div class="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3">
+                  {% if sale.product.image %}<img src="{{ sale.product.image.url }}" alt="{{ sale.product.name }}" class="h-16 w-16 shrink-0 rounded-xl bg-slate-50 object-contain p-1">{% else %}<span class="grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-700"><i class="fa-solid fa-box"></i></span>{% endif %}
+                  <div class="min-w-0 flex-1"><p class="truncate font-black text-slate-950">{{ sale.product.name }}</p><p class="text-sm text-slate-500">Quantity {{ sale.quantity }} · {{ sale.product.vendor.shop_name|default:sale.product.vendor }}</p></div>
+                  {% if order.warranty_selected and order.payment_status == 'paid' %}<a href="{% url 'download_warranty' sale.id %}" class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-emerald-700 text-white" title="Download warranty"><i class="fa-solid fa-download"></i></a>{% endif %}
+                </div>
+              {% empty %}<p class="text-sm text-slate-500">No products are linked to this order.</p>{% endfor %}
+            </div>
+
+            <div class="mt-4 flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between {% if order.warranty_selected %}bg-emerald-50{% else %}bg-slate-50{% endif %}">
+              {% if order.warranty_selected %}
+                <div><p class="font-black text-emerald-900"><i class="fa-solid fa-shield-halved mr-1"></i> Warranty registered</p><p class="text-sm text-emerald-800">Use the download button beside each product.</p></div>
+              {% elif order.payment_status == 'paid' %}
+                <div><p class="font-black text-slate-950">Warranty information not completed</p><p class="text-sm text-slate-500">Registration takes only a few minutes and includes your electronic signature.</p></div>
+                <a href="{% url 'register_warranty' order.id %}" class="inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-700 px-5 font-black text-white">Register warranty</a>
+              {% else %}
+                <div><p class="font-black text-slate-700">Available after payment</p><p class="text-sm text-slate-500">Warranty registration unlocks when this purchase is marked paid.</p></div>
+              {% endif %}
+            </div>
+          </div>
+        </article>
+      {% empty %}
+        <div class="rounded-[2rem] border border-dashed border-slate-300 bg-white p-10 text-center"><i class="fa-solid fa-shield-halved text-4xl text-emerald-600"></i><h2 class="mt-4 text-2xl font-black text-slate-950">No purchases yet</h2><p class="mt-2 text-slate-500">Your eligible warranty registrations will appear here after checkout.</p><a href="{% url 'index' %}" class="mt-5 inline-flex min-h-11 items-center rounded-full bg-emerald-700 px-6 font-black text-white">Browse products</a></div>
+      {% endfor %}
+    </div>
+  </main>
+  {% include 'footer.html' %}
+</div>
+{% endblock %}

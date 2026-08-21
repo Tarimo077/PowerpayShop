@@ -22,7 +22,7 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from accounts.models import Vendor
 from notifications.utils import notify
-from .forms import CheckoutForm, GalleryForm, PaymentForm, ProductForm, PromoCodeForm, RatingForm
+from .forms import CheckoutForm, GalleryForm, PaymentForm, ProductForm, PromoCodeForm, RatingForm, WarrantyRegistrationForm
 from .models import (
     Cart,
     CartItem,
@@ -654,16 +654,7 @@ def checkout(request):
             order.user = request.user
             order.total_amount = final_amount
             order.payment_status = "pending"
-            if order.warranty_selected:
-                order.warranty_accepted_at = timezone.now()
             order.save()
-
-            if order.warranty_selected:
-                order.warranty_signature.save(
-                    f"order-{order.pk}-signature.png",
-                    ContentFile(form.cleaned_data["signature_bytes"]),
-                    save=True,
-                )
 
             ref = f"order-{order.id}-{uuid.uuid4().hex[:6]}"
             order.payment_ref = ref
@@ -696,7 +687,12 @@ def checkout(request):
             messages.error(request, f"Payment failed: {resp}")
             return redirect("checkout")
     else:
-        form = CheckoutForm(initial={"email": request.user.email})
+        form = CheckoutForm(initial={
+            "first_name": request.user.first_name,
+            "last_name": request.user.last_name,
+            "email": request.user.email,
+            "phone": request.user.phone,
+        })
         payment_form = PaymentForm()
 
     return render(
@@ -776,6 +772,56 @@ def check_payment_status(request):
     if not order:
         return JsonResponse({"status": "unknown"})
     return JsonResponse({"status": order.payment_status, "receipt": order.mpesa_receipt})
+
+
+@login_required
+def warranties(request):
+    orders = (
+        CheckoutOrder.objects.filter(user=request.user)
+        .prefetch_related(
+            Prefetch(
+                "sales",
+                queryset=Sale.objects.select_related("product", "product__vendor").order_by("id"),
+            )
+        )
+        .order_by("-submitted_at")
+    )
+    return render(request, "shop/warranties.html", {"orders": orders})
+
+
+@login_required
+def register_warranty(request, order_id):
+    order = get_object_or_404(
+        CheckoutOrder.objects.prefetch_related("sales__product"),
+        pk=order_id,
+        user=request.user,
+        payment_status="paid",
+    )
+    if not order.sales.exists():
+        messages.error(request, "No purchased products were found for this order.")
+        return redirect("warranties")
+    if order.warranty_selected and order.warranty_signature:
+        messages.info(request, "The warranty for this purchase is already registered.")
+        return redirect("warranties")
+
+    if request.method == "POST":
+        form = WarrantyRegistrationForm(request.POST, instance=order)
+        if form.is_valid():
+            order = form.save(commit=False)
+            order.warranty_selected = True
+            order.warranty_accepted_at = timezone.now()
+            order.warranty_signature.save(
+                f"order-{order.pk}-signature.png",
+                ContentFile(form.cleaned_data["signature_bytes"]),
+                save=False,
+            )
+            order.save()
+            messages.success(request, "Warranty registered. Your certificates are ready to download.")
+            return redirect("warranties")
+    else:
+        form = WarrantyRegistrationForm(instance=order)
+
+    return render(request, "shop/warranty_form.html", {"form": form, "order": order})
 
 
 @login_required

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Register Warranty | PowerPay Shop{% endblock %}
+{% block content %}
+<div class="min-h-screen grid grid-rows-[auto_1fr_auto]">
+  {% include 'shop/navbar.html' %}
+  <main class="mx-auto w-full max-w-5xl px-3 py-7 sm:px-6 sm:py-10">
+    <a href="{% url 'warranties' %}" class="inline-flex items-center gap-2 text-sm font-black text-emerald-800"><i class="fa-solid fa-arrow-left"></i> My warranties</a>
+    <div class="mt-5 rounded-[2rem] border border-white/80 bg-white p-4 shadow-[0_24px_70px_rgba(15,23,42,0.10)] sm:p-8">
+      <div class="mb-7"><span class="inline-flex rounded-full bg-emerald-100 px-4 py-2 text-xs font-black uppercase tracking-wider text-emerald-800">Paid order</span><h1 class="mt-3 text-3xl font-black text-slate-950 sm:text-4xl">Register your warranty</h1><p class="mt-2 text-slate-500">Complete this once for all products in order {{ order.payment_ref|default:order.id }}.</p></div>
+
+      {% if form.errors %}<div class="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">Please complete the highlighted fields. {{ form.non_field_errors }}</div>{% endif %}
+      <form method="POST" id="warrantyForm" class="space-y-8">
+        {% csrf_token %}
+        <section><h2 class="mb-4 text-xl font-black text-slate-950">Location and household</h2><div class="grid gap-4 sm:grid-cols-2">
+          <label class="space-y-2"><span class="text-sm font-bold">City / Town *</span>{{ form.city }}{{ form.city.errors }}</label><label class="space-y-2"><span class="text-sm font-bold">Village *</span>{{ form.village }}{{ form.village.errors }}</label><label class="space-y-2 sm:col-span-2"><span class="text-sm font-bold">Street / address *</span>{{ form.address_detail }}{{ form.address_detail.errors }}</label>
+          <label class="space-y-2"><span class="text-sm font-bold">Gender *</span>{{ form.gender }}{{ form.gender.errors }}</label><label class="space-y-2"><span class="text-sm font-bold">Age *</span>{{ form.age }}{{ form.age.errors }}</label><label class="space-y-2"><span class="text-sm font-bold">National ID *</span>{{ form.national_id }}{{ form.national_id.errors }}</label><label class="space-y-2"><span class="text-sm font-bold">Education *</span>{{ form.education }}{{ form.education.errors }}</label><label class="space-y-2"><span class="text-sm font-bold">Marital status *</span>{{ form.marital_status }}{{ form.marital_status.errors }}</label><label class="space-y-2"><span class="text-sm font-bold">Employment *</span>{{ form.employment }}{{ form.employment.errors }}</label><label class="space-y-2 sm:col-span-2"><span class="text-sm font-bold">Economic activity *</span>{{ form.economic_activity }}{{ form.economic_activity.errors }}</label><label class="space-y-2"><span class="text-sm font-bold">Monthly income *</span>{{ form.monthly_income }}{{ form.monthly_income.errors }}</label><label class="space-y-2"><span class="text-sm font-bold">Other loans? *</span>{{ form.other_loans }}{{ form.other_loans.errors }}</label><label class="space-y-2 sm:col-span-2"><span class="text-sm font-bold">Used at home or business? *</span>{{ form.home_or_business }}{{ form.home_or_business.errors }}</label>
+        </div></section>
+
+        <section class="border-t border-slate-100 pt-7"><h2 class="mb-4 text-xl font-black text-slate-950">Cooking and energy</h2><div class="grid gap-4 sm:grid-cols-2">
+          <div class="space-y-2 sm:col-span-2"><span class="text-sm font-bold">Cooking fuel currently used *</span><div class="grid gap-2 sm:grid-cols-2">{% for checkbox in form.cooking_fuel %}<label class="flex items-center gap-3 rounded-2xl border border-slate-200 p-3">{{ checkbox.tag }} {{ checkbox.choice_label }}</label>{% endfor %}</div>{{ form.cooking_fuel.errors }}</div>
+          <div class="space-y-2 sm:col-span-2"><span class="text-sm font-bold">Cooking stove currently used *</span><div class="grid gap-2 sm:grid-cols-2">{% for checkbox in form.stove_type %}<label class="flex items-center gap-3 rounded-2xl border border-slate-200 p-3">{{ checkbox.tag }} {{ checkbox.choice_label }}</label>{% endfor %}</div>{{ form.stove_type.errors }}</div>
+          <label class="space-y-2"><span class="text-sm font-bold">Will this appliance be used for cooking? *</span>{{ form.is_cook_user }}{{ form.is_cook_user.errors }}</label><label class="space-y-2"><span class="text-sm font-bold">Monthly cooking cost *</span>{{ form.monthly_cooking_cost }}{{ form.monthly_cooking_cost.errors }}</label><label class="space-y-2"><span class="text-sm font-bold">Grid connection? *</span>{{ form.grid_connection }}{{ form.grid_connection.errors }}</label><label class="space-y-2"><span class="text-sm font-bold">Utility provider</span>{{ form.utility_provider }}{{ form.utility_provider.errors }}</label><label class="space-y-2 sm:col-span-2"><span class="text-sm font-bold">Monthly electricity cost</span>{{ form.monthly_electricity_cost }}{{ form.monthly_electricity_cost.errors }}</label>
+        </div></section>
+
+        <section class="border-t border-slate-100 pt-7"><h2 class="text-xl font-black text-slate-950">Consent and signature</h2><p class="mt-1 text-sm text-slate-500">Sign with your finger, mouse, or stylus.</p><canvas id="signatureCanvas" width="900" height="240" class="mt-4 h-40 w-full touch-none rounded-2xl border-2 border-dashed border-slate-300 bg-white"></canvas>{{ form.signature_data }}{{ form.signature_data.errors }}<button type="button" id="clearSignature" class="mt-3 rounded-full border border-slate-300 px-4 py-2 text-sm font-black">Clear signature</button><label class="mt-5 flex items-start gap-3 rounded-2xl bg-emerald-50 p-4 text-sm text-slate-700">{{ form.warranty_consent }}<span>I accept the warranty terms and consent to the warranty, carbon-title, and data-processing information included in the certificate.</span></label>{{ form.warranty_consent.errors }}</section>
+        <button class="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-emerald-700 px-6 font-black text-white sm:w-auto">Register warranty and create PDFs</button>
+      </form>
+    </div>
+  </main>
+  {% include 'footer.html' %}
+</div>
+<script>
+const canvas = document.getElementById("signatureCanvas"), input = document.getElementById("id_signature_data"), context = canvas.getContext("2d"); let drawing = false;
+context.lineWidth = 4; context.lineCap = "round"; context.strokeStyle = "#0f172a";
+function point(event) { const rect = canvas.getBoundingClientRect(); return {x:(event.clientX-rect.left)*(canvas.width/rect.width), y:(event.clientY-rect.top)*(canvas.height/rect.height)}; }
+canvas.addEventListener("pointerdown", event => { drawing=true; canvas.setPointerCapture(event.pointerId); const p=point(event); context.beginPath(); context.moveTo(p.x,p.y); });
+canvas.addEventListener("pointermove", event => { if(!drawing)return; const p=point(event); context.lineTo(p.x,p.y); context.stroke(); });
+function finish(){ if(!drawing)return; drawing=false; input.value=canvas.toDataURL("image/png"); }
+canvas.addEventListener("pointerup",finish); canvas.addEventListener("pointercancel",finish);
+document.getElementById("clearSignature").addEventListener("click",()=>{context.clearRect(0,0,canvas.width,canvas.height);input.value="";});
+</script>
+{% endblock %}
