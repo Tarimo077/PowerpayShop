@@ -5,6 +5,55 @@ import django.utils.timezone
 from django.db import migrations, models
 
 
+def add_field_if_missing(apps, schema_editor, model_name, field_name):
+    """Create a legacy state-only field when the database column is absent."""
+    model = apps.get_model("shop", model_name)
+    table_name = model._meta.db_table
+    with schema_editor.connection.cursor() as cursor:
+        tables = set(schema_editor.connection.introspection.table_names(cursor))
+        if table_name not in tables:
+            return
+        columns = {
+            column.name
+            for column in schema_editor.connection.introspection.get_table_description(cursor, table_name)
+        }
+    field = model._meta.get_field(field_name)
+    if field.column not in columns:
+        schema_editor.add_field(model, field)
+
+
+def ensure_product_max_stock(apps, schema_editor):
+    add_field_if_missing(apps, schema_editor, "Product", "max_stock")
+
+
+def ensure_product_rating_review(apps, schema_editor):
+    add_field_if_missing(apps, schema_editor, "ProductRating", "review")
+
+
+def create_model_if_missing(apps, schema_editor, model_name):
+    """Create a legacy state-only model and any missing automatic M2M tables."""
+    model = apps.get_model("shop", model_name)
+    with schema_editor.connection.cursor() as cursor:
+        tables = set(schema_editor.connection.introspection.table_names(cursor))
+
+    if model._meta.db_table not in tables:
+        schema_editor.create_model(model)
+        return
+
+    for field in model._meta.local_many_to_many:
+        through = field.remote_field.through
+        if through._meta.auto_created and through._meta.db_table not in tables:
+            schema_editor.create_model(through)
+
+
+def ensure_product_gallery(apps, schema_editor):
+    create_model_if_missing(apps, schema_editor, "ProductGallery")
+
+
+def ensure_promo_code(apps, schema_editor):
+    create_model_if_missing(apps, schema_editor, "PromoCode")
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -130,6 +179,7 @@ class Migration(migrations.Migration):
                 ),
             ],
         ),
+        migrations.RunPython(ensure_product_max_stock, migrations.RunPython.noop),
 
         # =========================================================
         # PRODUCT RATING.review
@@ -151,6 +201,7 @@ class Migration(migrations.Migration):
                 ),
             ],
         ),
+        migrations.RunPython(ensure_product_rating_review, migrations.RunPython.noop),
 
         # =========================================================
         # SALE.order
@@ -239,6 +290,7 @@ class Migration(migrations.Migration):
                 ),
             ],
         ),
+        migrations.RunPython(ensure_product_gallery, migrations.RunPython.noop),
 
         # =========================================================
         # PROMO CODE
@@ -350,4 +402,5 @@ class Migration(migrations.Migration):
                 ),
             ],
         ),
+        migrations.RunPython(ensure_promo_code, migrations.RunPython.noop),
     ]

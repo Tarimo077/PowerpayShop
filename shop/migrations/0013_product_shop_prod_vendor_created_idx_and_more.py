@@ -3,6 +3,24 @@
 from django.db import migrations, models
 
 
+def repair_missing_shop_tables(apps, schema_editor):
+    with schema_editor.connection.cursor() as cursor:
+        tables = set(schema_editor.connection.introspection.table_names(cursor))
+
+    for model_name in ("ProductGallery", "PromoCode"):
+        model = apps.get_model("shop", model_name)
+        if model._meta.db_table not in tables:
+            schema_editor.create_model(model)
+            tables.add(model._meta.db_table)
+            tables.update(field.remote_field.through._meta.db_table for field in model._meta.local_many_to_many)
+        else:
+            for field in model._meta.local_many_to_many:
+                through = field.remote_field.through
+                if through._meta.auto_created and through._meta.db_table not in tables:
+                    schema_editor.create_model(through)
+                    tables.add(through._meta.db_table)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -11,6 +29,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(repair_missing_shop_tables, migrations.RunPython.noop),
         migrations.AddIndex(
             model_name='product',
             index=models.Index(fields=['vendor', '-created_at'], name='shop_prod_vendor_created_idx'),
