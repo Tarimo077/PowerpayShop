@@ -7,6 +7,10 @@ from .models import CartItem, Wishlist
 
 
 def navigation_context(request):
+    cached = getattr(request, "_shop_navigation_context", None)
+    if cached is not None:
+        return cached
+
     user = request.user
     defaults = {
         "unread_notif_count": 0,
@@ -16,6 +20,7 @@ def navigation_context(request):
         "is_admin": False,
     }
     if not user.is_authenticated:
+        request._shop_navigation_context = defaults
         return defaults
 
     wishlist_count = (
@@ -47,7 +52,7 @@ def navigation_context(request):
         .first()
     ) or {}
 
-    return {
+    context = {
         "unread_notif_count": counts.get("nav_unread_count", 0),
         "cart_item_count": counts.get("nav_cart_count", 0),
         "wishlist_count": counts.get("nav_wishlist_count", 0),
@@ -58,3 +63,33 @@ def navigation_context(request):
         ),
         "is_admin": user.is_staff,
     }
+    request._shop_navigation_context = context
+    return context
+
+
+# Backward-compatible entry points for deployments whose settings still list
+# the original individual context processors. They share the cached combined
+# result, so using all five does not repeat the database query.
+def cart_item_count(request):
+    context = navigation_context(request)
+    return {"cart_item_count": context["cart_item_count"]}
+
+
+def wishlist_count(request):
+    context = navigation_context(request)
+    return {"wishlist_count": context["wishlist_count"]}
+
+
+def unread_notifications_count(request):
+    context = navigation_context(request)
+    return {"unread_notif_count": context["unread_notif_count"]}
+
+
+def is_approved_vendor(request):
+    context = navigation_context(request)
+    return {"is_approved_vendor": context["is_approved_vendor"]}
+
+
+def is_admin(request):
+    context = navigation_context(request)
+    return {"is_admin": context["is_admin"]}
