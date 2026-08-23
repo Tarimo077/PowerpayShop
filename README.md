@@ -1,4 +1,4 @@
-# 🛍️ PowerPay Marketplace Platform
+# 🛍️ Cook Yami Marketplace Platform
 
 A full-stack Django-powered multi-vendor e-commerce platform that allows users to browse and purchase products, while vendors can manage their own stores. The system includes secure authentication, support ticketing with live chat, vendor management tools, and a global notification system.
 

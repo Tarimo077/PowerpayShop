@@ -126,7 +126,7 @@ def verify_otp(request):
 
 
 def send_otp_email(user, otp):
-    subject = "Your PowerPayShop OTP"
+    subject = "Your Cook Yami Shop OTP"
     from_email = None  # will use DEFAULT_FROM_EMAIL
     to_email = [user.email]
 
