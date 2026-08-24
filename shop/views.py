@@ -11,6 +11,7 @@ from django.core.files.base import ContentFile
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Avg, Count, F, Prefetch, Q, Sum
+from django.db.models.functions import TruncMonth
 from django.http import JsonResponse, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -224,7 +225,8 @@ def vendor_dashboard(request):
         return redirect("index")
 
     vendor_instance = user.vendor
-    products = _base_product_queryset().filter(vendor=vendor_instance)
+    vendor_products = _base_product_queryset().filter(vendor=vendor_instance)
+    products = vendor_products
     promo_codes = PromoCode.objects.filter(vendor=vendor_instance).prefetch_related("products").order_by("-created_at")
 
     search = request.GET.get("search", "").strip()
@@ -238,7 +240,59 @@ def vendor_dashboard(request):
     if max_price is not None:
         products = products.filter(price__lte=max_price)
 
-    stats = Sale.objects.filter(product__vendor=vendor_instance).aggregate(total_sales=Count("id"), total_revenue=Sum("total_price"))
+    sales = Sale.objects.filter(product__vendor=vendor_instance).select_related("product", "customer", "order")
+    confirmed_sales = sales.filter(status__in=("paid", "shipped", "completed"))
+    stats = confirmed_sales.aggregate(
+        total_sales=Sum("quantity"),
+        total_orders=Count("id"),
+        total_revenue=Sum("total_price"),
+    )
+    total_revenue = stats["total_revenue"] or Decimal("0")
+    total_orders = stats["total_orders"] or 0
+
+    today = timezone.localdate()
+    month_starts = []
+    for offset in range(5, -1, -1):
+        month_index = today.year * 12 + today.month - 1 - offset
+        month_starts.append(today.replace(year=month_index // 12, month=month_index % 12 + 1, day=1))
+    monthly_rows = {
+        row["month"].date(): row
+        for row in confirmed_sales.filter(created_at__date__gte=month_starts[0])
+        .annotate(month=TruncMonth("created_at"))
+        .values("month")
+        .annotate(revenue=Sum("total_price"), units=Sum("quantity"))
+        .order_by("month")
+    }
+    revenue_chart = [
+        {
+            "label": month.strftime("%b"),
+            "revenue": float(monthly_rows.get(month, {}).get("revenue") or 0),
+            "units": monthly_rows.get(month, {}).get("units") or 0,
+        }
+        for month in month_starts
+    ]
+
+    status_counts = {choice: 0 for choice, _ in Sale.STATUS_CHOICES}
+    status_counts.update(dict(sales.values_list("status").annotate(total=Count("id"))))
+    status_chart = [
+        {"label": label, "value": status_counts[value], "key": value}
+        for value, label in Sale.STATUS_CHOICES
+    ]
+    top_products = list(
+        confirmed_sales.values("product__name")
+        .annotate(units=Sum("quantity"), revenue=Sum("total_price"))
+        .order_by("-units", "-revenue")[:5]
+    )
+    product_metrics = vendor_products.aggregate(
+        product_count=Count("id", distinct=True),
+        low_stock_count=Count("id", filter=Q(stock__lte=5), distinct=True),
+        wishlist_count=Count("wishlist", distinct=True),
+    )
+    average_rating = ProductRating.objects.filter(product__vendor=vendor_instance).aggregate(value=Avg("rating"))["value"] or 0
+    low_stock_products = vendor_products.filter(stock__lte=5).order_by("stock", "name")[:5]
+    active_promos = sum(1 for promo in promo_codes if promo.is_valid())
+    promo_uses = sum(promo.used_count for promo in promo_codes)
+    recent_sales = sales.order_by("-created_at")[:6]
     per_page = _safe_per_page(request, allowed=(5, 10, 15), default=10)
     page_obj = Paginator(products, per_page).get_page(request.GET.get("page"))
 
@@ -248,9 +302,21 @@ def vendor_dashboard(request):
         {
             "products": page_obj,
             "promo_codes": promo_codes,
-            "product_count": products.count(),
+            "product_count": product_metrics["product_count"] or 0,
             "total_sales": stats["total_sales"] or 0,
-            "total_revenue": stats["total_revenue"] or 0,
+            "total_orders": total_orders,
+            "total_revenue": total_revenue,
+            "average_order_value": total_revenue / total_orders if total_orders else 0,
+            "average_rating": average_rating,
+            "wishlist_count": product_metrics["wishlist_count"] or 0,
+            "low_stock_count": product_metrics["low_stock_count"] or 0,
+            "low_stock_products": low_stock_products,
+            "active_promos": active_promos,
+            "promo_uses": promo_uses,
+            "recent_sales": recent_sales,
+            "revenue_chart": revenue_chart,
+            "status_chart": status_chart,
+            "top_products": top_products,
             "is_authenticated": True,
             "per_page": per_page,
             "search": search,

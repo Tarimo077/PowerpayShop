@@ -16,11 +16,51 @@
       <a href="{% url 'add_product' %}" class="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)]"><i class="fa-solid fa-cart-plus"></i> New product</a>
     </div>
 
-    <div class="grid md:grid-cols-3 gap-5 mb-7">
-      <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-6"><p class="text-slate-500 font-bold">Products</p><p class="text-4xl font-black text-green-700 mt-1">{{ product_count }}</p></div>
-      <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-6"><p class="text-slate-500 font-bold">Sales</p><p class="text-4xl font-black text-orange-500 mt-1">{{ total_sales }}</p></div>
-      <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-6"><p class="text-slate-500 font-bold">Revenue</p><p class="text-4xl font-black text-green-700 mt-1">Ksh. {{ total_revenue|intcomma }}</p></div>
+    <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-5 mb-7">
+      <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6"><p class="text-slate-500 text-sm font-bold"><i class="fa-solid fa-box mr-1 text-green-600"></i> Products</p><p class="text-3xl sm:text-4xl font-black text-green-700 mt-1">{{ product_count }}</p><p class="text-xs text-slate-400 mt-2">{{ low_stock_count }} low stock</p></div>
+      <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6"><p class="text-slate-500 text-sm font-bold"><i class="fa-solid fa-bag-shopping mr-1 text-orange-500"></i> Units sold</p><p class="text-3xl sm:text-4xl font-black text-orange-500 mt-1">{{ total_sales }}</p><p class="text-xs text-slate-400 mt-2">{{ total_orders }} order line{{ total_orders|pluralize }}</p></div>
+      <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6"><p class="text-slate-500 text-sm font-bold"><i class="fa-solid fa-coins mr-1 text-green-600"></i> Revenue</p><p class="text-2xl sm:text-3xl font-black text-green-700 mt-1">Ksh. {{ total_revenue|floatformat:0|intcomma }}</p><p class="text-xs text-slate-400 mt-2">Confirmed payments</p></div>
+      <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6"><p class="text-slate-500 text-sm font-bold"><i class="fa-solid fa-receipt mr-1 text-blue-600"></i> Average sale</p><p class="text-2xl sm:text-3xl font-black text-blue-700 mt-1">Ksh. {{ average_order_value|floatformat:0|intcomma }}</p><p class="text-xs text-slate-400 mt-2">Per order line</p></div>
+      <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6"><p class="text-slate-500 text-sm font-bold"><i class="fa-solid fa-star mr-1 text-amber-500"></i> Rating</p><p class="text-3xl sm:text-4xl font-black text-amber-600 mt-1">{{ average_rating|floatformat:1 }}</p><p class="text-xs text-slate-400 mt-2">Across your products</p></div>
+      <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6"><p class="text-slate-500 text-sm font-bold"><i class="fa-solid fa-heart mr-1 text-rose-500"></i> Favourites</p><p class="text-3xl sm:text-4xl font-black text-rose-600 mt-1">{{ wishlist_count }}</p><p class="text-xs text-slate-400 mt-2">Customer interest</p></div>
     </div>
+
+    <div class="grid lg:grid-cols-3 gap-5 mb-7">
+      <section class="lg:col-span-2 bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6">
+        <div class="flex items-start justify-between gap-3 mb-4"><div><h2 class="text-xl sm:text-2xl font-black">Revenue trend</h2><p class="text-sm text-slate-500">Confirmed sales over the last six months</p></div><span class="rounded-full bg-green-50 px-3 py-1 text-xs font-black text-green-700">6 months</span></div>
+        <div class="relative h-64 sm:h-72"><canvas id="revenueChart" class="w-full h-full" aria-label="Six month revenue chart" role="img"></canvas></div>
+      </section>
+      <section class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6">
+        <h2 class="text-xl sm:text-2xl font-black">Order status</h2><p class="text-sm text-slate-500 mb-3">All vendor order lines</p>
+        <div class="relative h-44"><canvas id="statusChart" class="w-full h-full" aria-label="Order status chart" role="img"></canvas></div>
+        <div id="statusLegend" class="grid grid-cols-2 gap-2 mt-3 text-xs font-bold"></div>
+      </section>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-5 mb-7">
+      <section class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6">
+        <div class="flex items-center justify-between mb-4"><div><h2 class="text-xl font-black">Best sellers</h2><p class="text-sm text-slate-500">By confirmed units sold</p></div><i class="fa-solid fa-trophy text-2xl text-amber-500"></i></div>
+        <div class="space-y-3">
+          {% for item in top_products %}<div class="flex items-center gap-3"><span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-amber-50 font-black text-amber-700">{{ forloop.counter }}</span><div class="min-w-0 flex-1"><p class="truncate font-black">{{ item.product__name }}</p><p class="text-xs text-slate-500">Ksh. {{ item.revenue|floatformat:0|intcomma }}</p></div><span class="font-black text-green-700">{{ item.units }}</span></div>{% empty %}<p class="py-8 text-center text-slate-500">Sales will appear here after payment.</p>{% endfor %}
+        </div>
+      </section>
+      <section class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6">
+        <div class="flex items-center justify-between mb-4"><div><h2 class="text-xl font-black">Inventory alerts</h2><p class="text-sm text-slate-500">Products with 5 or fewer units</p></div><span class="rounded-full bg-red-50 px-3 py-1 text-xs font-black text-red-700">{{ low_stock_count }}</span></div>
+        <div class="space-y-3">
+          {% for product in low_stock_products %}<div class="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 p-3"><a href="{% url 'edit_product' product.id %}" class="min-w-0 truncate font-black hover:text-green-700">{{ product.name }}</a><span class="shrink-0 rounded-full px-3 py-1 text-xs font-black {% if product.stock == 0 %}bg-red-100 text-red-700{% else %}bg-orange-100 text-orange-700{% endif %}">{{ product.stock }} left</span></div>{% empty %}<p class="py-8 text-center text-slate-500">Inventory levels look healthy.</p>{% endfor %}
+        </div>
+      </section>
+      <section class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6">
+        <div class="flex items-center justify-between mb-4"><div><h2 class="text-xl font-black">Promotions</h2><p class="text-sm text-slate-500">Campaign performance</p></div><i class="fa-solid fa-tags text-2xl text-orange-500"></i></div>
+        <div class="grid grid-cols-2 gap-3"><div class="rounded-2xl bg-green-50 p-4"><p class="text-xs font-bold text-slate-500">Active</p><p class="text-3xl font-black text-green-700">{{ active_promos }}</p></div><div class="rounded-2xl bg-orange-50 p-4"><p class="text-xs font-bold text-slate-500">Uses</p><p class="text-3xl font-black text-orange-600">{{ promo_uses }}</p></div></div>
+        <button type="button" onclick="switchTab('promotions'); location.hash='promotions'" class="mt-4 w-full inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-emerald-500/10 px-4 py-3 font-black text-emerald-800 hover:bg-emerald-500/20">Manage promotions</button>
+      </section>
+    </div>
+
+    <section class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6 mb-7">
+      <div class="mb-4"><h2 class="text-xl sm:text-2xl font-black">Recent orders</h2><p class="text-sm text-slate-500">Latest activity across your products</p></div>
+      <div class="overflow-x-auto"><table class="w-full min-w-[680px] text-sm"><thead class="text-left text-xs uppercase tracking-wider text-slate-500"><tr><th class="py-3 pr-4">Product</th><th class="py-3 pr-4">Customer</th><th class="py-3 pr-4">Amount</th><th class="py-3 pr-4">Status</th><th class="py-3">Date</th></tr></thead><tbody class="divide-y divide-slate-100">{% for sale in recent_sales %}<tr><td class="py-4 pr-4 font-black">{{ sale.quantity }} × {{ sale.product.name }}</td><td class="py-4 pr-4 text-slate-600">{{ sale.customer.get_full_name|default:sale.customer.username }}</td><td class="py-4 pr-4 font-black text-green-700">Ksh. {{ sale.total_price|floatformat:0|intcomma }}</td><td class="py-4 pr-4"><span class="rounded-full px-3 py-1 text-xs font-black {% if sale.status == 'paid' or sale.status == 'completed' %}bg-green-50 text-green-700{% elif sale.status == 'shipped' %}bg-blue-50 text-blue-700{% else %}bg-orange-50 text-orange-700{% endif %}">{{ sale.get_status_display }}</span></td><td class="py-4 text-slate-500">{{ sale.created_at|naturaltime }}</td></tr>{% empty %}<tr><td colspan="5" class="py-10 text-center text-slate-500">No orders yet.</td></tr>{% endfor %}</tbody></table></div>
+    </section>
 
     <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-3 sm:p-4 mb-6">
       <div class="flex gap-2 flex-wrap">
@@ -120,7 +160,78 @@
   </div>
 </dialog>
 
+{{ revenue_chart|json_script:"vendor-revenue-data" }}
+{{ status_chart|json_script:"vendor-status-data" }}
 <script>
+const revenueData = JSON.parse(document.getElementById('vendor-revenue-data').textContent);
+const statusData = JSON.parse(document.getElementById('vendor-status-data').textContent);
+const chartColors = ['#f59e0b', '#16a34a', '#2563eb', '#0f766e'];
+
+function prepareCanvas(canvas) {
+  const rect = canvas.getBoundingClientRect();
+  const ratio = window.devicePixelRatio || 1;
+  canvas.width = Math.max(1, Math.round(rect.width * ratio));
+  canvas.height = Math.max(1, Math.round(rect.height * ratio));
+  const context = canvas.getContext('2d');
+  context.setTransform(ratio, 0, 0, ratio, 0, 0);
+  return { context, width: rect.width, height: rect.height };
+}
+
+function compactMoney(value) {
+  return new Intl.NumberFormat('en-KE', { notation: 'compact', maximumFractionDigits: 1 }).format(value);
+}
+
+function drawRevenueChart() {
+  const canvas = document.getElementById('revenueChart');
+  const { context: ctx, width, height } = prepareCanvas(canvas);
+  const padding = { top: 15, right: 12, bottom: 34, left: width < 500 ? 42 : 58 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const maximum = Math.max(...revenueData.map(item => item.revenue), 1);
+  ctx.font = '12px sans-serif';
+  ctx.textBaseline = 'middle';
+  for (let step = 0; step <= 4; step++) {
+    const y = padding.top + chartHeight * step / 4;
+    const value = maximum * (1 - step / 4);
+    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(padding.left, y); ctx.lineTo(width - padding.right, y); ctx.stroke();
+    ctx.fillStyle = '#64748b'; ctx.textAlign = 'right'; ctx.fillText(compactMoney(value), padding.left - 8, y);
+  }
+  const slot = chartWidth / Math.max(revenueData.length, 1);
+  revenueData.forEach((item, index) => {
+    const barWidth = Math.min(48, slot * .58);
+    const barHeight = chartHeight * item.revenue / maximum;
+    const x = padding.left + slot * index + (slot - barWidth) / 2;
+    const y = padding.top + chartHeight - barHeight;
+    const gradient = ctx.createLinearGradient(0, y, 0, padding.top + chartHeight);
+    gradient.addColorStop(0, '#16a34a'); gradient.addColorStop(1, '#059669');
+    ctx.fillStyle = gradient;
+    ctx.beginPath(); ctx.roundRect(x, y, barWidth, Math.max(barHeight, 2), 7); ctx.fill();
+    ctx.fillStyle = '#475569'; ctx.textAlign = 'center'; ctx.fillText(item.label, x + barWidth / 2, height - 14);
+  });
+}
+
+function drawStatusChart() {
+  const canvas = document.getElementById('statusChart');
+  const { context: ctx, width, height } = prepareCanvas(canvas);
+  const total = statusData.reduce((sum, item) => sum + item.value, 0);
+  const centerX = width / 2, centerY = height / 2, radius = Math.min(width, height) * .38;
+  let start = -Math.PI / 2;
+  statusData.forEach((item, index) => {
+    const angle = (total ? item.value / total : 1 / statusData.length) * Math.PI * 2;
+    ctx.beginPath(); ctx.arc(centerX, centerY, radius, start, start + angle); ctx.strokeStyle = chartColors[index]; ctx.lineWidth = Math.max(16, radius * .32); ctx.stroke();
+    start += angle;
+  });
+  ctx.fillStyle = '#0f172a'; ctx.font = '800 25px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(total, centerX, centerY - 5);
+  ctx.fillStyle = '#64748b'; ctx.font = '12px sans-serif'; ctx.fillText('orders', centerX, centerY + 17);
+  document.getElementById('statusLegend').innerHTML = statusData.map((item, index) => `<span class="flex items-center gap-2"><i class="h-2.5 w-2.5 rounded-full" style="background:${chartColors[index]}"></i>${item.label} (${item.value})</span>`).join('');
+}
+
+function drawDashboardCharts() { drawRevenueChart(); drawStatusChart(); }
+window.addEventListener('load', drawDashboardCharts);
+let chartResizeTimer;
+window.addEventListener('resize', () => { clearTimeout(chartResizeTimer); chartResizeTimer = setTimeout(drawDashboardCharts, 150); });
+
 const buttonBase = "inline-flex min-h-11 items-center justify-center gap-2 rounded-full border-0 px-4 py-3 font-black leading-none transition hover:-translate-y-0.5 cursor-pointer";
 const primaryButton = buttonBase + " bg-gradient-to-br from-green-600 to-emerald-800 text-white shadow-[0_14px_30px_rgba(15,143,79,0.25)]";
 const softButton = buttonBase + " bg-emerald-500/10 text-emerald-800 hover:bg-emerald-500/20";
