@@ -875,7 +875,29 @@ def warranties(request):
         )
         .order_by("-submitted_at")
     )
-    return render(request, "shop/warranties.html", {"orders": orders})
+    customer_warranties = Sale.objects.none()
+    if (
+        request.user.is_vendor
+        and request.user.is_vendor_approved
+        and hasattr(request.user, "vendor")
+        and not request.user.vendor.is_suspended
+    ):
+        customer_warranties = (
+            Sale.objects.filter(
+                product__vendor=request.user.vendor,
+                order__payment_status="paid",
+                order__warranty_selected=True,
+                order__warranty_signature__isnull=False,
+            )
+            .exclude(order__warranty_signature="")
+            .select_related("order", "customer", "product")
+            .order_by("-order__warranty_accepted_at", "-created_at")
+        )
+    return render(
+        request,
+        "shop/warranties.html",
+        {"orders": orders, "customer_warranties": customer_warranties},
+    )
 
 
 @login_required
