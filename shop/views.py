@@ -1076,7 +1076,7 @@ def send_checkout_emails(order, cart_total, ref):
     html_user = render_to_string("emails/checkout_user_email.html", {"order": order, "cart_total": cart_total, "ref": ref})
     if order.email:
         send_mail(
-            subject="Your PowerPay order",
+            subject="Your Cook Yami order",
             message="Your order has been received.",
             from_email=None,
             recipient_list=[order.email],

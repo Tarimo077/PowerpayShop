@@ -149,7 +149,7 @@ class CustomPasswordResetView(PasswordResetView):
         text_body = strip_tags(html_body)
 
         msg = EmailMultiAlternatives(
-            subject="Reset Your PowerPay Password",
+            subject="Reset Your Cook Yami Password",
             body=text_body,
             from_email=self.from_email,
             to=[to_email],
