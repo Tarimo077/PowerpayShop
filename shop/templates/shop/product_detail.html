@@ -13,7 +13,7 @@
       <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6">
         <div class="grid lg:grid-cols-[1fr_1fr] gap-6">
           <div>
-            <div class="min-h-[clamp(360px,48vw,620px)] rounded-[32px] relative overflow-hidden" data-product-carousel data-interval="7000">
+            <div class="group h-[clamp(360px,48vw,620px)] max-h-[620px] w-full rounded-[32px] relative overflow-hidden bg-slate-50/60" data-product-carousel data-interval="7000">
               {% if product.image %}
                 <img src="{{ product.image.url }}" alt="{{ product.name }}" data-carousel-slide class="absolute inset-0 h-full max-h-full w-full max-w-full object-contain p-3 opacity-0 scale-[.985] transition duration-500 saturate-[1.03] contrast-[1.02] is-active" id="mainProductImage" loading="eager" decoding="async">
               {% endif %}
@@ -31,12 +31,12 @@
               {% endif %}
             </div>
 
-            <div class="mt-8 flex gap-3 overflow-x-auto pb-1 data-carousel-thumbs">
+            <div class="mt-6 flex flex-wrap items-center justify-center gap-3 sm:justify-start" data-carousel-thumbs>
               {% if product.image %}
-                <button type="button" class="h-20 w-20 flex-none cursor-pointer rounded-[20px] border-2 border-slate-200 bg-white p-1 opacity-70 transition hover:-translate-y-0.5 hover:border-green-600 hover:opacity-100 is-active" data-carousel-thumb="0" aria-label="Show main image"><img src="{{ product.image.url }}" alt="{{ product.name }}"></button>
+                <button type="button" class="h-20 w-20 flex-none cursor-pointer overflow-hidden rounded-[20px] border-2 border-slate-200 bg-white p-1 opacity-70 transition hover:-translate-y-0.5 hover:border-green-600 hover:opacity-100 is-active" data-carousel-thumb="0" aria-label="Show main image"><img src="{{ product.image.url }}" alt="{{ product.name }}" class="block h-full w-full rounded-[15px] object-contain"></button>
               {% endif %}
               {% for photo in product.gallery.all %}
-                <button type="button" class="h-20 w-20 flex-none cursor-pointer rounded-[20px] border-2 border-slate-200 bg-white p-1 opacity-70 transition hover:-translate-y-0.5 hover:border-green-600 hover:opacity-100 {% if not product.image and forloop.first %}is-active{% endif %}" data-carousel-thumb="{% if product.image %}{{ forloop.counter }}{% else %}{{ forloop.counter0 }}{% endif %}" aria-label="Show image {{ forloop.counter }}"><img src="{{ photo.image.url }}" alt="{{ photo.alt_text|default:product.name }}"></button>
+                <button type="button" class="h-20 w-20 flex-none cursor-pointer overflow-hidden rounded-[20px] border-2 border-slate-200 bg-white p-1 opacity-70 transition hover:-translate-y-0.5 hover:border-green-600 hover:opacity-100 {% if not product.image and forloop.first %}is-active{% endif %}" data-carousel-thumb="{% if product.image %}{{ forloop.counter }}{% else %}{{ forloop.counter0 }}{% endif %}" aria-label="Show image {{ forloop.counter }}"><img src="{{ photo.image.url }}" alt="{{ photo.alt_text|default:product.name }}" class="block h-full w-full rounded-[15px] object-contain"></button>
               {% endfor %}
             </div>
           </div>
