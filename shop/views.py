@@ -875,6 +875,11 @@ def warranties(request):
         )
         .order_by("-submitted_at")
     )
+    for order in orders:
+        order.warranty_editable = order.payment_status == "paid" and not any(
+            sale.status in {"shipped", "completed"} for sale in order.sales.all()
+        )
+
     customer_warranties = Sale.objects.none()
     if (
         request.user.is_vendor
@@ -957,8 +962,9 @@ def register_warranty(request, order_id):
     if not order.sales.exists():
         messages.error(request, "No purchased products were found for this order.")
         return redirect("warranties")
-    if order.warranty_selected and order.warranty_signature:
-        messages.info(request, "The warranty for this purchase is already registered.")
+    is_editing = bool(order.warranty_selected and order.warranty_signature)
+    if any(sale.status in {"shipped", "completed"} for sale in order.sales.all()):
+        messages.error(request, "Warranty information cannot be changed after an item has shipped.")
         return redirect("warranties")
 
     if request.method == "POST":
@@ -967,18 +973,74 @@ def register_warranty(request, order_id):
             order = form.save(commit=False)
             order.warranty_selected = True
             order.warranty_accepted_at = timezone.now()
-            order.warranty_signature.save(
-                f"order-{order.pk}-signature.png",
-                ContentFile(form.cleaned_data["signature_bytes"]),
-                save=False,
-            )
+            if form.cleaned_data.get("signature_bytes"):
+                order.warranty_signature.save(
+                    f"order-{order.pk}-signature.png",
+                    ContentFile(form.cleaned_data["signature_bytes"]),
+                    save=False,
+                )
             order.save()
-            messages.success(request, "Warranty registered. Your certificates are ready to download.")
+            messages.success(request, "Warranty information updated." if is_editing else "Warranty registered. Your certificates are ready to download.")
             return redirect("warranties")
     else:
         form = WarrantyRegistrationForm(instance=order)
 
-    return render(request, "shop/warranty_form.html", {"form": form, "order": order})
+    return render(request, "shop/warranty_form.html", {"form": form, "order": order, "is_editing": is_editing})
+
+
+@login_required
+def vendor_warranty_detail(request, sale_id):
+    if not (
+        request.user.is_vendor
+        and request.user.is_vendor_approved
+        and hasattr(request.user, "vendor")
+        and not request.user.vendor.is_suspended
+    ):
+        return HttpResponseForbidden("Only approved vendors can view customer warranty details.")
+
+    sale = get_object_or_404(
+        Sale.objects.select_related("order", "customer", "product", "product__vendor"),
+        pk=sale_id,
+        product__vendor=request.user.vendor,
+        order__payment_status="paid",
+        order__warranty_selected=True,
+    )
+    order = sale.order
+
+    def displayed(field_name):
+        display = getattr(order, f"get_{field_name}_display", None)
+        return display() if callable(display) else getattr(order, field_name, None)
+
+    detail_sections = [
+        ("Customer and purchase", [
+            ("Customer", f"{order.first_name} {order.last_name}"),
+            ("Phone", order.phone), ("Email", order.email),
+            ("Product", sale.product.name), ("Quantity", sale.quantity),
+            ("Order reference", order.payment_ref), ("M-Pesa receipt", order.mpesa_receipt),
+            ("Purchase date", order.submitted_at), ("Fulfilment", sale.get_status_display()),
+        ]),
+        ("Location and household", [
+            ("Country", order.country), ("County / State", order.county), ("City / Town", order.city),
+            ("Village", order.village), ("Street / address", order.address_detail),
+            ("Gender", displayed("gender")), ("Age", order.age), ("National ID", order.national_id),
+            ("Education", displayed("education")), ("Marital status", displayed("marital_status")),
+            ("Employment", displayed("employment")), ("Economic activity", order.economic_activity),
+            ("Monthly income", displayed("monthly_income")), ("Other loans", displayed("other_loans")),
+            ("Home or business", displayed("home_or_business")),
+        ]),
+        ("Cooking and energy", [
+            ("Cooking fuel", displayed("cooking_fuel")), ("Cooking stove", displayed("stove_type")),
+            ("Appliance used for cooking", displayed("is_cook_user")),
+            ("Monthly cooking cost", order.monthly_cooking_cost),
+            ("Grid connection", displayed("grid_connection")), ("Utility provider", displayed("utility_provider")),
+            ("Monthly electricity cost", order.monthly_electricity_cost),
+        ]),
+    ]
+    return render(
+        request,
+        "shop/vendor_warranty_detail.html",
+        {"sale": sale, "order": order, "detail_sections": detail_sections},
+    )
 
 
 @login_required
@@ -986,10 +1048,18 @@ def download_warranty(request, sale_id):
     sale = get_object_or_404(
         Sale.objects.select_related("order", "product__vendor"),
         pk=sale_id,
-        customer=request.user,
-        order__user=request.user,
     )
-    if sale.order.payment_status != "paid" or sale.status != "paid":
+    is_customer = sale.customer_id == request.user.id and sale.order.user_id == request.user.id
+    is_owning_vendor = bool(
+        request.user.is_vendor
+        and request.user.is_vendor_approved
+        and hasattr(request.user, "vendor")
+        and not request.user.vendor.is_suspended
+        and sale.product.vendor_id == request.user.vendor.id
+    )
+    if not (is_customer or is_owning_vendor):
+        return HttpResponseForbidden("You do not have access to this warranty certificate.")
+    if sale.order.payment_status != "paid" or sale.status not in {"paid", "shipped", "completed"}:
         return HttpResponseForbidden("The warranty becomes available after payment is confirmed.")
     if not sale.order.warranty_selected or not sale.order.warranty_signature:
         return HttpResponseForbidden("This order does not include a warranty certificate.")

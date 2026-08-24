@@ -33,6 +33,7 @@ urlpatterns = [
     path("vendor/orders/<int:sale_id>/status/", views.update_sale_status, name="update_sale_status"),
     path("warranties/", views.warranties, name="warranties"),
     path("warranties/<int:order_id>/register/", views.register_warranty, name="register_warranty"),
+    path("vendor/warranties/<int:sale_id>/", views.vendor_warranty_detail, name="vendor_warranty_detail"),
     path("warranty/<int:sale_id>/download/", views.download_warranty, name="download_warranty"),
 
 ]

@@ -217,7 +217,9 @@ class WarrantyRegistrationForm(forms.ModelForm):
                 self.add_error("monthly_electricity_cost", "Monthly electricity cost is required when connected to the grid.")
 
         signature = cleaned.get("signature_data", "")
-        if not signature.startswith("data:image/png;base64,"):
+        if not signature and self.instance and self.instance.warranty_signature:
+            cleaned["signature_bytes"] = None
+        elif not signature.startswith("data:image/png;base64,"):
             self.add_error("signature_data", "Please add your electronic signature.")
         elif len(signature) > 1_500_000:
             self.add_error("signature_data", "The signature is too large. Please clear it and sign again.")
