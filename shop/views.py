@@ -813,6 +813,9 @@ def payment_callback(request):
                 order.save(update_fields=["payment_status"])
                 return JsonResponse({"detail": "Payment failed"}, status=200)
 
+            if order.payment_status == "paid":
+                return JsonResponse({"detail": "Payment already processed"}, status=200)
+
             metadata = callback.get("CallbackMetadata", {}).get("Item", [])
             meta = {item.get("Name"): item.get("Value") for item in metadata if item.get("Name")}
             order.payment_status = "paid"
@@ -823,6 +826,26 @@ def payment_callback(request):
             sales.update(status="paid")
             for sale in sales:
                 Product.objects.filter(pk=sale.product_id).update(stock=F("stock") - sale.quantity)
+
+            vendor_sales = {}
+            for sale in sales:
+                vendor_sales.setdefault(sale.vendor, []).append(sale)
+            for vendor_user, items in vendor_sales.items():
+                item_summary = ", ".join(f"{item.quantity} × {item.product.name}" for item in items)
+                vendor_total = sum((item.total_price for item in items), Decimal("0.00"))
+                notify(
+                    vendor_user,
+                    "New paid order",
+                    f"Payment confirmed for {item_summary}. Order value: Ksh. {vendor_total:,.2f}.",
+                    "success",
+                )
+            if order.user:
+                notify(
+                    order.user,
+                    "Payment confirmed",
+                    f"Your order {order.payment_ref} has been paid and is being prepared by the vendor.",
+                    "success",
+                )
 
             CartItem.objects.filter(cart__user=order.user).delete()
     except CheckoutOrder.DoesNotExist:
@@ -853,6 +876,52 @@ def warranties(request):
         .order_by("-submitted_at")
     )
     return render(request, "shop/warranties.html", {"orders": orders})
+
+
+@login_required
+def order_tracking(request):
+    orders = (
+        CheckoutOrder.objects.filter(user=request.user)
+        .prefetch_related(
+            Prefetch(
+                "sales",
+                queryset=Sale.objects.select_related("product", "product__vendor").order_by("id"),
+            )
+        )
+        .order_by("-submitted_at")
+    )
+    return render(request, "shop/order_tracking.html", {"orders": orders})
+
+
+@require_POST
+@login_required
+def update_sale_status(request, sale_id):
+    user = request.user
+    if not (user.is_vendor and user.is_vendor_approved and hasattr(user, "vendor") and not user.vendor.is_suspended):
+        return HttpResponseForbidden("Only approved vendors can update order status.")
+
+    sale = get_object_or_404(
+        Sale.objects.select_related("customer", "product", "order"),
+        pk=sale_id,
+        product__vendor=user.vendor,
+    )
+    requested_status = request.POST.get("status", "")
+    allowed_transition = {"paid": "shipped", "shipped": "completed"}.get(sale.status)
+    if requested_status != allowed_transition:
+        messages.error(request, "That order status change is not allowed.")
+        return redirect(reverse("vendor_dashboard") + "#orders")
+
+    sale.status = requested_status
+    sale.save(update_fields=["status"])
+    status_label = sale.get_status_display()
+    notify(
+        sale.customer,
+        f"Order {status_label.lower()}",
+        f"{sale.product.name} is now {status_label.lower()}. Reference: {sale.order.payment_ref if sale.order else sale.id}.",
+        "success" if requested_status == "completed" else "info",
+    )
+    messages.success(request, f"{sale.product.name} marked {status_label.lower()}.")
+    return redirect(reverse("vendor_dashboard") + "#orders")
 
 
 @login_required
