@@ -223,7 +223,33 @@
       if (event.target && event.target.id === "live-results") {
         event.target.classList.remove("hidden");
       }
+      enhancePasswordFields(event.target || document);
     });
+
+    function enhancePasswordFields(root = document) {
+      root.querySelectorAll('input[type="password"]:not([data-password-toggle-ready])').forEach((input) => {
+        input.dataset.passwordToggleReady = "true";
+        const wrapper = document.createElement('span');
+        wrapper.className = 'relative block';
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
+        input.classList.add('pr-16');
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-slate-100 px-2 py-1 text-xs font-black text-slate-600 transition hover:bg-emerald-100 hover:text-emerald-800';
+        button.textContent = 'Show';
+        button.setAttribute('aria-label', 'Show password');
+        button.addEventListener('click', () => {
+          const showing = input.type === 'text';
+          input.type = showing ? 'password' : 'text';
+          button.textContent = showing ? 'Show' : 'Hide';
+          button.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+        });
+        wrapper.appendChild(button);
+      });
+    }
+    enhancePasswordFields();
 
     document.getElementById("messageModal").addEventListener("click", function(event) {
       if (event.target === this) {

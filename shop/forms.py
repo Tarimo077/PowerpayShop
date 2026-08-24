@@ -83,11 +83,29 @@ CHECKOUT_FIELD_NAMES = [
 ]
 
 WARRANTY_FIELD_NAMES = [
-    "city", "village", "address_detail", "gender", "age", "national_id",
+    "phone", "city", "village", "address_detail", "gender", "age", "national_id",
     "education", "marital_status", "employment", "economic_activity",
     "monthly_income", "other_loans", "home_or_business", "cooking_fuel",
     "stove_type", "is_cook_user", "monthly_cooking_cost", "grid_connection",
     "utility_provider", "monthly_electricity_cost",
+]
+
+COUNTRY_CODE_CHOICES = [
+    ("+254", "Kenya (+254)"),
+    ("+255", "Tanzania (+255)"),
+    ("+256", "Uganda (+256)"),
+    ("+250", "Rwanda (+250)"),
+    ("+257", "Burundi (+257)"),
+    ("+211", "South Sudan (+211)"),
+    ("+251", "Ethiopia (+251)"),
+    ("+252", "Somalia (+252)"),
+    ("+27", "South Africa (+27)"),
+    ("+234", "Nigeria (+234)"),
+    ("+233", "Ghana (+233)"),
+    ("+1", "United States / Canada (+1)"),
+    ("+44", "United Kingdom (+44)"),
+    ("+971", "United Arab Emirates (+971)"),
+    ("+91", "India (+91)"),
 ]
 
 CHECKOUT_INPUT_CLASSES = (
@@ -142,12 +160,13 @@ class CheckoutForm(forms.ModelForm):
 
 
 class WarrantyRegistrationForm(forms.ModelForm):
+    country_code = forms.ChoiceField(choices=COUNTRY_CODE_CHOICES, initial="+254")
     warranty_consent = forms.BooleanField(required=True)
     signature_data = forms.CharField(required=False, widget=forms.HiddenInput())
 
     class Meta:
         model = CheckoutOrder
-        fields = WARRANTY_FIELD_NAMES
+        fields = ["country_code", *WARRANTY_FIELD_NAMES]
         widgets = {
             "cooking_fuel": forms.CheckboxSelectMultiple(attrs={"class": CHECKOUT_CHECKBOX_CLASSES}),
             "stove_type": forms.CheckboxSelectMultiple(attrs={"class": CHECKOUT_CHECKBOX_CLASSES}),
@@ -164,9 +183,30 @@ class WarrantyRegistrationForm(forms.ModelForm):
         for name in required:
             self.fields[name].required = True
         self.fields["address_detail"].widget.attrs["placeholder"] = "Street, estate, house number, landmark..."
+        self.fields["phone"].widget.attrs.update({"placeholder": "712 345 678", "inputmode": "tel", "autocomplete": "tel-national"})
+        self.fields["country_code"].widget.attrs.update({"class": CHECKOUT_SELECT_CLASSES, "autocomplete": "tel-country-code"})
         self.fields["economic_activity"].widget.attrs["placeholder"] = "Economic activity"
         self.fields["monthly_cooking_cost"].widget.attrs["placeholder"] = "Monthly cooking cost"
         self.fields["monthly_electricity_cost"].widget.attrs["placeholder"] = "Monthly electricity cost"
+
+        if not self.is_bound and self.instance and self.instance.phone:
+            saved_phone = "".join(character for character in str(self.instance.phone) if character.isdigit() or character == "+")
+            for code, _label in sorted(COUNTRY_CODE_CHOICES, key=lambda choice: len(choice[0]), reverse=True):
+                if saved_phone.startswith(code):
+                    self.initial["country_code"] = code
+                    self.initial["phone"] = saved_phone[len(code):]
+                    break
+
+    def clean_phone(self):
+        code = self.cleaned_data.get("country_code", "+254")
+        number = "".join(character for character in self.cleaned_data.get("phone", "") if character.isdigit())
+        code_digits = code.lstrip("+")
+        if number.startswith(code_digits):
+            number = number[len(code_digits):]
+        number = number.lstrip("0")
+        if not 7 <= len(number) <= 12:
+            raise forms.ValidationError("Enter a valid phone number without the country code.")
+        return f"{code}{number}"
 
     def clean(self):
         cleaned = super().clean()

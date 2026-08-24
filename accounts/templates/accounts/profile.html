@@ -12,7 +12,9 @@
 
     <div class="grid lg:grid-cols-[.35fr_.65fr] gap-6 items-start mx-2">
       <aside class="rounded-[1.75rem] border border-white/80 bg-white/90 p-5 text-center shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl sm:p-6 lg:sticky lg:top-28">
-        <div class="w-28 h-28 mx-auto rounded-[2rem] bg-gradient-to-br from-green-700 to-orange-500 text-white grid place-items-center text-5xl font-black shadow-xl">{{ request.user.username|first|upper }}</div>
+        <div class="w-28 h-28 mx-auto overflow-hidden rounded-[2rem] bg-gradient-to-br from-green-700 to-orange-500 text-white grid place-items-center text-5xl font-black shadow-xl">
+          {% if is_vendor and request.user.vendor.logo %}<img id="profileLogoPreview" src="{{ request.user.vendor.logo.url }}" alt="{{ request.user.vendor.shop_name|default:request.user.username }} logo" class="h-full w-full bg-white object-cover"><span id="profileLogoInitial" class="hidden">{{ request.user.username|first|upper }}</span>{% else %}<img id="profileLogoPreview" src="" alt="Selected vendor logo preview" class="hidden h-full w-full bg-white object-cover"><span id="profileLogoInitial">{{ request.user.username|first|upper }}</span>{% endif %}
+        </div>
         <h2 class="text-2xl font-black mt-4">{{ request.user.username }}</h2>
         <p class="text-slate-500 text-sm break-all">{{ request.user.email }}</p>
         {% if is_vendor %}<span class="inline-flex mt-4 px-3 py-1 rounded-full bg-green-50 text-green-700 font-black text-xs">Approved vendor</span>{% endif %}
@@ -41,9 +43,10 @@
             <form method="POST" enctype="multipart/form-data" class="grid sm:grid-cols-2 gap-4">
               {% csrf_token %}
               {% for field in vendor_form %}
-                <label class="block {% if field.name == 'description' or 'logo' %}sm:col-span-2{% endif %}">
+                <label class="block {% if field.name == 'description' or field.name == 'logo' %}sm:col-span-2{% endif %}">
                   <span class="font-bold text-sm">{{ field.label }}</span>
                   {{ field }}
+                  {% if field.name == 'logo' %}<span id="selectedLogoName" class="mt-2 block text-xs font-bold text-slate-500">{% if request.user.vendor.logo %}Current: {{ request.user.vendor.logo.name }}{% else %}Choose an image to preview it above.{% endif %}</span>{% endif %}
                   {% for error in field.errors %}<span class="block text-xs text-red-600 font-bold mt-1">{{ error }}</span>{% endfor %}
                 </label>
               {% endfor %}
@@ -56,4 +59,21 @@
   </main>
   {% include 'footer.html' %}
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const logoInput = document.querySelector('[data-logo-input="true"]');
+  const preview = document.getElementById('profileLogoPreview');
+  const initial = document.getElementById('profileLogoInitial');
+  const filename = document.getElementById('selectedLogoName');
+  if (!logoInput || !preview) return;
+  logoInput.addEventListener('change', () => {
+    const file = logoInput.files && logoInput.files[0];
+    if (!file) return;
+    preview.src = URL.createObjectURL(file);
+    preview.classList.remove('hidden');
+    if (initial) initial.classList.add('hidden');
+    if (filename) filename.textContent = `Selected: ${file.name}`;
+  });
+});
+</script>
 {% endblock %}

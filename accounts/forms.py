@@ -184,7 +184,9 @@ class VendorProfileForm(forms.ModelForm):
         "class": "input input-success p-2 h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
     }))
     logo = forms.ImageField(required=False, widget=forms.FileInput(attrs={
-        "class": "file-input file-input-success w-full"
+        "class": "file-input file-input-success w-full",
+        "accept": "image/*",
+        "data-logo-input": "true",
     }))
     description = forms.CharField(required=False, widget=forms.Textarea(attrs={
         "class": "textarea textarea-bordered w-full rounded-lg border-green-300 focus:border-green-500 focus:ring focus:ring-green-200",
