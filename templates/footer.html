@@ -3,21 +3,23 @@
   <div class="w-full mx-auto px-2 sm:px-3 lg:px-4 py-10 grid gap-8 md:grid-cols-[1.4fr_.8fr_.8fr] items-start">
     <div class="space-y-4">
       <a href="{% url 'index' %}" class="inline-flex items-center gap-3">
-        <img src="{% static 'images/yami-logo.png' %}" alt="YAMI Logo" width="96" height="96" loading="lazy" decoding="async" class="h-20 w-20 object-contain">
+        <img src="{% static 'images/yami-logo.png' %}" alt="YAMI Logo" width="96" height="96" loading="lazy" decoding="async" class="h-32 w-32 object-contain">
       </a>
+      <!-- 
       <div class="flex gap-3">
         <a href="#" class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/80 bg-white/90 text-emerald-800 shadow-[0_10px_22px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:text-orange-500" aria-label="X / Twitter"><i class="fa-brands fa-x-twitter"></i></a>
         <a href="#" class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/80 bg-white/90 text-emerald-800 shadow-[0_10px_22px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:text-orange-500" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
         <a href="#" class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/80 bg-white/90 text-emerald-800 shadow-[0_10px_22px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:text-orange-500" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-      </div>
+      </div>  -->
     </div>
 
     <div class="flex gap-6 justify-between p-6">
       <div>
         <h6 class="font-black text-gray-900 mb-3">Company</h6>
         <nav class="grid gap-2 text-sm text-slate-500">
-          <a href="#" class="hover:text-green-700 transition">About PowerPay</a>
-          <a href="#" class="hover:text-green-700 transition">Contact</a>
+          <!-- <a href="#" class="hover:text-green-700 transition">About PowerPay</a> 
+          <a href="#" class="hover:text-green-700 transition">About Cook Yami Shop</a>
+          <a href="#" class="hover:text-green-700 transition">Contact</a> -->
           <a href="{% url 'support:support_ticket_list' %}" class="hover:text-green-700 transition">Support</a>
         </nav>
       </div>
@@ -33,6 +35,6 @@
     </div>
   </div>
   <div class="border-t border-slate-200/70 py-4 text-center text-sm text-slate-500">
-    &copy; {% now "Y" %} PowerPay Africa Ltd. All rights reserved.
+    &copy; {% now "Y" %} Cook Yami Shop. All rights reserved.
   </div>
 </footer>
