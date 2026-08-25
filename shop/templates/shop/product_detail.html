@@ -13,15 +13,15 @@
       <div class="bg-white/90 border border-white/80 rounded-[1.75rem] shadow-[0_22px_55px_rgba(15,23,42,0.11)] backdrop-blur-xl p-4 sm:p-6">
         <div class="grid lg:grid-cols-[1fr_1fr] gap-6">
           <div>
-            <div class="group h-[clamp(360px,48vw,620px)] max-h-[620px] w-full rounded-[32px] relative overflow-hidden bg-slate-50/60" data-product-carousel data-interval="7000">
+            <div class="group relative h-80 w-full overflow-hidden rounded-[32px] bg-slate-50/60 sm:h-[480px] lg:h-[560px] xl:h-[620px]" data-product-carousel data-interval="7000">
               {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" data-carousel-slide class="absolute inset-0 h-full max-h-full w-full max-w-full object-contain p-3 opacity-0 scale-[.985] transition duration-500 saturate-[1.03] contrast-[1.02] is-active" id="mainProductImage" loading="eager" decoding="async">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" data-carousel-slide data-active="true" class="absolute inset-0 z-[2] h-full max-h-full w-full max-w-full scale-100 object-contain p-3 opacity-100 transition duration-500 saturate-[1.03] contrast-[1.02] is-active" id="mainProductImage" loading="eager" decoding="async">
               {% endif %}
               {% for photo in product.gallery.all %}
-                <img src="{{ photo.image.url }}" alt="{{ photo.alt_text|default:product.name }}" data-carousel-slide class="absolute inset-0 h-full max-h-full w-full max-w-full object-contain p-3 opacity-0 scale-[.985] transition duration-500 saturate-[1.03] contrast-[1.02] {% if not product.image and forloop.first %}is-active{% endif %}" loading="lazy" decoding="async">
+                <img src="{{ photo.image.url }}" alt="{{ photo.alt_text|default:product.name }}" data-carousel-slide {% if not product.image and forloop.first %}data-active="true"{% endif %} class="absolute inset-0 h-full max-h-full w-full max-w-full object-contain p-3 transition duration-500 saturate-[1.03] contrast-[1.02] {% if not product.image and forloop.first %}z-[2] scale-100 opacity-100 is-active{% else %}z-0 scale-[.985] opacity-0{% endif %}" loading="lazy" decoding="async">
               {% empty %}
                 {% if not product.image %}
-                  <div data-carousel-slide class="absolute inset-0 h-full max-h-full w-full max-w-full object-contain p-3 opacity-0 scale-[.985] transition duration-500 saturate-[1.03] contrast-[1.02] is-active grid place-items-center content-center bg-white/60 text-slate-500"><i class="fa-solid fa-image text-6xl mb-3"></i><p>No product image</p></div>
+                  <div data-carousel-slide data-active="true" class="absolute inset-0 z-[2] grid h-full max-h-full w-full max-w-full scale-100 place-items-center content-center bg-white/60 p-3 text-slate-500 opacity-100 transition duration-500"><i class="fa-solid fa-image text-6xl mb-3"></i><p>No product image</p></div>
                 {% endif %}
               {% endfor %}
               {% if product.gallery.all %}

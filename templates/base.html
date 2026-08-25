@@ -29,8 +29,8 @@
       dialog { max-width: 100vw; }
     }
   </style>
-  <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
-  <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+  <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}?v=gallery-mobile-1">
+  <link rel="stylesheet" href="{% static 'css/mobile.css' %}?v=gallery-mobile-1">
   {% block extra_head %}{% endblock %}
 </head>
 
@@ -268,7 +268,7 @@
     {% endif %}
   </script>
 
-  <script src="{% static 'js/shop-interactions.js' %}"></script>
+  <script src="{% static 'js/shop-interactions.js' %}?v=gallery-mobile-1"></script>
   {% block extra_scripts %}{% endblock %}
 </body>
 </html>
