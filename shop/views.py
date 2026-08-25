@@ -938,13 +938,31 @@ def update_sale_status(request, sale_id):
         messages.error(request, "That order status change is not allowed.")
         return redirect(reverse("vendor_dashboard") + "#orders")
 
+    update_fields = ["status"]
+    if requested_status == "shipped":
+        serial_number = request.POST.get("serial_number", "").strip()
+        serial_confirmed = request.POST.get("confirm_serial") == "on"
+        if not serial_number:
+            messages.error(request, "Enter the product serial number before marking it shipped.")
+            return redirect(reverse("vendor_dashboard") + "#orders")
+        if len(serial_number) > 100:
+            messages.error(request, "The serial number cannot exceed 100 characters.")
+            return redirect(reverse("vendor_dashboard") + "#orders")
+        if not serial_confirmed:
+            messages.error(request, "Confirm that you checked the serial number before shipping.")
+            return redirect(reverse("vendor_dashboard") + "#orders")
+        sale.serial_number = serial_number
+        update_fields.append("serial_number")
+
     sale.status = requested_status
-    sale.save(update_fields=["status"])
+    sale.save(update_fields=update_fields)
     status_label = sale.get_status_display()
     notify(
         sale.customer,
         f"Order {status_label.lower()}",
-        f"{sale.product.name} is now {status_label.lower()}. Reference: {sale.order.payment_ref if sale.order else sale.id}.",
+        f"{sale.product.name} is now {status_label.lower()}. "
+        f"{'Your warranty certificate is ready to download. ' if requested_status == 'shipped' and sale.order and sale.order.warranty_selected else ''}"
+        f"Reference: {sale.order.payment_ref if sale.order else sale.id}.",
         "success" if requested_status == "completed" else "info",
     )
     messages.success(request, f"{sale.product.name} marked {status_label.lower()}.")
@@ -1016,6 +1034,7 @@ def vendor_warranty_detail(request, sale_id):
             ("Customer", f"{order.first_name} {order.last_name}"),
             ("Phone", order.phone), ("Email", order.email),
             ("Product", sale.product.name), ("Quantity", sale.quantity),
+            ("Serial number", sale.serial_number),
             ("Order reference", order.payment_ref), ("M-Pesa receipt", order.mpesa_receipt),
             ("Purchase date", order.submitted_at), ("Fulfilment", sale.get_status_display()),
         ]),
@@ -1059,10 +1078,12 @@ def download_warranty(request, sale_id):
     )
     if not (is_customer or is_owning_vendor):
         return HttpResponseForbidden("You do not have access to this warranty certificate.")
-    if sale.order.payment_status != "paid" or sale.status not in {"paid", "shipped", "completed"}:
+    if sale.order.payment_status != "paid":
         return HttpResponseForbidden("The warranty becomes available after payment is confirmed.")
     if not sale.order.warranty_selected or not sale.order.warranty_signature:
         return HttpResponseForbidden("This order does not include a warranty certificate.")
+    if sale.status not in {"shipped", "completed"} or not sale.serial_number:
+        return HttpResponseForbidden("The warranty becomes available after the product is shipped and its serial number is confirmed.")
 
     pdf = build_warranty_pdf(sale)
     filename = f"warranty-{slugify(sale.product.name) or 'product'}-{sale.pk}.pdf"

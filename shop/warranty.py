@@ -137,6 +137,7 @@ def build_warranty_pdf(sale):
             ("Product name", sale.product.name),
             ("Quantity", sale.quantity),
             ("Product / model", sale.product.name),
+            ("Serial number", sale.serial_number),
             ("Payment receipt / reference", order.mpesa_receipt or order.payment_ref),
             ("Owner's name", f"{order.first_name} {order.last_name}"),
             ("Mobile number", order.phone),
