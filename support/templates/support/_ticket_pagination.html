@@ -16,7 +16,7 @@
 <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
     {% if tickets.has_previous %}
     <a href="?page={{ tickets.previous_page_number }}&per_page={{ per_page }}{{ qs }}"
-       class="px-3.5 py-2 rounded-xl bg-base-100 border border-base-200 text-sm hover:bg-success hover:text-white transition">
+       class="px-3.5 py-2 rounded-xl bg-base-100 border border-base-200 text-sm hover:bg-green-500 hover:text-white transition">
         <i class="fa-solid fa-chevron-left mr-1 text-xs"></i> Prev
     </a>
     {% else %}
@@ -27,16 +27,16 @@
 
     {% for num in tickets.paginator.page_range %}
         {% if num == tickets.number %}
-        <span class="px-3.5 py-2 rounded-xl bg-success text-white text-sm font-semibold">{{ num }}</span>
+        <span class="px-3.5 py-2 rounded-xl bg-green-500 text-white text-sm font-semibold">{{ num }}</span>
         {% elif num > tickets.number|add:"-3" and num < tickets.number|add:"3" %}
         <a href="?page={{ num }}&per_page={{ per_page }}{{ qs }}"
-           class="px-3.5 py-2 rounded-xl bg-base-100 border border-base-200 text-sm hover:bg-success hover:text-white transition">{{ num }}</a>
+           class="px-3.5 py-2 rounded-xl bg-base-100 border border-base-200 text-sm hover:bg-green-500 hover:text-white transition">{{ num }}</a>
         {% endif %}
     {% endfor %}
 
     {% if tickets.has_next %}
     <a href="?page={{ tickets.next_page_number }}&per_page={{ per_page }}{{ qs }}"
-       class="px-3.5 py-2 rounded-xl bg-base-100 border border-base-200 text-sm hover:bg-success hover:text-white transition">
+       class="px-3.5 py-2 rounded-xl bg-base-100 border border-base-200 text-sm hover:bg-green-500 hover:text-white transition">
         Next <i class="fa-solid fa-chevron-right ml-1 text-xs"></i>
     </a>
     {% else %}
