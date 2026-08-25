@@ -6,6 +6,7 @@
  */
 
 module.exports = {
+    darkMode: 'class',
     content: [
         /**
          * HTML. Paths to Django template files that will contain Tailwind CSS classes.
@@ -60,6 +61,6 @@ module.exports = {
         require('daisyui'),
     ],
     daisyui: {
-    themes: ["light", "dark", "synthwave"],
+    themes: ["light"],
     },
 }
