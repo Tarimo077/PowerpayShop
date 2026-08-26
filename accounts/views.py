@@ -159,7 +159,7 @@ class CustomPasswordResetView(PasswordResetView):
 
 def register_view(request):
     if request.method == "POST":
-        form = RegistrationForm(request.POST)
+        form = RegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save(commit=False)
 
@@ -173,9 +173,16 @@ def register_view(request):
             
             user.save()
 
-            # Create a vendor placeholder profile ONLY if user checked 'is_vendor'
-            #if user.is_vendor:
-                #Vendor.objects.create(user=user)
+            if user.is_vendor:
+                Vendor.objects.update_or_create(
+                    user=user,
+                    defaults={
+                        "shop_name": form.cleaned_data.get("shop_name"),
+                        "description": form.cleaned_data.get("description"),
+                        "address": form.cleaned_data.get("address"),
+                        "logo": form.cleaned_data.get("logo"),
+                    },
+                )
             messages.success(request, "Account created successfully!")
 
             if user.is_vendor:

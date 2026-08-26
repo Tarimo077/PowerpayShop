@@ -96,7 +96,7 @@
 
           {% for field in form %}
             {% if field.name != 'shop_name' and field.name != 'description' and field.name != 'address' and field.name != 'logo' %}
-              <label class="block rounded-2xl border border-slate-100 bg-slate-50/70 p-4 transition focus-within:border-emerald-300 focus-within:bg-white focus-within:shadow-sm {% if field.name == 'email' or field.name == 'password1' or field.name == 'password2' or field.name == 'is_vendor' or field.name == 'username' %}sm:col-span-2{% endif %}">
+              <label class="block rounded-2xl border border-slate-100 bg-slate-50/70 p-4 transition focus-within:border-emerald-300 focus-within:bg-white focus-within:shadow-sm {% if field.name == 'email' or field.name == 'phone' or field.name == 'password1' or field.name == 'password2' or field.name == 'is_vendor' or field.name == 'username' %}sm:col-span-2{% endif %}">
                 <span class="mb-2 block text-sm font-black text-slate-700">
                   {% if field.label == 'Password1' %} Password {% elif field.label == 'Password2' %} Confirm Password {% else %}{{ field.label }}{% endif %}
                 </span>

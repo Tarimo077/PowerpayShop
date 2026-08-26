@@ -67,6 +67,16 @@ class RegistrationForm(UserCreationForm):
             "class": "input input-success p-2 h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white dark:bg-gray-800"
         }
     ))
+    phone = forms.CharField(
+        required=False,
+        label="Contact phone",
+        widget=forms.TextInput(attrs={
+            "placeholder": "+254 712 345 678",
+            "inputmode": "tel",
+            "autocomplete": "tel",
+            "class": "input input-success p-2 h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg transition bg-white",
+        }),
+    )
     password1 = forms.CharField(widget=forms.PasswordInput(
         attrs={
             "placeholder": "Password",
@@ -116,7 +126,15 @@ class RegistrationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ["username", "email", "password1", "password2", "is_vendor", "shop_name", "description", "address", "logo"]
+        fields = ["username", "email", "phone", "password1", "password2", "is_vendor", "shop_name", "description", "address", "logo"]
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("is_vendor"):
+            for field_name, label in (("phone", "Contact phone"), ("shop_name", "Shop name"), ("address", "Business address")):
+                if not cleaned.get(field_name):
+                    self.add_error(field_name, f"{label} is required for vendors.")
+        return cleaned
 
 
 # ======================
@@ -150,6 +168,17 @@ class UserProfileForm(forms.ModelForm):
         })
     )
 
+    phone = forms.CharField(
+        required=False,
+        label="Contact phone",
+        widget=forms.TextInput(attrs={
+            "class": "input input-success p-2 h-8 w-full border-green-300 focus:border-green-500 focus:ring focus:ring-green-200 rounded-lg",
+            "placeholder": "+254 712 345 678",
+            "inputmode": "tel",
+            "autocomplete": "tel",
+        }),
+    )
+
     require_otp = forms.BooleanField(
         required=False,
         label="Enable Two-Factor Authentication (OTP)",
@@ -165,6 +194,7 @@ class UserProfileForm(forms.ModelForm):
             'email',
             'first_name',
             'last_name',
+            'phone',
             'require_otp',
         ]
 
@@ -177,6 +207,9 @@ class UserProfileForm(forms.ModelForm):
         if user.is_vendor or user.is_staff or user.is_superuser:
             self.fields['require_otp'].disabled = True
             self.fields['require_otp'].help_text = "OTP is mandatory for vendors and admins."
+        if user.is_vendor:
+            self.fields['phone'].required = True
+            self.fields['phone'].help_text = "Shown to customers as your shop contact number."
 
 
 class VendorProfileForm(forms.ModelForm):

@@ -74,7 +74,8 @@ def _apply_product_sorting(products, sort):
 def _base_product_queryset():
     public_promos = PromoCode.objects.filter(visibility="public").prefetch_related("products")
     return (
-        Product.objects.select_related("vendor", "vendor__user")
+        Product.objects.filter(vendor__is_suspended=False)
+        .select_related("vendor", "vendor__user")
         .prefetch_related(
             "gallery",
             "ratings",
@@ -158,7 +159,7 @@ def _add_product_to_cart(user, product):
 
 def index_page(request):
     products = _base_product_queryset()
-    vendors = Vendor.objects.filter(products__isnull=False).select_related("user").distinct().order_by("shop_name")
+    vendors = Vendor.objects.filter(products__isnull=False, is_suspended=False).select_related("user").distinct().order_by("shop_name")
 
     search = request.GET.get("search", "").strip()
     min_price_raw = request.GET.get("min_price", "").strip()
@@ -360,7 +361,7 @@ def product_detail(request, pk):
 
 
 def product_image_swap(request, pk):
-    product = get_object_or_404(Product, pk=pk)
+    product = get_object_or_404(Product, pk=pk, vendor__is_suspended=False)
     image_id = request.GET.get("image")
 
     if image_id == "main":
@@ -374,7 +375,7 @@ def product_image_swap(request, pk):
 
 @login_required
 def add_product(request):
-    if not (request.user.is_vendor and request.user.is_vendor_approved and hasattr(request.user, "vendor")):
+    if not (request.user.is_vendor and request.user.is_vendor_approved and hasattr(request.user, "vendor") and not request.user.vendor.is_suspended):
         messages.error(request, "Only approved vendors can add products.")
         return redirect("index")
 
@@ -445,7 +446,7 @@ def delete_gallery_image(request, image_id):
 
 @login_required
 def buy_now(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(Product, id=product_id, vendor__is_suspended=False)
     _, status = _add_product_to_cart(request.user, product)
     if status == "out_of_stock":
         messages.error(request, f"{product.name} is out of stock.")
@@ -457,7 +458,7 @@ def buy_now(request, product_id):
 
 @login_required
 def add_to_cart(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(Product, id=product_id, vendor__is_suspended=False)
     _, status = _add_product_to_cart(request.user, product)
     if status == "out_of_stock":
         messages.error(request, f"{product.name} is out of stock.")
@@ -551,7 +552,7 @@ def wishlist_remove(request, wid):
 
 @login_required
 def wishlist_move_to_cart(request, wid):
-    item = get_object_or_404(Wishlist.objects.select_related("product"), id=wid, user=request.user)
+    item = get_object_or_404(Wishlist.objects.select_related("product"), id=wid, user=request.user, product__vendor__is_suspended=False)
     product_name = item.product.name
     _, status = _add_product_to_cart(request.user, item.product)
     if status == "out_of_stock":
@@ -567,7 +568,7 @@ def wishlist_move_to_cart(request, wid):
 
 @login_required
 def toggle_wishlist(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(Product, id=product_id, vendor__is_suspended=False)
     wishlist_entry, created = Wishlist.objects.get_or_create(user=request.user, product=product)
     if created:
         messages.success(request, f"{product.name} added to wishlist!")
@@ -579,7 +580,7 @@ def toggle_wishlist(request, product_id):
 
 @login_required
 def rate_product(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(Product, id=product_id, vendor__is_suspended=False)
     rating_obj = ProductRating.objects.filter(product=product, user=request.user).first()
 
     if request.method == "POST":
