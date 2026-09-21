@@ -3,6 +3,34 @@
 from django.db import migrations, models
 
 
+def ensure_serial_number(apps, schema_editor):
+    sale = apps.get_model('shop', 'Sale')
+    table_name = sale._meta.db_table
+    with schema_editor.connection.cursor() as cursor:
+        columns = {
+            column.name
+            for column in schema_editor.connection.introspection.get_table_description(
+                cursor, table_name
+            )
+        }
+    if 'serial_number' in columns:
+        return
+
+    if schema_editor.connection.vendor == 'sqlite':
+        quote = schema_editor.quote_name
+        schema_editor.execute(
+            f'ALTER TABLE {quote(table_name)} '
+            f'ADD COLUMN {quote("serial_number")} '
+            "varchar(100) NOT NULL DEFAULT ''"
+        )
+        return
+
+    field = models.CharField(blank=True, max_length=100)
+    field.set_attributes_from_name('serial_number')
+    field.model = sale
+    schema_editor.add_field(sale, field)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,9 +38,19 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='sale',
-            name='serial_number',
-            field=models.CharField(blank=True, max_length=100),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunPython(
+                    ensure_serial_number,
+                    migrations.RunPython.noop,
+                ),
+            ],
+            state_operations=[
+                migrations.AddField(
+                    model_name='sale',
+                    name='serial_number',
+                    field=models.CharField(blank=True, max_length=100),
+                ),
+            ],
         ),
     ]

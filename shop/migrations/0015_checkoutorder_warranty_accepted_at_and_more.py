@@ -3,6 +3,55 @@
 from django.db import migrations, models
 
 
+def ensure_warranty_fields(apps, schema_editor):
+    """Add warranty columns only when they are absent.
+
+    Some production databases received these columns from an earlier local
+    migration whose history was never committed. Introspection keeps this
+    migration safe for both those databases and clean installations.
+    """
+    checkout_order = apps.get_model('shop', 'CheckoutOrder')
+    table_name = checkout_order._meta.db_table
+
+    with schema_editor.connection.cursor() as cursor:
+        columns = {
+            column.name
+            for column in schema_editor.connection.introspection.get_table_description(
+                cursor, table_name
+            )
+        }
+
+    fields = {
+        'warranty_accepted_at': models.DateTimeField(blank=True, null=True),
+        'warranty_selected': models.BooleanField(default=False),
+        'warranty_signature': models.ImageField(
+            blank=True,
+            null=True,
+            upload_to='warranty_signatures/%Y/%m/',
+        ),
+    }
+
+    for field_name, field in fields.items():
+        if field_name in columns:
+            continue
+        if schema_editor.connection.vendor == 'sqlite':
+            sqlite_definitions = {
+                'warranty_accepted_at': 'datetime NULL',
+                'warranty_selected': 'bool NOT NULL DEFAULT 0',
+                'warranty_signature': 'varchar(100) NULL',
+            }
+            quote = schema_editor.quote_name
+            schema_editor.execute(
+                f'ALTER TABLE {quote(table_name)} '
+                f'ADD COLUMN {quote(field_name)} '
+                f'{sqlite_definitions[field_name]}'
+            )
+            continue
+        field.set_attributes_from_name(field_name)
+        field.model = checkout_order
+        schema_editor.add_field(checkout_order, field)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,29 +59,48 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='checkoutorder',
-            name='warranty_accepted_at',
-            field=models.DateTimeField(blank=True, null=True),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunPython(
+                    ensure_warranty_fields,
+                    migrations.RunPython.noop,
+                ),
+            ],
+            state_operations=[
+                migrations.AddField(
+                    model_name='checkoutorder',
+                    name='warranty_accepted_at',
+                    field=models.DateTimeField(blank=True, null=True),
+                ),
+                migrations.AddField(
+                    model_name='checkoutorder',
+                    name='warranty_selected',
+                    field=models.BooleanField(default=False),
+                ),
+                migrations.AddField(
+                    model_name='checkoutorder',
+                    name='warranty_signature',
+                    field=models.ImageField(
+                        blank=True,
+                        null=True,
+                        upload_to='warranty_signatures/%Y/%m/',
+                    ),
+                ),
+            ],
         ),
-        migrations.AddField(
-            model_name='checkoutorder',
-            name='warranty_selected',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name='checkoutorder',
-            name='warranty_signature',
-            field=models.ImageField(blank=True, null=True, upload_to='warranty_signatures/%Y/%m/'),
-        ),
-        migrations.AlterField(
-            model_name='checkoutorder',
-            name='city',
-            field=models.CharField(blank=True, max_length=100),
-        ),
-        migrations.AlterField(
-            model_name='checkoutorder',
-            name='email',
-            field=models.EmailField(blank=True, max_length=254),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[],
+            state_operations=[
+                migrations.AlterField(
+                    model_name='checkoutorder',
+                    name='city',
+                    field=models.CharField(blank=True, max_length=100),
+                ),
+                migrations.AlterField(
+                    model_name='checkoutorder',
+                    name='email',
+                    field=models.EmailField(blank=True, max_length=254),
+                ),
+            ],
         ),
     ]
