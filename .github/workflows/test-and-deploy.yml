@@ -1,0 +1,108 @@
+name: Test and deploy
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Test application
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DJANGO_SECRET_KEY: ci-only-secret-key
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: theme/static_src/package-lock.json
+
+      - name: Install Python dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+
+      - name: Install frontend dependencies
+        working-directory: theme/static_src
+        run: npm ci
+
+      - name: Build Tailwind CSS
+        working-directory: theme/static_src
+        run: npm run build
+
+      - name: Check for missing migrations
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Apply migrations to test database
+        run: python manage.py migrate --noinput
+
+      - name: Run Django checks
+        run: python manage.py check
+
+      - name: Run tests
+        run: python manage.py test
+
+      - name: Verify static file collection
+        run: python manage.py collectstatic --noinput --clear
+
+  deploy:
+    name: Deploy to production
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+
+    steps:
+      - name: Deploy through SSH
+        uses: appleboy/ssh-action@v1
+        env:
+          DEPLOY_SHA: ${{ github.sha }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          fingerprint: ${{ secrets.SSH_FINGERPRINT }}
+          command_timeout: 25m
+          envs: DEPLOY_SHA
+          script: |
+            set -e
+            cd /shop/PowerpayShop
+            git fetch origin main
+            git merge --ff-only "$DEPLOY_SHA"
+            test "$(git rev-parse HEAD)" = "$DEPLOY_SHA"
+            . powerpayshopvenv/bin/activate
+            python -m pip install -r requirements.txt
+            cd theme/static_src
+            npm ci
+            npm run build
+            cd ../..
+            python manage.py migrate --noinput
+            python manage.py collectstatic --noinput
+            python manage.py check
+            sudo nginx -t
+            sudo systemctl restart powerpayshop
+            sudo systemctl reload nginx

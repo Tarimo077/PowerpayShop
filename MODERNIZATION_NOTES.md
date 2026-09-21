@@ -1,4 +1,4 @@
-# PowerPayShop Modernization Notes
+# Cook Yami Shop Modernization Notes
 
 ## What changed
 
