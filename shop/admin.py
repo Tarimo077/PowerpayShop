@@ -1,5 +1,14 @@
 from django.contrib import admin
-from .models import Product, Sale, Cart, CartItem, CheckoutOrder, ProductRating
+from .models import (
+    Cart,
+    CartItem,
+    CheckoutOrder,
+    Product,
+    ProductGallery,
+    ProductRating,
+    PromoCode,
+    Sale,
+)
 
 # Product Admin
 @admin.register(Product)
@@ -8,6 +17,44 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ('vendor',)
     search_fields = ('name', 'description', 'vendor__username')
     ordering = ('-created_at',)
+
+
+@admin.register(ProductGallery)
+class ProductGalleryAdmin(admin.ModelAdmin):
+    list_display = ('product', 'alt_text')
+    search_fields = ('product__name', 'alt_text')
+    autocomplete_fields = ('product',)
+
+
+@admin.register(PromoCode)
+class PromoCodeAdmin(admin.ModelAdmin):
+    list_display = (
+        'code',
+        'vendor',
+        'discount_display',
+        'visibility',
+        'currently_valid',
+        'used_count',
+        'usage_limit',
+        'valid_from',
+        'valid_to',
+    )
+    list_filter = ('visibility', 'discount_type', 'is_active', 'vendor')
+    search_fields = ('code', 'vendor__shop_name', 'vendor__user__username')
+    filter_horizontal = ('products',)
+    readonly_fields = ('used_count', 'created_at')
+    ordering = ('-created_at',)
+    date_hierarchy = 'created_at'
+
+    @admin.display(description='Discount')
+    def discount_display(self, promo):
+        if promo.discount_type == 'percentage':
+            return f'{promo.discount_value:g}%'
+        return f'Ksh. {promo.discount_value:,.2f}'
+
+    @admin.display(boolean=True, description='Valid now')
+    def currently_valid(self, promo):
+        return promo.is_valid()
 
 
 # Sale/Admin
