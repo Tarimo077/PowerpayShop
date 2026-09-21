@@ -1,0 +1,20 @@
+# Python runtime files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local environments and secrets
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+powerpayshopvenv/
+
+# Test and tooling caches
+.coverage
+.pytest_cache/
+
+# JavaScript dependencies
+node_modules/
+

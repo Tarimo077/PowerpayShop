@@ -110,6 +110,19 @@ jobs:
           script: |
             set -e
             cd /shop/PowerpayShop
+
+            # Preserve tracked server-side edits so they cannot block deployment.
+            # They remain recoverable with `git stash list` after deployment.
+            if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+              git stash push -m "Automatic pre-deploy stash $DEPLOY_SHA"
+            fi
+
+            # Older server checkouts may have this generated file untracked,
+            # while the repository now tracks it.
+            if [ -e package-lock.json ] && ! git ls-files --error-unmatch package-lock.json >/dev/null 2>&1; then
+              rm -f package-lock.json
+            fi
+
             git fetch origin main
             git merge --ff-only "$DEPLOY_SHA"
             test "$(git rev-parse HEAD)" = "$DEPLOY_SHA"
