@@ -99,12 +99,26 @@ WSGI_APPLICATION = 'powerpayshop.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if os.environ.get('DB_NAME_POWERPAY'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ['DB_NAME_POWERPAY'],
+            'USER': os.environ.get('DB_USER_POWERPAY', ''),
+            'PASSWORD': os.environ.get('DB_PASSWORD_POWERPAY', ''),
+            'HOST': os.environ.get('DB_HOST_POWERPAY', '127.0.0.1'),
+            'PORT': os.environ.get('DB_PORT_POWERPAY', '5432'),
+            'CONN_MAX_AGE': 60,
+            'CONN_HEALTH_CHECKS': True,
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
