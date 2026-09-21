@@ -117,6 +117,15 @@ jobs:
               git stash push -m "Automatic pre-deploy stash $DEPLOY_SHA"
             fi
 
+            # Preserve and remove locally generated migration files that are
+            # not part of the tested commit. Stale merge migrations can make
+            # Django's migration graph impossible to load.
+            if [ -n "$(git ls-files --others --exclude-standard -- shop/migrations)" ]; then
+              git stash push --include-untracked \
+                -m "Automatic untracked migration stash $DEPLOY_SHA" \
+                -- shop/migrations
+            fi
+
             # Older server checkouts may have this generated file untracked,
             # while the repository now tracks it.
             if [ -e package-lock.json ] && ! git ls-files --error-unmatch package-lock.json >/dev/null 2>&1; then
