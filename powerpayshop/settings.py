@@ -26,15 +26,15 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-dev-only-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'shop.powerpayafrica.com,127.0.0.1,localhost,testserver').split(',')
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'shop.cookyami.com, shop.powerpayafrica.com,127.0.0.1,localhost,testserver').split(',')
 
 TAILWIND_APP_NAME = 'theme'
 
 AUTH_USER_MODEL = "accounts.User"
 
-#NPM_BIN_PATH = os.environ.get('NPM_BIN_PATH', 'npm')
+NPM_BIN_PATH = os.environ.get("NPM_BIN_PATH", "npm")
 
 INTERNAL_IPS = [
     "127.0.0.1",
@@ -54,7 +54,6 @@ INSTALLED_APPS = [
     'support',
     'tailwind',
     'theme',
-    'django_browser_reload',
     'widget_tweaks',
     'django.contrib.humanize',
     'multiselectfield'
@@ -63,14 +62,18 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_browser_reload.middleware.BrowserReloadMiddleware'
 ]
+
+if DEBUG:
+    INSTALLED_APPS.append('django_browser_reload')
+    MIDDLEWARE.append('django_browser_reload.middleware.BrowserReloadMiddleware')
 
 ROOT_URLCONF = 'powerpayshop.urls'
 
@@ -84,11 +87,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'shop.context_processors.cart_item_count',
-                'shop.context_processors.wishlist_count',
-                'shop.context_processors.unread_notifications_count',
-                'shop.context_processors.is_approved_vendor',
-                'shop.context_processors.is_admin'
+                'shop.context_processors.navigation_context',
             ],
         },
     },
@@ -102,12 +101,8 @@ WSGI_APPLICATION = 'powerpayshop.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME_POWERPAY'),
-        'USER': os.environ.get('DB_USER_POWERPAY'),
-        'PASSWORD': os.environ.get('DB_PASSWORD_POWERPAY'),
-        'HOST': os.environ.get('DB_HOST_POWERPAY'),
-        'PORT': os.environ.get('DB_PORT_POWERPAY'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -146,7 +141,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
