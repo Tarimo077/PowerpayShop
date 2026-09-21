@@ -19,10 +19,29 @@ jobs:
     name: Test application
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: powerpay_ci
+          POSTGRES_USER: powerpay_ci
+          POSTGRES_PASSWORD: powerpay_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U powerpay_ci -d powerpay_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       DJANGO_SECRET_KEY: ci-only-secret-key
       DJANGO_DEBUG: "False"
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+      DB_NAME_POWERPAY: powerpay_ci
+      DB_USER_POWERPAY: powerpay_ci
+      DB_PASSWORD_POWERPAY: powerpay_ci_password
+      DB_HOST_POWERPAY: 127.0.0.1
+      DB_PORT_POWERPAY: "5432"
 
     steps:
       - name: Check out source
